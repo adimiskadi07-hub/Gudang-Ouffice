@@ -45,7 +45,7 @@
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between">
       
-      <!-- LOGO OUFFICE.CO.ID (RESPONSIF, PRESISI & PIXEL-PERFECT) -->
+      <!-- LOGO OUFFICE.CO.ID -->
       <div class="flex items-center space-x-3">
         <div class="cursor-pointer flex flex-col items-end group select-none" onclick="resetFilterAndReload()" title="Ouffice.co.id - Reset & Segarkan Data">
           <div class="flex items-baseline font-black tracking-tight text-slate-900 text-2xl sm:text-3xl leading-none">
@@ -59,8 +59,15 @@
         <span class="hidden sm:inline-block text-xs font-semibold text-slate-500 uppercase tracking-wider">Gudang Inventaris</span>
       </div>
 
-      <!-- ACTION BUTTONS -->
+      <!-- STATUS INDIKATOR SINKRONISASI & ACTION BUTTONS -->
       <div class="flex items-center space-x-2 sm:space-x-3">
+        <!-- Status Koneksi Google Sheets -->
+        <button onclick="openConfigModal()" id="connectionBadge" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200 flex items-center space-x-1.5 hover:bg-emerald-100 transition" title="Klik untuk konfigurasi API Google Sheets">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span id="connectionBadgeText" class="hidden md:inline">Google Sheets Live</span>
+          <i class="fa-solid fa-gear text-slate-400 hover:text-slate-600 text-xs ml-1"></i>
+        </button>
+
         <button onclick="openStokModal()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-semibold rounded-lg transition duration-200 flex items-center space-x-1.5 border border-slate-300">
           <i class="fa-solid fa-boxes-stacked text-orange-600"></i>
           <span>Rekap Stok</span>
@@ -450,6 +457,36 @@
     </div>
   </div>
 
+  <!-- MODAL 4: CONFIG HUBUNGKAN GOOGLE SHEETS (UNTUK GITHUB) -->
+  <div id="configModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden">
+      <div class="px-5 py-3.5 bg-slate-800 text-white flex justify-between items-center">
+        <h3 class="font-bold text-sm flex items-center space-x-2">
+          <i class="fa-solid fa-plug text-orange-400"></i>
+          <span>Pengaturan Koneksi Google Sheets</span>
+        </h3>
+        <button onclick="closeConfigModal()" class="text-white/80 hover:text-white text-lg">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="p-5 text-xs text-slate-600 space-y-3">
+        <p>Jika aplikasi ini di-host di <strong>GitHub Pages</strong>, masukkan URL Deploy Web App Google Apps Script Anda untuk melakukan sinkronisasi otomatis secara terintegrasi:</p>
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">URL Web App Apps Script (Exec):</label>
+          <input type="text" id="configGasUrl" placeholder="https://script.google.com/macros/s/AKfycb.../exec" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-mono focus:outline-none focus:ring-1 focus:ring-orange-500">
+        </div>
+        <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-800">
+          <p class="font-bold mb-1"><i class="fa-solid fa-circle-info mr-1"></i>Petunjuk Pengaturan:</p>
+          <p>Pastikan saat Deploy di Apps Script, opsi <strong>Who has access</strong> diset ke <strong>Anyone</strong> (Siapa Saja).</p>
+        </div>
+        <div class="pt-2 flex justify-end space-x-2">
+          <button onclick="closeConfigModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-semibold hover:bg-slate-200">Tutup</button>
+          <button onclick="saveGasUrlConfig()" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold shadow-sm">Simpan & Hubungkan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     // GLOBAL STATE VARIABLES
     let rawInventoryData = [];
@@ -457,23 +494,55 @@
     let html5QrScannerInstance = null;
     let activeScanTarget = 'search';
 
+    // AMBIL GAS URL TERSIMPAN DARI LOCALSTORAGE
+    let CUSTOM_GAS_URL = localStorage.getItem('OUFFICE_GAS_WEBAPP_URL') || '';
+
     // INITIALIZATION ON LOAD
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('formTanggal').value = new Date().toISOString().split('T')[0];
+      if (document.getElementById('configGasUrl')) {
+        document.getElementById('configGasUrl').value = CUSTOM_GAS_URL;
+      }
       loadDataFromBackend();
     });
 
-    // READ DATA FROM GOOGLE APPS SCRIPT
+    function openConfigModal() {
+      document.getElementById('configGasUrl').value = CUSTOM_GAS_URL;
+      document.getElementById('configModal').classList.remove('hidden');
+    }
+
+    function closeConfigModal() {
+      document.getElementById('configModal').classList.add('hidden');
+    }
+
+    function saveGasUrlConfig() {
+      const url = document.getElementById('configGasUrl').value.trim();
+      CUSTOM_GAS_URL = url;
+      localStorage.setItem('OUFFICE_GAS_WEBAPP_URL', url);
+      closeConfigModal();
+      Swal.fire({
+        icon: 'success',
+        title: 'URL Disimpan!',
+        text: 'Mencoba terhubung dengan Google Sheets...',
+        timer: 1500,
+        showConfirmButton: false
+      });
+      loadDataFromBackend();
+    }
+
+    // ENGINE DUAL-SYNC: MEMBACA DATA DARI APPS SCRIPT / REST API (GITHUB PAGES)
     function loadDataFromBackend() {
       showLoadingState();
       
       const timeoutTimer = setTimeout(() => {
         if (document.getElementById('inventoryTableBody').querySelector('.fa-spinner')) {
-          renderTableError("Waktu koneksi habis (Timeout). Pastikan Google Apps Script telah di-deploy sebagai Web App dengan akses 'Anyone'.");
+          renderTableError("Waktu koneksi habis (Timeout). Pastikan Google Apps Script di-deploy dengan akses 'Anyone' atau atur URL Web App di tombol Pengaturan (⚙️).");
         }
-      }, 12000);
+      }, 15000);
 
+      // OPSI A: Jika diakses langsung dalam iFrame / GAS
       if (typeof google !== 'undefined' && google.script && google.script.run) {
+        updateBadgeStatus(true, "Google Sheets Live (GAS)");
         google.script.run
           .withSuccessHandler((response) => {
             clearTimeout(timeoutTimer);
@@ -492,18 +561,48 @@
             renderTableError('Eror koneksi Apps Script: ' + error.message);
           })
           .readData();
-      } else {
+      } 
+      // OPSI B: Jika di-host di GitHub Pages / External Domain dengan REST API
+      else if (CUSTOM_GAS_URL) {
+        updateBadgeStatus(true, "Google Sheets Live (API)");
+        const fetchUrl = CUSTOM_GAS_URL + (CUSTOM_GAS_URL.includes('?') ? '&' : '?') + 'action=read';
+        fetch(fetchUrl)
+          .then(res => res.json())
+          .then(response => {
+            clearTimeout(timeoutTimer);
+            if (response && response.success) {
+              rawInventoryData = response.data || [];
+              filteredInventoryData = [...rawInventoryData];
+              updateDashboardStats();
+              renderTable();
+              document.getElementById('lastUpdatedTime').innerText = 'Pembaruan terakhir: ' + new Date().toLocaleTimeString('id-ID');
+            } else {
+              renderTableError(response ? response.message : 'Gagal memuat data dari API.');
+            }
+          })
+          .catch(err => {
+            clearTimeout(timeoutTimer);
+            renderTableError('Eror koneksi API Google Sheets: ' + err.message + '. Silakan periksa URL Web App pada menu Pengaturan (⚙️).');
+          });
+      } 
+      // OPSI C: URL Belum Dikonfigurasi di GitHub Pages
+      else {
         clearTimeout(timeoutTimer);
-        // Fallback Mock Data
-        rawInventoryData = [
-          { id: 'INV-1', tanggal: '2026-09-01', jenisTransaksi: 'Masuk', namaBarang: 'Videotron Modul P2.5 Indoor', brand: 'Gloshine', deskripsi: 'Kondisi mulus', tipe: 'Indoor', seri: 'MG7', lokasi: 'Indoor', serialNumber: 'SN-2023-9901', quantity: 50, satuan: 'Pcs', endUser: 'PT Citra Sari Kencana', peruntukan: 'Proyek Hall A', statusKondisi: 'Berfungsi' },
-          { id: 'INV-2', tanggal: '2026-09-02', jenisTransaksi: 'Keluar', namaBarang: 'Videotron Modul P2.5 Indoor', brand: 'Gloshine', deskripsi: 'Penyewaan event', tipe: 'Indoor', seri: 'MG7', lokasi: 'Indoor', serialNumber: 'SN-2023-9901', quantity: 20, satuan: 'Pcs', endUser: 'Client Event X', peruntukan: 'Exhibition 2026', statusKondisi: 'Berfungsi' },
-          { id: 'INV-3', tanggal: '2026-09-05', jenisTransaksi: 'Masuk', namaBarang: 'Power Supply 5V 60A', brand: 'Meanwell', deskripsi: 'Spare unit', tipe: 'Controller', seri: 'VX4S', lokasi: 'Indoor', serialNumber: 'PS-560-0012', quantity: 15, satuan: 'Unit', endUser: 'Stok Gudang', peruntukan: 'Pemeliharaan Rutin', statusKondisi: 'Berfungsi' },
-          { id: 'INV-4', tanggal: '2026-09-08', jenisTransaksi: 'Masuk', namaBarang: 'Receiving Card NovaStar DH7512', brand: 'NovaStar', deskripsi: 'Ada pin bengkok', tipe: 'Kabel', seri: '5m', lokasi: 'Outdoor', serialNumber: 'NS-RC-8812', quantity: 2, satuan: 'Pcs', endUser: 'QC Internal', peruntukan: 'Pengujian Garansi', statusKondisi: 'Tidak Berfungsi' }
-        ];
-        filteredInventoryData = [...rawInventoryData];
-        updateDashboardStats();
-        renderTable();
+        updateBadgeStatus(false, "Atur URL Google Sheets");
+        renderTableError("Atur URL Web App Google Sheets Anda terlebih dahulu dengan mengklik ikon Gerigi (⚙️) atau tombol badge di pojok kanan atas.");
+      }
+    }
+
+    function updateBadgeStatus(isLive, text) {
+      const badge = document.getElementById('connectionBadge');
+      const badgeText = document.getElementById('connectionBadgeText');
+      if (!badge || !badgeText) return;
+
+      badgeText.innerText = text;
+      if (isLive) {
+        badge.className = "px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200 flex items-center space-x-1.5 hover:bg-emerald-100 transition cursor-pointer";
+      } else {
+        badge.className = "px-2.5 py-1 bg-rose-50 text-rose-700 text-xs font-semibold rounded-full border border-rose-200 flex items-center space-x-1.5 hover:bg-rose-100 transition cursor-pointer";
       }
     }
 
@@ -526,8 +625,14 @@
         <tr>
           <td colspan="12" class="py-8 text-center text-rose-600 bg-rose-50/50">
             <i class="fa-solid fa-circle-exclamation text-2xl mb-2"></i>
-            <p class="text-xs font-semibold">${escapeHtml(message)}</p>
-            <button onclick="loadDataFromBackend()" class="mt-3 px-3 py-1 bg-rose-600 text-white rounded text-xs hover:bg-rose-700">Coba Lagi</button>
+            <p class="text-xs font-semibold max-w-lg mx-auto px-4">${escapeHtml(message)}</p>
+            <div class="mt-3 flex justify-center space-x-2">
+              <button onclick="openConfigModal()" class="px-3 py-1 bg-slate-800 text-white rounded text-xs hover:bg-slate-700 flex items-center space-x-1">
+                <i class="fa-solid fa-gear"></i>
+                <span>Atur URL Web App</span>
+              </button>
+              <button onclick="loadDataFromBackend()" class="px-3 py-1 bg-rose-600 text-white rounded text-xs hover:bg-rose-700">Coba Lagi</button>
+            </div>
           </td>
         </tr>`;
     }
@@ -739,6 +844,7 @@
         didOpen: () => { Swal.showLoading(); }
       });
 
+      // METODE A: via GAS Native google.script.run
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         if (id) {
           google.script.run
@@ -751,16 +857,22 @@
             .withFailureHandler(onSaveFailure)
             .addData(payload);
         }
+      } 
+      // METODE B: via REST API Fetch (GitHub Pages)
+      else if (CUSTOM_GAS_URL) {
+        const actionName = id ? 'update' : 'add';
+        const bodyData = { action: actionName, id: id, ...payload };
+        
+        fetch(CUSTOM_GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify(bodyData)
+        })
+        .then(res => res.json())
+        .then(res => onSaveSuccess(res))
+        .catch(err => onSaveFailure(err));
       } else {
-        setTimeout(() => {
-          if (id) {
-            const idx = rawInventoryData.findIndex(x => x.id === id);
-            if (idx !== -1) rawInventoryData[idx] = { ...payload, id };
-          } else {
-            rawInventoryData.unshift({ ...payload, id: 'INV-' + Date.now() });
-          }
-          onSaveSuccess({ success: true, message: 'Data berhasil disimpan (Mode Demo)!' });
-        }, 500);
+        Swal.fire('Eror Konfigurasi!', 'URL Google Sheets Web App belum dikonfigurasi.', 'error');
       }
     }
 
@@ -775,7 +887,7 @@
     }
 
     function onSaveFailure(error) {
-      Swal.fire('Eror Server!', error.message, 'error');
+      Swal.fire('Eror Server!', error.message || error.toString(), 'error');
     }
 
     function editItem(id) {
@@ -815,10 +927,22 @@
               })
               .withFailureHandler(onSaveFailure)
               .deleteData(id);
-          } else {
-            rawInventoryData = rawInventoryData.filter(x => x.id !== id);
-            Swal.fire('Terhapus!', 'Data berhasil dihapus (Mode Demo).', 'success');
-            loadDataFromBackend();
+          } else if (CUSTOM_GAS_URL) {
+            fetch(CUSTOM_GAS_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain' },
+              body: JSON.stringify({ action: 'delete', id: id })
+            })
+            .then(res => res.json())
+            .then(res => {
+              if (res && res.success) {
+                Swal.fire('Terhapus!', res.message, 'success');
+                loadDataFromBackend();
+              } else {
+                Swal.fire('Gagal!', res ? res.message : 'Gagal menghapus.', 'error');
+              }
+            })
+            .catch(err => onSaveFailure(err));
           }
         }
       });
@@ -996,7 +1120,7 @@
       }).join('');
     }
 
-    // EXPORT PDF LOGIC WITH BRAND COLUMN
+    // EXPORT PDF LOGIC WITH EXACT OUFFICE.CO.ID LOGO
     function exportToPDF() {
       if (filteredInventoryData.length === 0) {
         Swal.fire('Peringatan', 'Tidak ada data untuk diexport!', 'warning');
@@ -1041,7 +1165,7 @@
           <!-- KOP SURAT LAPORAN -->
           <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #ea580c; padding-bottom: 12px; margin-bottom: 16px;">
             <div style="display: flex; align-items: center;">
-              <!-- LOGO OUFFICE.CO.ID (FIXED BOUNDS & PERFECT ALIGNMENT) -->
+              <!-- LOGO OUFFICE.CO.ID -->
               <div style="width: 105px; margin-right: 16px; text-align: right; white-space: nowrap; flex-shrink: 0;">
                 <div style="font-family: 'Inter', sans-serif; font-weight: 900; font-size: 22px; color: #0f172a; line-height: 1; letter-spacing: -0.5px; text-align: right;">
                   O<span style="color: #ea580c;">u</span>ffice
@@ -1146,7 +1270,7 @@
         <div style="position: relative; z-index: 10;">
           <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #ea580c; padding-bottom: 12px; margin-bottom: 16px;">
             <div style="display: flex; align-items: center;">
-              <!-- LOGO OUFFICE.CO.ID (FIXED BOUNDS & PERFECT ALIGNMENT) -->
+              <!-- LOGO OUFFICE.CO.ID -->
               <div style="width: 105px; margin-right: 16px; text-align: right; white-space: nowrap; flex-shrink: 0;">
                 <div style="font-family: 'Inter', sans-serif; font-weight: 900; font-size: 22px; color: #0f172a; line-height: 1; letter-spacing: -0.5px; text-align: right;">
                   O<span style="color: #ea580c;">u</span>ffice
