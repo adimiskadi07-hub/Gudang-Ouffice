@@ -59,10 +59,10 @@
         <span class="hidden sm:inline-block text-xs font-semibold text-slate-500 uppercase tracking-wider">Gudang Inventaris</span>
       </div>
 
-      <!-- STATUS INDIKATOR SINKRONISASI & ACTION BUTTONS -->
+      <!-- ACTION BUTTONS (Badge API Disembunyikan) -->
       <div class="flex items-center space-x-2 sm:space-x-3">
-        <!-- Status Koneksi Google Sheets -->
-        <button onclick="openConfigModal()" id="connectionBadge" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200 flex items-center space-x-1.5 hover:bg-emerald-100 transition" title="Klik untuk konfigurasi API Google Sheets">
+        <!-- Status Koneksi Google Sheets (Disembunyikan dari Tampilan) -->
+        <button onclick="openConfigModal()" id="connectionBadge" class="hidden px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200 flex items-center space-x-1.5 hover:bg-emerald-100 transition" title="Klik untuk konfigurasi API Google Sheets">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span id="connectionBadgeText" class="hidden md:inline">Google Sheets Live</span>
           <i class="fa-solid fa-gear text-slate-400 hover:text-slate-600 text-xs ml-1"></i>
@@ -111,7 +111,7 @@
         </div>
       </div>
 
-      <!-- Card 3: Barang Berfungsi (Kuantitas Masuk Berfungsi - Keluar Berfungsi) -->
+      <!-- Card 3: Barang Berfungsi -->
       <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
           <p class="text-xs font-semibold text-slate-500">Barang Berfungsi</p>
@@ -122,7 +122,7 @@
         </div>
       </div>
 
-      <!-- Card 4: Tidak Berfungsi (Kuantitas Masuk Tidak Berfungsi - Keluar Tidak Berfungsi) -->
+      <!-- Card 4: Tidak Berfungsi -->
       <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
         <div>
           <p class="text-xs font-semibold text-slate-500">Tidak Berfungsi</p>
@@ -134,7 +134,7 @@
       </div>
     </div>
 
-    <!-- SEARCH & FILTER PANEL (2-ROW COMPACT LAYOUT) -->
+    <!-- SEARCH & FILTER PANEL -->
     <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-sm mb-5">
       <!-- BARIS 1: Search, Filter Dropdowns, Export PDF & Reload -->
       <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
@@ -457,7 +457,7 @@
     </div>
   </div>
 
-  <!-- MODAL 4: CONFIG HUBUNGKAN GOOGLE SHEETS (UNTUK GITHUB) -->
+  <!-- MODAL 4: CONFIG HUBUNGKAN GOOGLE SHEETS -->
   <div id="configModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
     <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden">
       <div class="px-5 py-3.5 bg-slate-800 text-white flex justify-between items-center">
@@ -536,13 +536,13 @@
       
       const timeoutTimer = setTimeout(() => {
         if (document.getElementById('inventoryTableBody').querySelector('.fa-spinner')) {
-          renderTableError("Waktu koneksi habis (Timeout). Pastikan Google Apps Script di-deploy dengan akses 'Anyone' atau atur URL Web App di tombol Pengaturan (⚙️).");
+          renderTableError("Waktu koneksi habis (Timeout). Pastikan Google Apps Script di-deploy dengan akses 'Anyone' atau atur URL Web App di tombol Pengaturan.");
         }
       }, 15000);
 
       // OPSI A: Jika diakses langsung dalam iFrame / GAS
       if (typeof google !== 'undefined' && google.script && google.script.run) {
-        updateBadgeStatus(true, "Google Sheets Live (GAS)");
+        updateBadgeStatus(true, "Google Sheets Live");
         google.script.run
           .withSuccessHandler((response) => {
             clearTimeout(timeoutTimer);
@@ -564,7 +564,7 @@
       } 
       // OPSI B: Jika di-host di GitHub Pages / External Domain dengan REST API
       else if (CUSTOM_GAS_URL) {
-        updateBadgeStatus(true, "Google Sheets Live (API)");
+        updateBadgeStatus(true, "Google Sheets Live");
         const fetchUrl = CUSTOM_GAS_URL + (CUSTOM_GAS_URL.includes('?') ? '&' : '?') + 'action=read';
         fetch(fetchUrl)
           .then(res => res.json())
@@ -582,28 +582,26 @@
           })
           .catch(err => {
             clearTimeout(timeoutTimer);
-            renderTableError('Eror koneksi API Google Sheets: ' + err.message + '. Silakan periksa URL Web App pada menu Pengaturan (⚙️).');
+            renderTableError('Eror koneksi API Google Sheets: ' + err.message + '. Silakan periksa URL Web App.');
           });
       } 
       // OPSI C: URL Belum Dikonfigurasi di GitHub Pages
       else {
         clearTimeout(timeoutTimer);
         updateBadgeStatus(false, "Atur URL Google Sheets");
-        renderTableError("Atur URL Web App Google Sheets Anda terlebih dahulu dengan mengklik ikon Gerigi (⚙️) atau tombol badge di pojok kanan atas.");
+        renderTableError("Atur URL Web App Google Sheets Anda terlebih dahulu.");
       }
     }
 
+    // Helper Status Badge (Tersembunyi secara default)
     function updateBadgeStatus(isLive, text) {
       const badge = document.getElementById('connectionBadge');
       const badgeText = document.getElementById('connectionBadgeText');
       if (!badge || !badgeText) return;
 
       badgeText.innerText = text;
-      if (isLive) {
-        badge.className = "px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200 flex items-center space-x-1.5 hover:bg-emerald-100 transition cursor-pointer";
-      } else {
-        badge.className = "px-2.5 py-1 bg-rose-50 text-rose-700 text-xs font-semibold rounded-full border border-rose-200 flex items-center space-x-1.5 hover:bg-rose-100 transition cursor-pointer";
-      }
+      // Tetapkan badge tetap tersembunyi agar tampilan header bersih
+      badge.classList.add('hidden');
     }
 
     function showLoadingState() {
