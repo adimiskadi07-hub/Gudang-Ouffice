@@ -1125,7 +1125,7 @@
     async function startAndroidCameraWithFallback(html5QrCode, config) {
       const statusText = document.getElementById('qrScannerStatus');
 
-      // Strategi 1: Coba mode facingMode "environment" (Standard Back Camera)
+      // Strategi 1: Coba mode facingMode "environment" (Kamera Belakang)
       try {
         await html5QrCode.start({ facingMode: "environment" }, config, handleQrScanSuccess);
         if (statusText) {
@@ -1134,45 +1134,60 @@
         }
         return;
       } catch (err1) {
-        console.warn("Strategi 1 (facingMode) gagal:", err1);
+        console.warn("Strategi 1 (environment) tidak tersedia:", err1?.message || err1);
       }
 
-      // Strategi 2: Enumerasi kamera untuk memilih kamera belakang Android (multiple lenses)
+      // Strategi 2: Coba mode facingMode "user" (Kamera Depan / Laptop Webcam)
+      try {
+        await html5QrCode.start({ facingMode: "user" }, config, handleQrScanSuccess);
+        if (statusText) {
+          statusText.innerText = "Kamera aktif. Arahkan ke Barcode / QR Code.";
+          statusText.className = "text-xs text-slate-500 mt-3";
+        }
+        return;
+      } catch (err2) {
+        console.warn("Strategi 2 (user) tidak tersedia:", err2?.message || err2);
+      }
+
+      // Strategi 3: Enumerasi kamera untuk memilih perangkat video yang tersedia
       try {
         const cameras = await Html5Qrcode.getCameras();
         if (cameras && cameras.length > 0) {
-          // Pada Android dengan banyak lensa, kamera belakang biasanya berada di urutan paling akhir
-          const backCamera = cameras[cameras.length - 1];
-          await html5QrCode.start(backCamera.id, config, handleQrScanSuccess);
+          const cameraToUse = cameras[cameras.length - 1];
+          await html5QrCode.start(cameraToUse.id, config, handleQrScanSuccess);
           if (statusText) {
             statusText.innerText = "Arahkan kamera ke Barcode / QR Code Serial Number barang.";
             statusText.className = "text-xs text-slate-500 mt-3";
           }
           return;
         }
-      } catch (err2) {
-        console.warn("Strategi 2 (getCameras) gagal:", err2);
+      } catch (err3) {
+        console.warn("Strategi 3 (getCameras) tidak berhasil:", err3?.message || err3);
       }
 
-      // Strategi 3: Fallback akhir untuk kamera default
+      // Strategi 4: Coba tanpa constraint khusus
       try {
-        await html5QrCode.start({ facingMode: "user" }, config, handleQrScanSuccess);
+        await html5QrCode.start({}, config, handleQrScanSuccess);
         if (statusText) {
-          statusText.innerText = "Kamera aktif. Arahkan ke QR Code.";
+          statusText.innerText = "Kamera aktif. Arahkan ke Barcode / QR Code.";
           statusText.className = "text-xs text-slate-500 mt-3";
         }
-      } catch (err3) {
-        console.error("Seluruh opsi kamera gagal diinisialisasi:", err3);
-        if (statusText) {
-          statusText.innerText = "Gagal mengakses kamera. Periksa izin kamera browser HP Anda.";
-          statusText.className = "text-xs text-rose-600 font-bold mt-3";
-        }
-        Swal.fire({
-          icon: 'error',
-          title: 'Izin Kamera Diperlukan',
-          text: 'Pastikan Anda memberikan izin akses kamera pada browser Android Anda (dan pastikan situs diakses melalui tautan HTTPS).',
-          confirmButtonColor: '#ea580c'
-        });
+        return;
+      } catch (err4) {
+        console.warn("Strategi 4 (default constraint) gagal:", err4?.message || err4);
+      }
+
+      // Bila tidak ada perangkat kamera fisik terdeteksi (NotFoundError / Tidak Ada Hardware)
+      if (statusText) {
+        statusText.innerText = "Kamera tidak terdeteksi pada perangkat ini. Silakan gunakan tombol '📸 Foto / Upload QR' di bawah.";
+        statusText.className = "text-xs text-amber-600 font-semibold mt-3 p-2 bg-amber-50 rounded-lg border border-amber-200 block";
+      }
+
+      // Highlighting tombol upload foto jika kamera tidak tersedia
+      const uploadBtn = document.querySelector("button[onclick*='nativeFileInput']");
+      if (uploadBtn) {
+        uploadBtn.classList.add("ring-2", "ring-orange-500", "animate-bounce");
+        setTimeout(() => uploadBtn.classList.remove("animate-bounce"), 2500);
       }
     }
 
