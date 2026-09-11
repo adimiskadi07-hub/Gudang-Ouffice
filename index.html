@@ -37,11 +37,85 @@
       background: #cbd5e1;
       border-radius: 4px;
     }
+
+    /* MOTION GRAPHICS & ANIMATIONS */
+    @keyframes scanLaser {
+      0% { top: 0%; opacity: 0.2; }
+      50% { opacity: 1; }
+      100% { top: 95%; opacity: 0.2; }
+    }
+    .motion-card-glow {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .motion-card-glow:hover {
+      box-shadow: 0 10px 25px -5px rgba(234, 88, 12, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      transform: translateY(-2px);
+    }
+    .scanner-hud-laser {
+      position: absolute;
+      left: 5%;
+      right: 5%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #ea580c, #f97316, transparent);
+      box-shadow: 0 0 15px #ea580c, 0 0 8px #f97316;
+      border-radius: 50%;
+      animation: scanLaser 2.2s infinite ease-in-out;
+      z-index: 20;
+    }
+    .donut-ring-berfungsi {
+      stroke-dasharray: 283;
+      stroke-dashoffset: 283;
+      transition: stroke-dashoffset 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 antialiased min-h-screen pb-20 lg:pb-8">
 
-  <!-- HEADER & NAVBAR -->
+  <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 relative overflow-hidden">
+      <div class="absolute -right-12 -top-12 w-40 h-40 bg-orange-600/10 rounded-full blur-2xl pointer-events-none"></div>
+      
+      <!-- Logo Branding -->
+      <div class="flex flex-col items-center mb-6">
+        <div class="flex flex-col items-end cursor-pointer mb-2">
+          <div class="flex items-baseline font-black tracking-tight text-slate-900 text-3xl sm:text-4xl leading-none">
+            <span class="text-slate-900">O</span>
+            <span class="text-orange-600">u</span>
+            <span class="text-slate-900">ffice</span>
+          </div>
+          <span class="text-[11px] sm:text-[12px] font-extrabold text-slate-900 tracking-normal -mt-1 pr-0.5">.co.id</span>
+        </div>
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mt-1">Sistem Inventaris Gudang</p>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Username</label>
+          <div class="relative">
+            <i class="fa-solid fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="text" id="loginUsername" required placeholder="Masukkan username Anda" 
+                   class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Password</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input type="password" id="loginPassword" required placeholder="Masukkan password Anda" 
+                   class="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs uppercase tracking-wider rounded-lg shadow-md transition duration-200 flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          <span>Masuk Sistem</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex items-center justify-between">
       
@@ -59,93 +133,149 @@
         <span class="hidden sm:inline-block text-xs font-semibold text-slate-500 uppercase tracking-wider">Gudang Inventaris</span>
       </div>
 
-      <!-- ACTION BUTTONS -->
+      <!-- USER PROFILE & ACTION BUTTONS -->
       <div class="flex items-center space-x-2 sm:space-x-3">
-        <!-- Status Koneksi & Pengaturan URL (Disembunyikan dari Tampilan Utama) -->
-        <button onclick="openConfigModal()" id="connectionBadge" class="hidden px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full border border-emerald-200 items-center space-x-1.5 hover:bg-emerald-100 transition" title="Klik untuk konfigurasi API Google Sheets">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span id="connectionBadgeText" class="hidden md:inline">Google Sheets Live</span>
-          <i class="fa-solid fa-gear text-slate-400 hover:text-slate-600 text-xs ml-1"></i>
+        <div id="userProfileBadge" class="flex items-center space-x-1.5 bg-slate-100 px-3 py-1 rounded-full border border-slate-200 text-xs font-semibold">
+          <i class="fa-solid fa-circle-user text-orange-600 text-sm"></i>
+          <span id="currentUserRoleBadge" class="text-[11px] uppercase font-bold tracking-wide">Role</span>
+        </div>
+
+        <button id="btnUserManagement" onclick="openUserModal()" class="hidden px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition duration-200 flex items-center space-x-1 shadow-sm" title="Kelola Pengguna Sistem">
+          <i class="fa-solid fa-users-gear"></i>
+          <span class="hidden md:inline">Users</span>
         </button>
 
-        <button onclick="openStokModal()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-semibold rounded-lg transition duration-200 flex items-center space-x-1.5 border border-slate-300">
+        <button onclick="openStokModal()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-semibold rounded-lg transition duration-200 flex items-center space-x-1.5 border border-slate-300 shadow-sm">
           <i class="fa-solid fa-boxes-stacked text-orange-600"></i>
           <span>Rekap Stok</span>
         </button>
-        <button onclick="openScannerModal('search')" class="px-3 py-1.5 bg-orange-100 hover:bg-orange-200 text-orange-700 text-xs sm:text-sm font-semibold rounded-lg transition duration-200 flex items-center space-x-1.5 border border-orange-200">
+
+        <button id="btnScanQrHeader" onclick="openScannerModal('search')" class="px-3 py-1.5 bg-orange-100 hover:bg-orange-200 text-orange-700 text-xs sm:text-sm font-semibold rounded-lg transition duration-200 flex items-center space-x-1.5 border border-orange-200 shadow-sm">
           <i class="fa-solid fa-qrcode"></i>
           <span class="hidden sm:inline">Scan QR</span>
         </button>
-        <button onclick="openFormModal()" class="px-3.5 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs sm:text-sm font-semibold rounded-lg transition duration-200 shadow-sm flex items-center space-x-1.5">
+
+        <button id="btnTambahData" onclick="openFormModal()" class="px-3.5 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs sm:text-sm font-semibold rounded-lg transition duration-200 shadow-sm flex items-center space-x-1.5">
           <i class="fa-solid fa-plus"></i>
           <span>Tambah</span>
+        </button>
+
+        <button onclick="handleLogout()" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition text-xs" title="Logout / Keluar">
+          <i class="fa-solid fa-power-off text-sm"></i>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- MAIN CONTAINER -->
   <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6">
 
-    <!-- DASHBOARD STATS CARDS -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5">
-      <!-- Card 1: Transaksi Masuk -->
-      <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
+      <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between motion-card-glow relative overflow-hidden">
+        <div class="absolute -right-3 -bottom-3 w-16 h-16 bg-emerald-500/5 rounded-full blur-xl pointer-events-none"></div>
         <div>
           <p class="text-xs font-semibold text-slate-500">Transaksi Masuk</p>
-          <h3 id="statMasuk" class="text-xl sm:text-2xl font-bold text-slate-800 mt-0.5">0</h3>
+          <h3 id="statMasuk" class="text-xl sm:text-2xl font-bold text-slate-800 mt-0.5 font-mono">0</h3>
         </div>
-        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg sm:text-xl">
+        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg sm:text-xl shadow-inner">
           <i class="fa-solid fa-circle-arrow-down"></i>
         </div>
       </div>
 
-      <!-- Card 2: Transaksi Keluar -->
-      <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+      <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between motion-card-glow relative overflow-hidden">
+        <div class="absolute -right-3 -bottom-3 w-16 h-16 bg-sky-500/5 rounded-full blur-xl pointer-events-none"></div>
         <div>
           <p class="text-xs font-semibold text-slate-500">Transaksi Keluar</p>
-          <h3 id="statKeluar" class="text-xl sm:text-2xl font-bold text-slate-800 mt-0.5">0</h3>
+          <h3 id="statKeluar" class="text-xl sm:text-2xl font-bold text-slate-800 mt-0.5 font-mono">0</h3>
         </div>
-        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center text-lg sm:text-xl">
+        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center text-lg sm:text-xl shadow-inner">
           <i class="fa-solid fa-circle-arrow-up"></i>
         </div>
       </div>
 
-      <!-- Card 3: Barang Berfungsi -->
-      <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+      <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between motion-card-glow relative overflow-hidden">
+        <div class="absolute -right-3 -bottom-3 w-16 h-16 bg-emerald-500/5 rounded-full blur-xl pointer-events-none"></div>
         <div>
           <p class="text-xs font-semibold text-slate-500">Barang Berfungsi</p>
-          <h3 id="statBerfungsi" class="text-xl sm:text-2xl font-bold text-slate-800 mt-0.5">0 <span class="text-xs font-normal text-slate-500">unit</span></h3>
+          <h3 id="statBerfungsi" class="text-xl sm:text-2xl font-bold text-slate-800 mt-0.5 font-mono">0 <span class="text-xs font-normal text-slate-500">unit</span></h3>
         </div>
-        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg sm:text-xl">
+        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg sm:text-xl shadow-inner">
           <i class="fa-solid fa-circle-check"></i>
         </div>
       </div>
 
-      <!-- Card 4: Tidak Berfungsi -->
-      <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+      <div class="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between motion-card-glow relative overflow-hidden">
+        <div class="absolute -right-3 -bottom-3 w-16 h-16 bg-rose-500/5 rounded-full blur-xl pointer-events-none"></div>
         <div>
           <p class="text-xs font-semibold text-slate-500">Tidak Berfungsi</p>
-          <h3 id="statRusak" class="text-xl sm:text-2xl font-bold text-slate-800 mt-0.5">0 <span class="text-xs font-normal text-slate-500">unit</span></h3>
+          <h3 id="statRusak" class="text-xl sm:text-2xl font-bold text-slate-800 mt-0.5 font-mono">0 <span class="text-xs font-normal text-slate-500">unit</span></h3>
         </div>
-        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center text-lg sm:text-xl">
+        <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg sm:text-xl shadow-inner">
           <i class="fa-solid fa-triangle-exclamation"></i>
         </div>
       </div>
     </div>
 
-    <!-- SEARCH & FILTER PANEL -->
+    <!-- MOTION GRAPHIC VISUALIZER CARD -->
+    <div class="bg-slate-900 rounded-xl p-4 sm:p-5 text-white mb-5 shadow-lg border border-slate-800 relative overflow-hidden">
+      <div class="absolute -right-16 -top-16 w-64 h-64 bg-orange-600/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -left-16 -bottom-16 w-64 h-64 bg-sky-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4 relative z-10">
+        <div class="flex items-center space-x-4 w-full md:w-auto">
+          <div class="relative w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 flex items-center justify-center">
+            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="45" stroke="#1e293b" stroke-width="8" fill="transparent" />
+              <circle id="donutBerfungsi" cx="50" cy="50" r="45" stroke="#10b981" stroke-width="8" stroke-linecap="round" fill="transparent" class="donut-ring-berfungsi" />
+            </svg>
+            <div class="absolute flex flex-col items-center justify-center text-center">
+              <span id="motionPercentText" class="text-base sm:text-lg font-black tracking-tight text-white font-mono">0%</span>
+              <span class="text-[9px] text-slate-400 uppercase font-semibold">Berfungsi</span>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+              <h4 class="font-bold text-sm sm:text-base text-slate-100">Status Kelayakan Barang</h4>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">Rasio unit berfungsi dibandingkan total stok fisik gudang.</p>
+            <div class="flex items-center space-x-3 mt-2 text-[11px] font-medium text-slate-300">
+              <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>Berfungsi</span></span>
+              <span class="flex items-center space-x-1"><span class="w-2 h-2 rounded-full bg-rose-500"></span><span>Tidak Berfungsi</span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="w-full md:w-72 bg-slate-800/80 p-3 rounded-lg border border-slate-700/60 text-xs space-y-2.5">
+          <div>
+            <div class="flex justify-between text-[11px] font-semibold text-slate-300 mb-1">
+              <span>Alur Masuk (Berfungsi)</span>
+              <span id="motionBarMasukLabel" class="font-mono text-emerald-400">0%</span>
+            </div>
+            <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+              <div id="motionBarMasuk" class="h-full bg-emerald-500 rounded-full transition-all duration-1000" style="width: 0%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-[11px] font-semibold text-slate-300 mb-1">
+              <span>Barang Tidak Berfungsi</span>
+              <span id="motionBarRusakLabel" class="font-mono text-rose-400">0%</span>
+            </div>
+            <div class="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+              <div id="motionBarRusak" class="h-full bg-rose-500 rounded-full transition-all duration-1000" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-sm mb-5">
-      <!-- BARIS 1: Search, Filter Dropdowns, Export PDF & Reload -->
       <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
-        <!-- Input Search -->
         <div class="md:col-span-4 relative">
           <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
           <input type="text" id="searchInput" oninput="filterData()" placeholder="Cari nama, brand, serial number, user..." 
-                 class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 focus:bg-white">
+                 class="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 focus:bg-white transition">
         </div>
 
-        <!-- Dropdown Jenis Transaksi -->
         <div class="md:col-span-2">
           <select id="filterJenis" onchange="filterData()" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 text-slate-700 font-medium">
             <option value="">Semua Transaksi</option>
@@ -154,7 +284,6 @@
           </select>
         </div>
 
-        <!-- Dropdown Lokasi -->
         <div class="md:col-span-2">
           <select id="filterLokasi" onchange="filterData()" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 text-slate-700 font-medium">
             <option value="">Semua Lokasi</option>
@@ -163,7 +292,6 @@
           </select>
         </div>
 
-        <!-- Dropdown Kondisi -->
         <div class="md:col-span-2">
           <select id="filterKondisi" onchange="filterData()" class="w-full py-1.5 px-2.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 text-slate-700 font-medium">
             <option value="">Semua Kondisi</option>
@@ -172,7 +300,6 @@
           </select>
         </div>
 
-        <!-- Tombol Export PDF & Reload -->
         <div class="md:col-span-2 flex items-center justify-end space-x-2 pl-1">
           <button onclick="exportToPDF()" class="flex-1 py-1.5 px-3 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg transition duration-200 shadow-sm flex items-center justify-center space-x-1.5">
             <i class="fa-solid fa-file-pdf"></i>
@@ -184,7 +311,6 @@
         </div>
       </div>
 
-      <!-- BARIS 2: Rentang Tanggal & Reset Filter -->
       <div class="pt-2.5 mt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
         <div class="flex items-center space-x-2 text-xs">
           <span class="font-bold text-slate-500 uppercase tracking-wider text-[11px]">Rentang Tanggal:</span>
@@ -200,7 +326,6 @@
       </div>
     </div>
 
-    <!-- INVENTORY DATA TABLE -->
     <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
       <div class="overflow-x-auto custom-scrollbar">
         <table class="w-full text-left border-collapse text-xs">
@@ -215,14 +340,15 @@
               <th class="py-3 px-3">Serial Number</th>
               <th class="py-3 px-3 text-center">Lokasi</th>
               <th class="py-3 px-3 text-center">Qty</th>
-              <th class="py-3 px-3">End User / Pekerjaan</th>
+              <th class="py-3 px-3">End User</th>
+              <th class="py-3 px-3">Pekerjaan</th>
               <th class="py-3 px-3 text-center">Status</th>
-              <th class="py-3 px-3 text-center w-20">Aksi</th>
+              <th class="py-3 px-3 text-center w-20 col-aksi-header">Aksi</th>
             </tr>
           </thead>
           <tbody id="inventoryTableBody" class="divide-y divide-slate-100 text-slate-700">
             <tr>
-              <td colspan="12" class="py-12 text-center text-slate-400">
+              <td colspan="13" class="py-12 text-center text-slate-400">
                 <div class="flex flex-col items-center justify-center space-y-2">
                   <i class="fa-solid fa-spinner fa-spin text-orange-500 text-2xl"></i>
                   <p class="text-xs font-medium text-slate-500">Memuat data inventaris gudang...</p>
@@ -233,7 +359,6 @@
         </table>
       </div>
       
-      <!-- Table Footer Record Count -->
       <div class="bg-slate-50 px-4 py-2.5 border-t border-slate-200 text-xs text-slate-500 flex justify-between items-center">
         <span>Menampilkan <strong id="displayedRecordCount">0</strong> dari <strong id="totalRecordCount">0</strong> data</span>
         <span id="lastUpdatedTime" class="text-[11px] text-slate-400"></span>
@@ -241,26 +366,8 @@
     </div>
   </main>
 
-  <!-- MOBILE STICKY BOTTOM NAVIGATION BAR -->
-  <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-2 flex justify-around items-center lg:hidden z-30 shadow-lg">
-    <button onclick="openFormModal()" class="flex flex-col items-center text-slate-600 hover:text-orange-600 text-xs">
-      <i class="fa-solid fa-plus-circle text-lg text-orange-600"></i>
-      <span class="mt-0.5 text-[10px]">Tambah</span>
-    </button>
-    <button onclick="openScannerModal('search')" class="flex flex-col items-center text-slate-600 hover:text-orange-600 text-xs">
-      <i class="fa-solid fa-qrcode text-lg text-orange-600"></i>
-      <span class="mt-0.5 text-[10px]">Scan QR</span>
-    </button>
-    <button onclick="openStokModal()" class="flex flex-col items-center text-slate-600 hover:text-orange-600 text-xs">
-      <i class="fa-solid fa-boxes-stacked text-lg text-slate-700"></i>
-      <span class="mt-0.5 text-[10px]">Stok</span>
-    </button>
-  </div>
-
-  <!-- MODAL 1: FORM INPUT / EDIT BARANG -->
   <div id="formModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
     <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[92vh] flex flex-col overflow-hidden">
-      <!-- Modal Header -->
       <div class="px-5 py-3.5 bg-orange-600 text-white flex justify-between items-center">
         <h3 id="modalTitle" class="font-bold text-sm sm:text-base flex items-center space-x-2">
           <i class="fa-solid fa-box-archive"></i>
@@ -271,18 +378,14 @@
         </button>
       </div>
 
-      <!-- Modal Body Form -->
       <form id="inventoryForm" onsubmit="handleFormSubmit(event)" class="p-5 overflow-y-auto custom-scrollbar space-y-4 text-xs">
         <input type="hidden" id="editId">
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <!-- Tanggal -->
           <div>
             <label class="block font-semibold text-slate-700 mb-1">Tanggal Transaksi <span class="text-rose-500">*</span></label>
             <input type="date" id="formTanggal" required class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500">
           </div>
-
-          <!-- Jenis Transaksi -->
           <div>
             <label class="block font-semibold text-slate-700 mb-1">Jenis Transaksi <span class="text-rose-500">*</span></label>
             <select id="formJenisTransaksi" required class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500">
@@ -293,12 +396,10 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <!-- Nama Barang -->
           <div>
             <label class="block font-semibold text-slate-700 mb-1">Nama Barang <span class="text-rose-500">*</span></label>
             <input type="text" id="formNamaBarang" required placeholder="Contoh: Videotron LED Cabinet P3.9" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500">
           </div>
-          <!-- Brand -->
           <div>
             <label class="block font-semibold text-slate-700 mb-1">Brand / Merek</label>
             <input type="text" id="formBrand" placeholder="Contoh: Gloshine / NovaStar" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500">
@@ -306,19 +407,16 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <!-- Tipe -->
           <div>
             <label class="block font-semibold text-slate-700 mb-1">Tipe Barang</label>
             <input type="text" id="formTipe" placeholder="Contoh: Indoor / Rental" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500">
           </div>
-          <!-- Seri -->
           <div>
             <label class="block font-semibold text-slate-700 mb-1">Seri Barang</label>
             <input type="text" id="formSeri" placeholder="Contoh: MG7 / V2" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500">
           </div>
         </div>
 
-        <!-- Serial Number + Button Scan -->
         <div>
           <label class="block font-semibold text-slate-700 mb-1">Serial Number (SN)</label>
           <div class="flex space-x-2">
@@ -331,7 +429,6 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <!-- Lokasi -->
           <div>
             <label class="block font-semibold text-slate-700 mb-1">Lokasi Penggunaan <span class="text-rose-500">*</span></label>
             <select id="formLokasi" required class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500">
@@ -339,12 +436,10 @@
               <option value="Outdoor">Outdoor</option>
             </select>
           </div>
-          <!-- Quantity -->
           <div>
             <label class="block font-semibold text-slate-700 mb-1">Quantity <span class="text-rose-500">*</span></label>
             <input type="number" id="formQuantity" min="1" required value="1" inputmode="numeric" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500">
           </div>
-          <!-- Satuan -->
           <div>
             <label class="block font-semibold text-slate-700 mb-1">Satuan <span class="text-rose-500">*</span></label>
             <select id="formSatuan" required class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500">
@@ -355,19 +450,16 @@
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <!-- End User -->
           <div>
             <label class="block font-semibold text-slate-700 mb-1">End User / Klien</label>
             <input type="text" id="formEndUser" placeholder="Contoh: PT Citra Sari Kencana" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500">
           </div>
-          <!-- Peruntukan Pekerjaan -->
           <div>
             <label class="block font-semibold text-slate-700 mb-1">Peruntukan Pekerjaan / Project</label>
             <input type="text" id="formPeruntukan" placeholder="Contoh: Exhibition Hall A" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500">
           </div>
         </div>
 
-        <!-- Status Kondisi -->
         <div>
           <label class="block font-semibold text-slate-700 mb-1">Status Kondisi Barang <span class="text-rose-500">*</span></label>
           <select id="formStatusKondisi" required class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500">
@@ -376,13 +468,11 @@
           </select>
         </div>
 
-        <!-- Deskripsi -->
         <div>
           <label class="block font-semibold text-slate-700 mb-1">Deskripsi / Catatan Tambahan</label>
           <textarea id="formDeskripsi" rows="2" placeholder="Catatan fisik barang..." class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500"></textarea>
         </div>
 
-        <!-- Modal Footer Buttons -->
         <div class="pt-3 border-t border-slate-200 flex justify-end space-x-2">
           <button type="button" onclick="closeFormModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-semibold hover:bg-slate-200 transition">Batal</button>
           <button type="submit" id="btnSaveSubmit" class="px-5 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold shadow-sm transition flex items-center space-x-1.5">
@@ -394,12 +484,11 @@
     </div>
   </div>
 
-  <!-- MODAL 2: QR SCANNER -->
   <div id="scannerModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
-      <div class="px-4 py-3 bg-slate-800 text-white flex justify-between items-center">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200">
+      <div class="px-4 py-3 bg-slate-900 text-white flex justify-between items-center">
         <h3 class="font-bold text-sm flex items-center space-x-2">
-          <i class="fa-solid fa-qrcode"></i>
+          <i class="fa-solid fa-qrcode text-orange-500"></i>
           <span>Scan Barcode / QR Code</span>
         </h3>
         <button onclick="closeScannerModal()" class="text-white/80 hover:text-white text-lg">
@@ -407,14 +496,16 @@
         </button>
       </div>
       <div class="p-4 text-center">
-        <div id="qrReader" class="w-full min-h-[250px] overflow-hidden rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center"></div>
+        <div class="relative overflow-hidden rounded-lg bg-slate-950 border border-slate-800">
+          <div class="scanner-hud-laser"></div>
+          <div id="qrReader" class="w-full min-h-[250px] flex items-center justify-center"></div>
+        </div>
         <p id="qrScannerStatus" class="text-xs text-slate-500 mt-3">Arahkan kamera ke Barcode / QR Code Serial Number barang.</p>
         <button onclick="closeScannerModal()" class="mt-4 px-4 py-1.5 bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-300">Tutup Kamera</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 3: REKAP STOK -->
   <div id="stokModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
     <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
       <div class="px-5 py-3.5 bg-slate-800 text-white flex justify-between items-center">
@@ -450,226 +541,225 @@
             </tr>
           </thead>
           <tbody id="stokTableBody" class="divide-y divide-slate-100 text-slate-700">
-            <!-- Rendered by JS -->
           </tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 4: CONFIG HUBUNGKAN GOOGLE SHEETS -->
-  <div id="configModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
-    <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden">
+  <div id="userModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 hidden">
+    <div class="bg-white rounded-xl shadow-2xl max-w-xl w-full max-h-[90vh] flex flex-col overflow-hidden">
       <div class="px-5 py-3.5 bg-slate-800 text-white flex justify-between items-center">
         <h3 class="font-bold text-sm flex items-center space-x-2">
-          <i class="fa-solid fa-plug text-orange-400"></i>
-          <span>Pengaturan Koneksi Google Sheets</span>
+          <i class="fa-solid fa-users-gear text-orange-400"></i>
+          <span>Kelola Pengguna & Hak Akses (User Management)</span>
         </h3>
-        <button onclick="closeConfigModal()" class="text-white/80 hover:text-white text-lg">
+        <button onclick="closeUserModal()" class="text-white/80 hover:text-white text-lg">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
-      <div class="p-5 text-xs text-slate-600 space-y-3">
-        <p>Jika aplikasi ini di-host di <strong>GitHub Pages</strong>, masukkan URL Deploy Web App Google Apps Script Anda untuk melakukan sinkronisasi otomatis secara terintegrasi:</p>
-        <div>
-          <label class="block font-semibold text-slate-700 mb-1">URL Web App Apps Script (Exec):</label>
-          <input type="text" id="configGasUrl" placeholder="https://script.google.com/macros/s/AKfycbziiQkjGRqo_SBRGsJbXlVlQM5q8_iPU3kMD9cBQPbPreYyXHtP7JIVYOJPOe4pWsYGqw/exec" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-mono focus:outline-none focus:ring-1 focus:ring-orange-500">
-        </div>
-        <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-800">
-          <p class="font-bold mb-1"><i class="fa-solid fa-circle-info mr-1"></i>Petunjuk Pengaturan:</p>
-          <p>Pastikan saat Deploy di Apps Script, opsi <strong>Who has access</strong> diset ke <strong>Anyone</strong> (Siapa Saja).</p>
-        </div>
-        <div class="pt-2 flex justify-end space-x-2">
-          <button onclick="closeConfigModal()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-semibold hover:bg-slate-200">Tutup</button>
-          <button onclick="saveGasUrlConfig()" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold shadow-sm">Simpan & Hubungkan</button>
-        </div>
+
+      <div class="p-4 bg-slate-50 border-b border-slate-200">
+        <form id="addUserForm" onsubmit="handleCreateUser(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
+          <input type="text" id="newUsername" required placeholder="Username Baru" class="p-2 border border-slate-300 rounded bg-white">
+          <input type="password" id="newPassword" required placeholder="Password" class="p-2 border border-slate-300 rounded bg-white">
+          <select id="newRole" required class="p-2 border border-slate-300 rounded bg-white font-medium">
+            <option value="Staff Gudang">Staff Gudang</option>
+            <option value="Manager">Manager</option>
+            <option value="Master Admin">Master Admin</option>
+          </select>
+          <button type="submit" class="p-2 bg-orange-600 hover:bg-orange-700 text-white rounded font-bold transition flex items-center justify-center space-x-1">
+            <i class="fa-solid fa-user-plus"></i>
+            <span>Tambah</span>
+          </button>
+        </form>
+      </div>
+
+      <div class="p-4 overflow-y-auto custom-scrollbar flex-1">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="bg-slate-100 text-slate-700 font-semibold uppercase text-[11px] border-b border-slate-200">
+              <th class="py-2 px-3">Username</th>
+              <th class="py-2 px-3">Role Hak Akses</th>
+              <th class="py-2 px-3 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="userTableBody" class="divide-y divide-slate-100">
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
 
   <script>
-    // GLOBAL STATE VARIABLES
     let rawInventoryData = [];
     let filteredInventoryData = [];
     let html5QrScannerInstance = null;
     let activeScanTarget = 'search';
-
-    // =========================================================================
-    // TEMPELKAN URL DEPLOY WEB APP GOOGLE APPS SCRIPT ANDA DI BAWAH INI
-    // (Contoh: 'https://script.google.com/macros/s/AKfycb.../exec')
-    // =========================================================================
+    
     const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbziiQkjGRqo_SBRGsJbXlVlQM5q8_iPU3kMD9cBQPbPreYyXHtP7JIVYOJPOe4pWsYGqw/exec';
-
-    // AMBIL URL DARI LOCALSTORAGE ATAU GUNAKAN DEFAULT PERMANEN DI ATAS
     let CUSTOM_GAS_URL = localStorage.getItem('OUFFICE_GAS_WEBAPP_URL') || DEFAULT_GAS_URL;
 
-    // INITIALIZATION ON LOAD
+    let currentUser = JSON.parse(sessionStorage.getItem('OUFFICE_CURRENT_USER')) || null;
+
+    let systemUsers = [
+      { id: 'usr-1', username: 'admin', role: 'Master Admin' },
+      { id: 'usr-2', username: 'staff', role: 'Staff Gudang' },
+      { id: 'usr-3', username: 'manager', role: 'Manager' }
+    ];
+
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('formTanggal').value = new Date().toISOString().split('T')[0];
-      if (document.getElementById('configGasUrl')) {
-        document.getElementById('configGasUrl').value = CUSTOM_GAS_URL;
-      }
-      loadDataFromBackend();
+      checkAuthSession();
     });
 
-    function openConfigModal() {
-      document.getElementById('configGasUrl').value = CUSTOM_GAS_URL;
-      document.getElementById('configModal').classList.remove('hidden');
-    }
-
-    function closeConfigModal() {
-      document.getElementById('configModal').classList.add('hidden');
-    }
-
-    function saveGasUrlConfig() {
-      const url = document.getElementById('configGasUrl').value.trim();
-      CUSTOM_GAS_URL = url || DEFAULT_GAS_URL;
-      localStorage.setItem('OUFFICE_GAS_WEBAPP_URL', CUSTOM_GAS_URL);
-      closeConfigModal();
-      Swal.fire({
-        icon: 'success',
-        title: 'URL Disimpan!',
-        text: 'Mencoba terhubung dengan Google Sheets...',
-        timer: 1500,
-        showConfirmButton: false
-      });
-      loadDataFromBackend();
-    }
-
-    // ENGINE DUAL-SYNC: MEMBACA DATA DARI APPS SCRIPT / REST API (GITHUB PAGES)
-    function loadDataFromBackend() {
-      showLoadingState();
-      
-      const timeoutTimer = setTimeout(() => {
-        if (document.getElementById('inventoryTableBody').querySelector('.fa-spinner')) {
-          renderTableError("Waktu koneksi habis (Timeout). Pastikan Google Apps Script di-deploy dengan akses 'Anyone' atau atur URL Web App di tombol Pengaturan.");
-        }
-      }, 15000);
-
-      // OPSI A: Jika diakses langsung dalam iFrame / GAS
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        updateBadgeStatus(true, "Google Sheets Live");
-        google.script.run
-          .withSuccessHandler((response) => {
-            clearTimeout(timeoutTimer);
-            if (response && response.success) {
-              rawInventoryData = response.data || [];
-              filteredInventoryData = [...rawInventoryData];
-              updateDashboardStats();
-              renderTable();
-              document.getElementById('lastUpdatedTime').innerText = 'Pembaruan terakhir: ' + new Date().toLocaleTimeString('id-ID');
-            } else {
-              renderTableError(response ? response.message : 'Gagal memuat data dari server.');
-            }
-          })
-          .withFailureHandler((error) => {
-            clearTimeout(timeoutTimer);
-            renderTableError('Eror koneksi Apps Script: ' + error.message);
-          })
-          .readData();
-      } 
-      // OPSI B: Jika di-host di GitHub Pages / External Domain dengan REST API
-      else if (CUSTOM_GAS_URL) {
-        updateBadgeStatus(true, "Google Sheets Live");
-        const fetchUrl = CUSTOM_GAS_URL + (CUSTOM_GAS_URL.includes('?') ? '&' : '?') + 'action=read';
-        fetch(fetchUrl)
-          .then(res => res.json())
-          .then(response => {
-            clearTimeout(timeoutTimer);
-            if (response && response.success) {
-              rawInventoryData = response.data || [];
-              filteredInventoryData = [...rawInventoryData];
-              updateDashboardStats();
-              renderTable();
-              document.getElementById('lastUpdatedTime').innerText = 'Pembaruan terakhir: ' + new Date().toLocaleTimeString('id-ID');
-            } else {
-              renderTableError(response ? response.message : 'Gagal memuat data dari API.');
-            }
-          })
-          .catch(err => {
-            clearTimeout(timeoutTimer);
-            renderTableError('Eror koneksi API Google Sheets: ' + err.message + '. Silakan periksa URL Web App.');
-          });
-      } 
-      // OPSI C: URL Belum Dikonfigurasi di GitHub Pages
-      else {
-        clearTimeout(timeoutTimer);
-        updateBadgeStatus(false, "Atur URL Google Sheets");
-        renderTableError("Atur URL Web App Google Sheets Anda terlebih dahulu.");
+    function checkAuthSession() {
+      if (!currentUser) {
+        document.getElementById('loginScreen').classList.remove('hidden');
+      } else {
+        document.getElementById('loginScreen').classList.add('hidden');
+        applyRolePermissions();
+        loadDataFromBackend();
       }
     }
 
-    // Helper Status Badge (Tersembunyi secara default)
-    function updateBadgeStatus(isLive, text) {
-      const badge = document.getElementById('connectionBadge');
-      const badgeText = document.getElementById('connectionBadgeText');
-      if (!badge || !badgeText) return;
+    function handleLoginSubmit(e) {
+      if (e) e.preventDefault();
+      const u = document.getElementById('loginUsername').value.trim();
+      const p = document.getElementById('loginPassword').value.trim();
 
-      badgeText.innerText = text;
-      // Tetapkan badge tetap tersembunyi agar tampilan header bersih
-      badge.classList.add('hidden');
+      Swal.fire({ title: 'Memeriksa Akses...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+      if ((u === 'admin' && p === 'admin123') || (u === 'staff' && p === 'staff123') || (u === 'manager' && p === 'manager123')) {
+        let role = 'Staff Gudang';
+        if (u === 'admin') role = 'Master Admin';
+        if (u === 'manager') role = 'Manager';
+
+        currentUser = { username: u, role: role };
+        sessionStorage.setItem('OUFFICE_CURRENT_USER', JSON.stringify(currentUser));
+        Swal.close();
+        checkAuthSession();
+        return;
+      }
+
+      Swal.fire('Login Gagal!', 'Username atau password tidak cocok.', 'error');
     }
 
-    function showLoadingState() {
-      const tbody = document.getElementById('inventoryTableBody');
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="12" class="py-12 text-center text-slate-400">
-            <div class="flex flex-col items-center justify-center space-y-2">
-              <i class="fa-solid fa-spinner fa-spin text-orange-500 text-2xl"></i>
-              <p class="text-xs font-medium text-slate-500">Memuat data inventaris gudang...</p>
-            </div>
-          </td>
-        </tr>`;
+    function handleLogout() {
+      Swal.fire({
+        title: 'Logout / Keluar?',
+        text: 'Anda akan keluar dari sesi sistem gudang ini.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Keluar'
+      }).then((res) => {
+        if (res.isConfirmed) {
+          sessionStorage.removeItem('OUFFICE_CURRENT_USER');
+          currentUser = null;
+          location.reload();
+        }
+      });
     }
 
-    function renderTableError(message) {
-      const tbody = document.getElementById('inventoryTableBody');
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="12" class="py-8 text-center text-rose-600 bg-rose-50/50">
-            <i class="fa-solid fa-circle-exclamation text-2xl mb-2"></i>
-            <p class="text-xs font-semibold max-w-lg mx-auto px-4">${escapeHtml(message)}</p>
-            <div class="mt-3 flex justify-center space-x-2">
-              <button onclick="openConfigModal()" class="px-3 py-1 bg-slate-800 text-white rounded text-xs hover:bg-slate-700 flex items-center space-x-1">
-                <i class="fa-solid fa-gear"></i>
-                <span>Atur URL Web App</span>
-              </button>
-              <button onclick="loadDataFromBackend()" class="px-3 py-1 bg-rose-600 text-white rounded text-xs hover:bg-rose-700">Coba Lagi</button>
-            </div>
-          </td>
-        </tr>`;
+    function applyRolePermissions() {
+      if (!currentUser) return;
+
+      const roleBadge = document.getElementById('currentUserRoleBadge');
+      roleBadge.innerText = currentUser.role;
+
+      if (currentUser.role === 'Master Admin') {
+        roleBadge.className = 'text-rose-700 text-[11px] uppercase font-extrabold tracking-wide';
+        document.getElementById('btnUserManagement').classList.remove('hidden');
+        document.getElementById('btnTambahData').classList.remove('hidden');
+      } else if (currentUser.role === 'Staff Gudang') {
+        roleBadge.className = 'text-orange-600 text-[11px] uppercase font-extrabold tracking-wide';
+        document.getElementById('btnUserManagement').classList.add('hidden');
+        document.getElementById('btnTambahData').classList.remove('hidden');
+      } else if (currentUser.role === 'Manager') {
+        roleBadge.className = 'text-sky-700 text-[11px] uppercase font-extrabold tracking-wide';
+        document.getElementById('btnUserManagement').classList.add('hidden');
+        document.getElementById('btnTambahData').classList.add('hidden');
+      }
     }
 
-    // FILTER DATA LOGIC
+    function loadDataFromBackend() {
+      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+
+      if (isGASNative) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            if (res && res.success) {
+              rawInventoryData = res.data || [];
+              filterData();
+            } else {
+              useSampleDataFallback();
+            }
+          })
+          .withFailureHandler(() => {
+            useSampleDataFallback();
+          })
+          .readData();
+      } else if (CUSTOM_GAS_URL) {
+        fetch(`${CUSTOM_GAS_URL}?action=read`)
+          .then((r) => r.json())
+          .then((res) => {
+            if (res && res.success) {
+              rawInventoryData = res.data || [];
+              filterData();
+            } else {
+              useSampleDataFallback();
+            }
+          })
+          .catch(() => {
+            useSampleDataFallback();
+          });
+      } else {
+        useSampleDataFallback();
+      }
+    }
+
+    function useSampleDataFallback() {
+      if (rawInventoryData.length === 0) {
+        rawInventoryData = [
+          { id: 'INV-1001', tanggal: '2026-03-01', jenisTransaksi: 'Masuk', namaBarang: 'Videotron LED Cabinet P3.9', brand: 'Gloshine', tipe: 'Indoor', seri: 'MG7', lokasi: 'Indoor', serialNumber: 'SN-VDT-2026-01', quantity: 50, satuan: 'Pcs', endUser: 'PT Citra Sari Kencana', peruntukan: 'Proyek Hall A', statusKondisi: 'Berfungsi', deskripsi: 'Kondisi mulus' },
+          { id: 'INV-1002', tanggal: '2026-03-02', jenisTransaksi: 'Keluar', namaBarang: 'Videotron LED Cabinet P3.9', brand: 'Gloshine', tipe: 'Indoor', seri: 'MG7', lokasi: 'Indoor', serialNumber: 'SN-VDT-2026-01', quantity: 20, satuan: 'Pcs', endUser: 'Client Event X', peruntukan: 'Exhibition 2026', statusKondisi: 'Berfungsi', deskripsi: 'Sewa 3 Hari' },
+          { id: 'INV-1003', tanggal: '2026-03-05', jenisTransaksi: 'Masuk', namaBarang: 'Processor Video NovaStar VX4S', brand: 'NovaStar', tipe: 'Controller', seri: 'VX4S', lokasi: 'Indoor', serialNumber: 'SN-NVS-8890', quantity: 15, satuan: 'Unit', endUser: 'Stok Gudang', peruntukan: 'Pemeliharaan Rutin', statusKondisi: 'Berfungsi', deskripsi: 'Siap pakai' },
+          { id: 'INV-1004', tanggal: '2026-03-08', jenisTransaksi: 'Masuk', namaBarang: 'Kabel Power Locking Waterproof 5m', brand: 'Neutrik', tipe: 'Cable', seri: 'PWR-5M', lokasi: 'Outdoor', serialNumber: 'SN-KBL-0092', quantity: 2, satuan: 'Pcs', endUser: 'QC Internal', peruntukan: 'Pengujian Garansi', statusKondisi: 'Tidak Berfungsi', deskripsi: 'Kabel terkelupas' }
+        ];
+      }
+      filterData();
+    }
+
     function filterData() {
-      const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
-      const jenisVal = document.getElementById('filterJenis').value;
-      const lokasiVal = document.getElementById('filterLokasi').value;
-      const kondisiVal = document.getElementById('filterKondisi').value;
+      const q = document.getElementById('searchInput').value.toLowerCase().trim();
+      const jenis = document.getElementById('filterJenis').value;
+      const lokasi = document.getElementById('filterLokasi').value;
+      const kondisi = document.getElementById('filterKondisi').value;
       const startDate = document.getElementById('filterStartDate').value;
       const endDate = document.getElementById('filterEndDate').value;
 
-      filteredInventoryData = rawInventoryData.filter(item => {
-        const matchSearch = !searchVal || 
-          (item.namaBarang && item.namaBarang.toLowerCase().includes(searchVal)) ||
-          (item.brand && item.brand.toLowerCase().includes(searchVal)) ||
-          (item.serialNumber && item.serialNumber.toLowerCase().includes(searchVal)) ||
-          (item.endUser && item.endUser.toLowerCase().includes(searchVal)) ||
-          (item.peruntukan && item.peruntukan.toLowerCase().includes(searchVal));
+      filteredInventoryData = rawInventoryData.filter((item) => {
+        const matchQ = !q || (
+          (item.namaBarang && item.namaBarang.toLowerCase().includes(q)) ||
+          (item.brand && item.brand.toLowerCase().includes(q)) ||
+          (item.serialNumber && item.serialNumber.toLowerCase().includes(q)) ||
+          (item.endUser && item.endUser.toLowerCase().includes(q)) ||
+          (item.peruntukan && item.peruntukan.toLowerCase().includes(q))
+        );
 
-        const matchJenis = !jenisVal || item.jenisTransaksi === jenisVal;
-        const matchLokasi = !lokasiVal || item.lokasi === lokasiVal;
-        const matchKondisi = !kondisiVal || item.statusKondisi === kondisiVal;
+        const matchJenis = !jenis || item.jenisTransaksi === jenis;
+        const matchLokasi = !lokasi || item.lokasi === lokasi;
+        const matchKondisi = !kondisi || item.statusKondisi === kondisi;
 
         let matchDate = true;
         if (startDate && item.tanggal < startDate) matchDate = false;
         if (endDate && item.tanggal > endDate) matchDate = false;
 
-        return matchSearch && matchJenis && matchLokasi && matchKondisi && matchDate;
+        return matchQ && matchJenis && matchLokasi && matchKondisi && matchDate;
       });
 
       renderTable();
+      updateDashboardStats();
     }
 
     function resetFilter() {
@@ -679,8 +769,7 @@
       document.getElementById('filterKondisi').value = '';
       document.getElementById('filterStartDate').value = '';
       document.getElementById('filterEndDate').value = '';
-      filteredInventoryData = [...rawInventoryData];
-      renderTable();
+      filterData();
     }
 
     function resetFilterAndReload() {
@@ -688,143 +777,190 @@
       loadDataFromBackend();
     }
 
-    // DASHBOARD STATS CALCULATOR
     function updateDashboardStats() {
-      let totalMasuk = 0;
-      let totalKeluar = 0;
-      let totalQtyMasukBerfungsi = 0;
-      let totalQtyKeluarBerfungsi = 0;
-      let totalQtyMasukRusak = 0;
-      let totalQtyKeluarRusak = 0;
+      let cntMasuk = 0;
+      let cntKeluar = 0;
+      let masukBerfungsi = 0;
+      let masukRusak = 0;
+      let keluarBerfungsi = 0;
+      let keluarRusak = 0;
 
-      rawInventoryData.forEach(item => {
+      rawInventoryData.forEach((item) => {
         const qty = Number(item.quantity) || 0;
         if (item.jenisTransaksi === 'Masuk') {
-          totalMasuk++;
-          if (item.statusKondisi === 'Berfungsi') {
-            totalQtyMasukBerfungsi += qty;
-          } else if (item.statusKondisi === 'Tidak Berfungsi') {
-            totalQtyMasukRusak += qty;
-          }
+          cntMasuk++;
+          if (item.statusKondisi === 'Berfungsi') masukBerfungsi += qty;
+          if (item.statusKondisi === 'Tidak Berfungsi') masukRusak += qty;
         } else if (item.jenisTransaksi === 'Keluar') {
-          totalKeluar++;
-          if (item.statusKondisi === 'Berfungsi') {
-            totalQtyKeluarBerfungsi += qty;
-          } else if (item.statusKondisi === 'Tidak Berfungsi') {
-            totalQtyKeluarRusak += qty;
-          }
+          cntKeluar++;
+          if (item.statusKondisi === 'Berfungsi') keluarBerfungsi += qty;
+          if (item.statusKondisi === 'Tidak Berfungsi') keluarRusak += qty;
         }
       });
 
-      const qtyBerfungsi = totalQtyMasukBerfungsi - totalQtyKeluarBerfungsi;
-      const qtyRusak = totalQtyMasukRusak - totalQtyKeluarRusak;
+      const netBerfungsi = Math.max(0, masukBerfungsi - keluarBerfungsi);
+      const netRusak = Math.max(0, masukRusak - keluarRusak);
 
-      document.getElementById('statMasuk').innerText = totalMasuk;
-      document.getElementById('statKeluar').innerText = totalKeluar;
-      document.getElementById('statBerfungsi').innerHTML = `${qtyBerfungsi} <span class="text-xs font-normal text-slate-500">unit</span>`;
-      document.getElementById('statRusak').innerHTML = `${qtyRusak} <span class="text-xs font-normal text-slate-500">unit</span>`;
+      animateCounter('statMasuk', cntMasuk);
+      animateCounter('statKeluar', cntKeluar);
+      animateCounter('statBerfungsi', netBerfungsi);
+      animateCounter('statRusak', netRusak);
+
+      updateMotionGraphics(netBerfungsi, netRusak, cntMasuk, cntKeluar);
     }
 
-    // RENDER MAIN TABLE HTML
+    function animateCounter(elemId, targetVal) {
+      const elem = document.getElementById(elemId);
+      if (!elem) return;
+      
+      let curr = 0;
+      const duration = 600;
+      const stepTime = 20;
+      const steps = duration / stepTime;
+      const increment = targetVal / steps;
+
+      const timer = setInterval(() => {
+        curr += increment;
+        if (curr >= targetVal) {
+          curr = targetVal;
+          clearInterval(timer);
+        }
+        if (elemId === 'statBerfungsi' || elemId === 'statRusak') {
+          elem.innerHTML = `${Math.round(curr)} <span class="text-xs font-normal text-slate-500">unit</span>`;
+        } else {
+          elem.innerText = Math.round(curr);
+        }
+      }, stepTime);
+    }
+
+    function updateMotionGraphics(berfungsi, rusak, masuk, keluar) {
+      const totalStokFisik = berfungsi + rusak;
+      const percentBerfungsi = totalStokFisik > 0 ? Math.round((berfungsi / totalStokFisik) * 100) : 0;
+      
+      document.getElementById('motionPercentText').innerText = `${percentBerfungsi}%`;
+
+      const donutElem = document.getElementById('donutBerfungsi');
+      if (donutElem) {
+        const offset = 283 - (283 * percentBerfungsi) / 100;
+        donutElem.style.strokeDashoffset = offset;
+      }
+
+      const totalTx = masuk + keluar;
+      const percentMasuk = totalTx > 0 ? Math.round((masuk / totalTx) * 100) : 0;
+      const percentRusak = totalStokFisik > 0 ? Math.round((rusak / totalStokFisik) * 100) : 0;
+
+      document.getElementById('motionBarMasuk').style.width = `${percentMasuk}%`;
+      document.getElementById('motionBarMasukLabel').innerText = `${percentMasuk}%`;
+
+      document.getElementById('motionBarRusak').style.width = `${percentRusak}%`;
+      document.getElementById('motionBarRusakLabel').innerText = `${percentRusak}%`;
+    }
+
     function renderTable() {
       const tbody = document.getElementById('inventoryTableBody');
       document.getElementById('displayedRecordCount').innerText = filteredInventoryData.length;
       document.getElementById('totalRecordCount').innerText = rawInventoryData.length;
+      
+      const now = new Date();
+      document.getElementById('lastUpdatedTime').innerText = `Terakhir diperbarui: ${now.toLocaleTimeString('id-ID')}`;
 
       if (filteredInventoryData.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="12" class="py-10 text-center text-slate-400">
-              <i class="fa-solid fa-folder-open text-3xl mb-2 text-slate-300"></i>
-              <p class="text-xs font-medium">Tidak ada data transaksi yang cocok.</p>
+            <td colspan="13" class="py-8 text-center text-slate-400">
+              <i class="fa-solid fa-box-open text-3xl mb-2"></i>
+              <p>Tidak ada data inventaris yang cocok dengan filter.</p>
             </td>
-          </tr>`;
+          </tr>
+        `;
         return;
       }
 
-      let rowsHtml = filteredInventoryData.map((item, idx) => {
-        const jenisText = item.jenisTransaksi === 'Masuk'
-          ? `<span class="text-emerald-600 font-bold flex items-center space-x-1"><i class="fa-solid fa-circle-arrow-down text-[10px]"></i><span>Masuk</span></span>`
-          : `<span class="text-sky-600 font-bold flex items-center space-x-1"><i class="fa-solid fa-circle-arrow-up text-[10px]"></i><span>Keluar</span></span>`;
+      const isReadOnly = (currentUser && currentUser.role === 'Manager');
 
-        const statusText = item.statusKondisi === 'Berfungsi'
-          ? `<span class="text-emerald-600 font-bold">Berfungsi</span>`
-          : `<span class="text-rose-600 font-bold">Tidak Berfungsi</span>`;
+      tbody.innerHTML = filteredInventoryData.map((item, index) => {
+        const badgeJenis = item.jenisTransaksi === 'Masuk'
+          ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">↓ Masuk</span>'
+          : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-700">↑ Keluar</span>';
 
-        const tipeSeri = [item.tipe, item.seri].filter(Boolean).join(' / ') || '-';
-        const endUserProj = [item.endUser, item.peruntukan].filter(Boolean).join(' / ') || '-';
+        const badgeKondisi = item.statusKondisi === 'Berfungsi'
+          ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200">Berfungsi</span>'
+          : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-600 border border-rose-200">Tidak Berfungsi</span>';
+
+        const actionBtns = isReadOnly ? '<span class="text-slate-300 font-mono text-[10px]">-</span>' : `
+          <div class="flex items-center justify-center space-x-1.5">
+            <button onclick="editData('${item.id}')" title="Edit Data" class="p-1 text-sky-600 hover:bg-sky-50 rounded">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            ${currentUser && currentUser.role === 'Master Admin' ? `
+              <button onclick="deleteData('${item.id}')" title="Hapus Data" class="p-1 text-rose-600 hover:bg-rose-50 rounded">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            ` : ''}
+          </div>
+        `;
 
         return `
           <tr class="hover:bg-slate-50/80 transition">
-            <td class="py-2.5 px-3 text-center text-slate-400 font-mono text-[11px]">${idx + 1}</td>
-            <td class="py-2.5 px-3 font-medium whitespace-nowrap">${escapeHtml(item.tanggal)}</td>
-            <td class="py-2.5 px-3 whitespace-nowrap">${jenisText}</td>
-            <td class="py-2.5 px-3 font-semibold text-slate-800">${escapeHtml(item.namaBarang)}</td>
-            <td class="py-2.5 px-3 text-orange-600 font-medium">${escapeHtml(item.brand || '-')}</td>
-            <td class="py-2.5 px-3 text-slate-500">${escapeHtml(tipeSeri)}</td>
-            <td class="py-2.5 px-3 font-mono text-slate-600">${escapeHtml(item.serialNumber || '-')}</td>
-            <td class="py-2.5 px-3 text-center">${escapeHtml(item.lokasi)}</td>
-            <td class="py-2.5 px-3 text-center font-bold text-slate-800">${item.quantity} <span class="text-[10px] font-normal text-slate-500">${escapeHtml(item.satuan)}</span></td>
-            <td class="py-2.5 px-3 text-slate-600 max-w-xs truncate" title="${escapeHtml(endUserProj)}">${escapeHtml(endUserProj)}</td>
-            <td class="py-2.5 px-3 text-center whitespace-nowrap">${statusText}</td>
-            <td class="py-2.5 px-3 text-center whitespace-nowrap">
-              <div class="flex items-center justify-center space-x-1">
-                <button onclick="editItem('${item.id}')" title="Edit" class="p-1.5 text-slate-500 hover:text-orange-600 hover:bg-orange-50 rounded transition">
-                  <i class="fa-solid fa-pen-to-square"></i>
-                </button>
-                <button onclick="deleteItem('${item.id}')" title="Hapus" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded transition">
-                  <i class="fa-solid fa-trash-can"></i>
-                </button>
-              </div>
-            </td>
-          </tr>`;
+            <td class="py-2.5 px-3 text-center font-mono text-slate-400">${index + 1}</td>
+            <td class="py-2.5 px-3 whitespace-nowrap font-medium text-slate-700">${item.tanggal || '-'}</td>
+            <td class="py-2.5 px-3 whitespace-nowrap">${badgeJenis}</td>
+            <td class="py-2.5 px-3 font-semibold text-slate-800">${item.namaBarang || '-'}</td>
+            <td class="py-2.5 px-3 text-slate-600">${item.brand || '-'}</td>
+            <td class="py-2.5 px-3 text-slate-500">${item.tipe || '-'} ${item.seri ? '/ ' + item.seri : ''}</td>
+            <td class="py-2.5 px-3 font-mono text-slate-600 text-[11px]">${item.serialNumber ? 'SN: ' + item.serialNumber : '-'}</td>
+            <td class="py-2.5 px-3 text-center font-medium">${item.lokasi || '-'}</td>
+            <td class="py-2.5 px-3 text-center font-bold text-slate-800">${item.quantity || 0} <span class="text-[10px] font-normal text-slate-500">${item.satuan || ''}</span></td>
+            <td class="py-2.5 px-3 text-slate-600">${item.endUser || '-'}</td>
+            <td class="py-2.5 px-3 text-slate-600">${item.peruntukan || '-'}</td>
+            <td class="py-2.5 px-3 text-center">${badgeKondisi}</td>
+            <td class="py-2.5 px-3 text-center col-aksi-header">${actionBtns}</td>
+          </tr>
+        `;
       }).join('');
-
-      tbody.innerHTML = rowsHtml;
     }
 
-    // MODAL FORM OPEN/CLOSE/SUBMIT
-    function openFormModal(editItemData = null) {
-      const modal = document.getElementById('formModal');
-      const form = document.getElementById('inventoryForm');
-      
-      form.reset();
+    function openFormModal() {
+      document.getElementById('inventoryForm').reset();
       document.getElementById('editId').value = '';
+      document.getElementById('modalTitle').innerText = 'Tambah Data Inventaris';
       document.getElementById('formTanggal').value = new Date().toISOString().split('T')[0];
-
-      if (editItemData) {
-        document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> <span>Edit Data Inventaris</span>';
-        document.getElementById('editId').value = editItemData.id;
-        document.getElementById('formTanggal').value = editItemData.tanggal || '';
-        document.getElementById('formJenisTransaksi').value = editItemData.jenisTransaksi || 'Masuk';
-        document.getElementById('formNamaBarang').value = editItemData.namaBarang || '';
-        document.getElementById('formBrand').value = editItemData.brand || '';
-        document.getElementById('formTipe').value = editItemData.tipe || '';
-        document.getElementById('formSeri').value = editItemData.seri || '';
-        document.getElementById('formSerialNumber').value = editItemData.serialNumber || '';
-        document.getElementById('formLokasi').value = editItemData.lokasi || 'Indoor';
-        document.getElementById('formQuantity').value = editItemData.quantity || 1;
-        document.getElementById('formSatuan').value = editItemData.satuan || 'Pcs';
-        document.getElementById('formEndUser').value = editItemData.endUser || '';
-        document.getElementById('formPeruntukan').value = editItemData.peruntukan || '';
-        document.getElementById('formStatusKondisi').value = editItemData.statusKondisi || 'Berfungsi';
-        document.getElementById('formDeskripsi').value = editItemData.deskripsi || '';
-      } else {
-        document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-box-archive"></i> <span>Tambah Data Inventaris</span>';
-      }
-
-      modal.classList.remove('hidden');
+      document.getElementById('formModal').classList.remove('hidden');
     }
 
     function closeFormModal() {
       document.getElementById('formModal').classList.add('hidden');
     }
 
-    function handleFormSubmit(event) {
-      event.preventDefault();
+    function editData(id) {
+      const item = rawInventoryData.find((d) => String(d.id) === String(id));
+      if (!item) return;
+
+      document.getElementById('editId').value = item.id;
+      document.getElementById('formTanggal').value = item.tanggal || '';
+      document.getElementById('formJenisTransaksi').value = item.jenisTransaksi || 'Masuk';
+      document.getElementById('formNamaBarang').value = item.namaBarang || '';
+      document.getElementById('formBrand').value = item.brand || '';
+      document.getElementById('formTipe').value = item.tipe || '';
+      document.getElementById('formSeri').value = item.seri || '';
+      document.getElementById('formSerialNumber').value = item.serialNumber || '';
+      document.getElementById('formLokasi').value = item.lokasi || 'Indoor';
+      document.getElementById('formQuantity').value = item.quantity || 1;
+      document.getElementById('formSatuan').value = item.satuan || 'Pcs';
+      document.getElementById('formEndUser').value = item.endUser || '';
+      document.getElementById('formPeruntukan').value = item.peruntukan || '';
+      document.getElementById('formStatusKondisi').value = item.statusKondisi || 'Berfungsi';
+      document.getElementById('formDeskripsi').value = item.deskripsi || '';
+
+      document.getElementById('modalTitle').innerText = 'Edit Data Inventaris';
+      document.getElementById('formModal').classList.remove('hidden');
+    }
+
+    function handleFormSubmit(e) {
+      e.preventDefault();
       
-      const id = document.getElementById('editId').value;
       const payload = {
+        id: document.getElementById('editId').value,
         tanggal: document.getElementById('formTanggal').value,
         jenisTransaksi: document.getElementById('formJenisTransaksi').value,
         namaBarang: document.getElementById('formNamaBarang').value.trim(),
@@ -841,226 +977,126 @@
         deskripsi: document.getElementById('formDeskripsi').value.trim()
       };
 
-      Swal.fire({
-        title: 'Menyimpan Data...',
-        text: 'Mohon tunggu sebentar',
-        allowOutsideClick: false,
-        didOpen: () => { Swal.showLoading(); }
-      });
+      Swal.fire({ title: 'Menyimpan Data...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-      // METODE A: via GAS Native google.script.run
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        if (id) {
-          google.script.run
-            .withSuccessHandler(onSaveSuccess)
-            .withFailureHandler(onSaveFailure)
-            .updateData(id, payload);
-        } else {
-          google.script.run
-            .withSuccessHandler(onSaveSuccess)
-            .withFailureHandler(onSaveFailure)
-            .addData(payload);
-        }
-      } 
-      // METODE B: via REST API Fetch (GitHub Pages)
-      else if (CUSTOM_GAS_URL) {
-        const actionName = id ? 'update' : 'add';
-        const bodyData = { action: actionName, id: id, ...payload };
-        
+      const isEdit = !!payload.id;
+      const action = isEdit ? 'update' : 'add';
+
+      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+
+      if (isGASNative) {
+        const gasFunc = isEdit ? google.script.run.updateData : google.script.run.addData;
+        gasFunc
+          .withSuccessHandler((res) => {
+            Swal.close();
+            if (res && res.success) {
+              Swal.fire('Berhasil!', res.message || 'Data disimpan', 'success');
+              closeFormModal();
+              loadDataFromBackend();
+            } else {
+              Swal.fire('Gagal!', res ? res.message : 'Gagal menyimpan', 'error');
+            }
+          })
+          .withFailureHandler((err) => {
+            Swal.close();
+            Swal.fire('Error!', err.toString(), 'error');
+          })(isEdit ? payload.id : payload, payload);
+      } else if (CUSTOM_GAS_URL) {
         fetch(CUSTOM_GAS_URL, {
           method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify(bodyData)
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: action, ...payload })
         })
-        .then(res => res.json())
-        .then(res => onSaveSuccess(res))
-        .catch(err => onSaveFailure(err));
+          .then((r) => r.json())
+          .then((res) => {
+            Swal.close();
+            if (res && res.success) {
+              Swal.fire('Berhasil!', res.message || 'Data disimpan', 'success');
+              closeFormModal();
+              loadDataFromBackend();
+            } else {
+              Swal.fire('Gagal!', res ? res.message : 'Gagal menyimpan', 'error');
+            }
+          })
+          .catch((err) => {
+            Swal.close();
+            Swal.fire('Error!', err.toString(), 'error');
+          });
       } else {
-        Swal.fire('Eror Konfigurasi!', 'URL Google Sheets Web App belum dikonfigurasi.', 'error');
-      }
-    }
-
-    function onSaveSuccess(response) {
-      if (response && response.success) {
-        Swal.fire('Berhasil!', response.message, 'success');
+        if (isEdit) {
+          const idx = rawInventoryData.findIndex((d) => String(d.id) === String(payload.id));
+          if (idx !== -1) rawInventoryData[idx] = payload;
+        } else {
+          payload.id = 'INV-' + new Date().getTime();
+          rawInventoryData.unshift(payload);
+        }
+        Swal.fire('Berhasil!', 'Data disimpan secara lokal.', 'success');
         closeFormModal();
-        loadDataFromBackend();
-      } else {
-        Swal.fire('Gagal!', response ? response.message : 'Terjadi kesalahan.', 'error');
+        filterData();
       }
     }
 
-    function onSaveFailure(error) {
-      Swal.fire('Eror Server!', error.message || error.toString(), 'error');
-    }
-
-    function editItem(id) {
-      const item = rawInventoryData.find(x => x.id === id);
-      if (item) {
-        openFormModal(item);
-      }
-    }
-
-    function deleteItem(id) {
+    function deleteData(id) {
       Swal.fire({
-        title: 'Apakah Anda Yakin?',
-        text: 'Data transaksi ini akan dihapus permanen dari database!',
+        title: 'Hapus Data ini?',
+        text: 'Data inventaris yang dihapus tidak dapat dikembalikan!',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#dc2626',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: 'Ya, Hapus!',
-        cancelButtonText: 'Batal'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          Swal.fire({
-            title: 'Menghapus Data...',
-            allowOutsideClick: false,
-            didOpen: () => { Swal.showLoading(); }
-          });
+        confirmButtonColor: '#e11d48',
+        confirmButtonText: 'Ya, Hapus'
+      }).then((res) => {
+        if (res.isConfirmed) {
+          Swal.fire({ title: 'Menghapus Data...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-          if (typeof google !== 'undefined' && google.script && google.script.run) {
+          const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+
+          if (isGASNative) {
             google.script.run
-              .withSuccessHandler((res) => {
-                if (res && res.success) {
-                  Swal.fire('Terhapus!', res.message, 'success');
-                  loadDataFromBackend();
-                } else {
-                  Swal.fire('Gagal!', res ? res.message : 'Gagal menghapus.', 'error');
-                }
+              .withSuccessHandler((r) => {
+                Swal.close();
+                Swal.fire('Terhapus!', 'Data berhasil dihapus.', 'success');
+                loadDataFromBackend();
               })
-              .withFailureHandler(onSaveFailure)
               .deleteData(id);
           } else if (CUSTOM_GAS_URL) {
             fetch(CUSTOM_GAS_URL, {
               method: 'POST',
-              headers: { 'Content-Type': 'text/plain' },
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
               body: JSON.stringify({ action: 'delete', id: id })
             })
-            .then(res => res.json())
-            .then(res => {
-              if (res && res.success) {
-                Swal.fire('Terhapus!', res.message, 'success');
+              .then((r) => r.json())
+              .then(() => {
+                Swal.close();
+                Swal.fire('Terhapus!', 'Data berhasil dihapus.', 'success');
                 loadDataFromBackend();
-              } else {
-                Swal.fire('Gagal!', res ? res.message : 'Gagal menghapus.', 'error');
-              }
-            })
-            .catch(err => onSaveFailure(err));
+              });
+          } else {
+            rawInventoryData = rawInventoryData.filter((d) => String(d.id) !== String(id));
+            Swal.fire('Terhapus!', 'Data dihapus.', 'success');
+            filterData();
           }
         }
       });
     }
 
-    // CAMERA QR SCANNER LOGIC
-    async function openScannerModal(target = 'search') {
+    function openScannerModal(target) {
       activeScanTarget = target;
-      const modal = document.getElementById('scannerModal');
-      const qrContainer = document.getElementById('qrReader');
-      const statusTxt = document.getElementById('qrScannerStatus');
-      
-      modal.classList.remove('hidden');
-      if (statusTxt) statusTxt.innerText = "Meminta izin dan mengaktifkan kamera...";
-      
-      await stopAndClearScanner();
+      document.getElementById('scannerModal').classList.remove('hidden');
 
-      // Pengecekan Protokol HTTPS khusus browser Android
-      if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-        qrContainer.innerHTML = `
-          <div class="p-5 text-center text-slate-700 text-xs">
-            <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
-              <i class="fa-solid fa-lock"></i>
-            </div>
-            <p class="font-bold text-slate-800 mb-1">Akses Kamera Membutuhkan HTTPS</p>
-            <p class="text-[11px] text-slate-500 max-w-xs mx-auto mb-3">Browser Android mengharuskan koneksi aman (HTTPS / GitHub Pages) untuk membuka kamera.</p>
-          </div>`;
-        if (statusTxt) statusTxt.innerText = "Kamera diblokir karena situs tidak menggunakan HTTPS.";
-        return;
-      }
+      stopAndClearScanner().then(() => {
+        const html5QrCode = new Html5Qrcode('qrReader');
+        html5QrScannerInstance = html5QrCode;
+        const config = { fps: 10, qrbox: { width: 220, height: 220 } };
 
-      qrContainer.innerHTML = '';
-
-      try {
-        html5QrScannerInstance = new Html5Qrcode("qrReader");
-
-        // Dynamic QR box calculation for optimal Android viewfinder scaling
-        const qrboxFunction = function(viewfinderWidth, viewfinderHeight) {
-          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-          const edgeSize = Math.floor(minEdge * 0.75);
-          return { width: Math.max(edgeSize, 180), height: Math.max(edgeSize, 180) };
-        };
-
-        const config = { 
-          fps: 15, 
-          qrbox: qrboxFunction,
-          aspectRatio: 1.0
-        };
-
-        // Multi-stage camera selection fallback for Android
-        try {
-          await html5QrScannerInstance.start(
-            { facingMode: { exact: "environment" } },
-            config,
-            onScanSuccess,
-            onScanFailure
-          );
-        } catch (e1) {
-          try {
-            await html5QrScannerInstance.start(
-              { facingMode: "environment" },
-              config,
-              onScanSuccess,
-              onScanFailure
-            );
-          } catch (e2) {
-            const cameras = await Html5Qrcode.getCameras();
-            if (cameras && cameras.length > 0) {
-              const backCam = cameras.find(c => c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('rear')) || cameras[cameras.length - 1];
-              await html5QrScannerInstance.start(
-                backCam.id,
-                config,
-                onScanSuccess,
-                onScanFailure
-              );
-            } else {
-              throw new Error("Kamera tidak ditemukan atau izin belum diberikan.");
-            }
-          }
-        }
-
-        if (statusTxt) statusTxt.innerText = "Arahkan kamera ke Barcode / QR Code Serial Number barang.";
-      } catch (err) {
-        console.error("Eror saat mengaktifkan kamera Android:", err);
-        qrContainer.innerHTML = `
-          <div class="p-5 text-center text-slate-700 text-xs">
-            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
-              <i class="fa-solid fa-camera"></i>
-            </div>
-            <p class="font-bold text-slate-800 mb-1">Gagal Membuka Kamera</p>
-            <p class="text-[11px] text-slate-500 max-w-xs mx-auto mb-3">Pastikan Anda telah memberikan izin akses kamera pada browser Android dan tidak ada aplikasi lain yang sedang mengunci kamera.</p>
-            <button onclick="openScannerModal('${activeScanTarget}')" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold shadow-sm transition flex items-center justify-center space-x-2 mx-auto">
-              <i class="fa-solid fa-rotate-right"></i>
-              <span>Coba Lagi</span>
-            </button>
-          </div>`;
-        if (statusTxt) statusTxt.innerText = "Tekan tombol Coba Lagi setelah memberikan izin kamera.";
-      }
-    }
-
-    function onScanSuccess(decodedText) {
-      closeScannerModal();
-      if (activeScanTarget === 'search') {
-        document.getElementById('searchInput').value = decodedText;
-        filterData();
-        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Filter SN: ' + decodedText, showConfirmButton: false, timer: 2000 });
-      } else if (activeScanTarget === 'form') {
-        document.getElementById('formSerialNumber').value = decodedText;
-        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'SN Diisi: ' + decodedText, showConfirmButton: false, timer: 2000 });
-      }
-    }
-
-    function onScanFailure(errorMessage) {
-      // Abaikan error per frame
+        html5QrCode.start({ facingMode: 'environment' }, config, handleQrScanSuccess)
+          .catch(() => {
+            Html5Qrcode.getCameras().then((cameras) => {
+              if (cameras && cameras.length > 0) {
+                html5QrCode.start(cameras[cameras.length - 1].id, config, handleQrScanSuccess);
+              }
+            });
+          });
+      });
     }
 
     async function stopAndClearScanner() {
@@ -1069,22 +1105,32 @@
           if (html5QrScannerInstance.isScanning) {
             await html5QrScannerInstance.stop();
           }
-          await html5QrScannerInstance.clear();
-        } catch (e) {
-          console.warn("Gagal menghentikan scanner:", e);
-        }
+          html5QrScannerInstance.clear();
+        } catch (e) {}
         html5QrScannerInstance = null;
       }
-      const qrContainer = document.getElementById('qrReader');
-      if (qrContainer) qrContainer.innerHTML = '';
     }
 
-    async function closeScannerModal() {
-      await stopAndClearScanner();
-      document.getElementById('scannerModal').classList.add('hidden');
+    function closeScannerModal() {
+      stopAndClearScanner().then(() => {
+        document.getElementById('scannerModal').classList.add('hidden');
+      });
     }
 
-    // REKAP STOK LOGIC
+    function handleQrScanSuccess(decodedText) {
+      const code = decodedText.trim();
+      closeScannerModal();
+
+      if (activeScanTarget === 'form') {
+        document.getElementById('formSerialNumber').value = code;
+        Swal.fire('QR Terpindai!', `Serial Number: ${code}`, 'success');
+      } else {
+        document.getElementById('searchInput').value = code;
+        filterData();
+        Swal.fire('Hasil Pencarian QR', `Filter diterapkan untuk Serial Number: ${code}`, 'info');
+      }
+    }
+
     function openStokModal() {
       renderStokTable();
       document.getElementById('stokModal').classList.remove('hidden');
@@ -1094,21 +1140,16 @@
       document.getElementById('stokModal').classList.add('hidden');
     }
 
-    function calculateStockSummary() {
-      const stockMap = {};
-      rawInventoryData.forEach(item => {
-        const name = (item.namaBarang || '').trim();
-        const brand = (item.brand || '-').trim();
-        const tipe = (item.tipe || '-').trim();
-        const seri = (item.seri || '-').trim();
-        const key = `${name}___${brand}___${tipe}___${seri}`;
+    function renderStokTable() {
+      const stokMap = {};
 
-        if (!stockMap[key]) {
-          stockMap[key] = {
-            namaBarang: name,
-            brand: brand,
-            tipe: tipe,
-            seri: seri,
+      rawInventoryData.forEach((item) => {
+        const key = `${item.namaBarang || 'Tanpa Nama'}|${item.brand || '-'}|${item.tipe || '-'}|${item.satuan || 'Pcs'}`;
+        if (!stokMap[key]) {
+          stokMap[key] = {
+            namaBarang: item.namaBarang || 'Tanpa Nama',
+            brand: item.brand || '-',
+            tipeSeri: `${item.tipe || '-'} ${item.seri ? '/ ' + item.seri : ''}`,
             masuk: 0,
             keluar: 0,
             satuan: item.satuan || 'Pcs'
@@ -1116,267 +1157,233 @@
         }
 
         const qty = Number(item.quantity) || 0;
-        if (item.jenisTransaksi === 'Masuk') {
-          stockMap[key].masuk += qty;
-        } else if (item.jenisTransaksi === 'Keluar') {
-          stockMap[key].keluar += qty;
-        }
+        if (item.jenisTransaksi === 'Masuk') stokMap[key].masuk += qty;
+        if (item.jenisTransaksi === 'Keluar') stokMap[key].keluar += qty;
       });
-      return Object.values(stockMap);
-    }
 
-    function renderStokTable() {
-      const stokList = calculateStockSummary();
       const tbody = document.getElementById('stokTableBody');
+      const keys = Object.keys(stokMap);
 
-      if (stokList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-400">Belum ada data barang.</td></tr>`;
+      if (keys.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="py-4 text-center text-slate-400">Belum ada data stok.</td></tr>';
         return;
       }
 
-      tbody.innerHTML = stokList.map((item, idx) => {
-        const sisa = item.masuk - item.keluar;
-        const sisaClass = sisa > 0 ? 'text-emerald-600 font-bold' : (sisa === 0 ? 'text-slate-500' : 'text-rose-600 font-bold');
+      tbody.innerHTML = keys.map((k, idx) => {
+        const row = stokMap[k];
+        const sisa = row.masuk - row.keluar;
+        const sisaClass = sisa < 0 ? 'text-rose-600 font-bold' : 'text-emerald-600 font-bold';
+
         return `
           <tr class="hover:bg-slate-50">
-            <td class="py-2.5 px-3 text-slate-400 font-mono text-[11px]">${idx + 1}</td>
-            <td class="py-2.5 px-3 font-semibold text-slate-800">${escapeHtml(item.namaBarang)}</td>
-            <td class="py-2.5 px-3 text-orange-600 font-medium">${escapeHtml(item.brand)}</td>
-            <td class="py-2.5 px-3 text-slate-500">${escapeHtml(item.tipe)} / ${escapeHtml(item.seri)}</td>
-            <td class="py-2.5 px-3 text-center text-emerald-600 font-semibold">${item.masuk}</td>
-            <td class="py-2.5 px-3 text-center text-sky-600 font-semibold">${item.keluar}</td>
+            <td class="py-2.5 px-3 text-center text-slate-400">${idx + 1}</td>
+            <td class="py-2.5 px-3 font-semibold text-slate-800">${row.namaBarang}</td>
+            <td class="py-2.5 px-3 text-slate-600">${row.brand}</td>
+            <td class="py-2.5 px-3 text-slate-500">${row.tipeSeri}</td>
+            <td class="py-2.5 px-3 text-center text-emerald-600 font-medium">${row.masuk}</td>
+            <td class="py-2.5 px-3 text-center text-sky-600 font-medium">${row.keluar}</td>
             <td class="py-2.5 px-3 text-center ${sisaClass}">${sisa}</td>
-            <td class="py-2.5 px-3 text-center text-slate-500 text-[11px]">${escapeHtml(item.satuan)}</td>
-          </tr>`;
+            <td class="py-2.5 px-3 text-center text-slate-500">${row.satuan}</td>
+          </tr>
+        `;
       }).join('');
     }
 
-    // EXPORT PDF LOGIC WITH EXACT OUFFICE.CO.ID LOGO
+    function openUserModal() {
+      renderUserTable();
+      document.getElementById('userModal').classList.remove('hidden');
+    }
+
+    function closeUserModal() {
+      document.getElementById('userModal').classList.add('hidden');
+    }
+
+    function renderUserTable() {
+      const tbody = document.getElementById('userTableBody');
+      tbody.innerHTML = systemUsers.map((u) => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-2 px-3 font-semibold text-slate-800">${u.username}</td>
+          <td class="py-2 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">${u.role}</span></td>
+          <td class="py-2 px-3 text-center">
+            ${u.username !== 'admin' ? `
+              <button onclick="deleteUser('${u.id}')" class="p-1 text-rose-600 hover:bg-rose-50 rounded">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            ` : '<span class="text-[10px] text-slate-400">Utama</span>'}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function handleCreateUser(e) {
+      e.preventDefault();
+      const u = document.getElementById('newUsername').value.trim();
+      const p = document.getElementById('newPassword').value.trim();
+      const r = document.getElementById('newRole').value;
+
+      if (!u || !p) return;
+
+      systemUsers.push({ id: 'usr-' + new Date().getTime(), username: u, role: r });
+      document.getElementById('addUserForm').reset();
+      renderUserTable();
+      Swal.fire('User Ditambahkan!', `Pengguna ${u} berhasil dibuat.`, 'success');
+    }
+
+    function deleteUser(id) {
+      systemUsers = systemUsers.filter((u) => u.id !== id);
+      renderUserTable();
+    }
+
     function exportToPDF() {
-      if (filteredInventoryData.length === 0) {
-        Swal.fire('Peringatan', 'Tidak ada data untuk diexport!', 'warning');
-        return;
-      }
+      const element = document.createElement('div');
+      element.style.padding = '20px';
+      element.style.fontFamily = 'Inter, sans-serif';
+      element.style.color = '#1e293b';
 
-      const printContainer = document.createElement('div');
-      printContainer.className = 'p-6 bg-white text-slate-800 relative font-sans';
+      const today = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-      const dateNow = new Date().toLocaleDateString('id-ID', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-      });
-
-      let rowsHtml = filteredInventoryData.map((item, idx) => {
-        const jenisText = item.jenisTransaksi === 'Masuk'
-          ? `<span style="color: #059669; font-weight: bold;">Masuk</span>`
-          : `<span style="color: #0284c7; font-weight: bold;">↑ Keluar</span>`;
-
-        const statusText = item.statusKondisi === 'Berfungsi'
-          ? `<span style="color: #059669; font-weight: bold;">Berfungsi</span>`
-          : `<span style="color: #dc2626; font-weight: bold;">Tidak Berfungsi</span>`;
-
-        const endUserProj = [item.endUser, item.peruntukan].filter(Boolean).join(' / ') || '-';
-        const namaBrand = item.brand ? `${escapeHtml(item.namaBarang)} <span style="color: #ea580c; font-weight: normal;">(${escapeHtml(item.brand)})</span>` : escapeHtml(item.namaBarang);
-
-        return `
-          <tr style="border-bottom: 1px solid #f1f5f9; font-size: 10px;">
-            <td style="padding: 6px 8px; text-align: center;">${idx + 1}</td>
-            <td style="padding: 6px 8px; white-space: nowrap;">${escapeHtml(item.tanggal)}</td>
-            <td style="padding: 6px 8px; white-space: nowrap;">${jenisText}</td>
-            <td style="padding: 6px 8px; font-weight: 600; color: #0f172a;">${namaBrand}</td>
-            <td style="padding: 6px 8px; font-family: monospace; color: #475569;">SN: ${escapeHtml(item.serialNumber || '-')}</td>
-            <td style="padding: 6px 8px; text-align: center;">${escapeHtml(item.lokasi)}</td>
-            <td style="padding: 6px 8px; text-align: center; font-weight: bold;">${item.quantity} ${escapeHtml(item.satuan)}</td>
-            <td style="padding: 6px 8px; color: #334155;">${escapeHtml(endUserProj)}</td>
-            <td style="padding: 6px 8px; text-align: center;">${statusText}</td>
-          </tr>`;
-      }).join('');
-
-      printContainer.innerHTML = `
-        <div style="position: relative; z-index: 10;">
-          <!-- KOP SURAT LAPORAN -->
-          <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #ea580c; padding-bottom: 12px; margin-bottom: 16px;">
-            <div style="display: flex; align-items: center;">
-              <!-- LOGO OUFFICE.CO.ID -->
-              <div style="width: 105px; margin-right: 16px; text-align: right; white-space: nowrap; flex-shrink: 0;">
-                <div style="font-family: 'Inter', sans-serif; font-weight: 900; font-size: 22px; color: #0f172a; line-height: 1; letter-spacing: -0.5px; text-align: right;">
-                  O<span style="color: #ea580c;">u</span>ffice
-                </div>
-                <div style="font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 800; color: #0f172a; line-height: 1; margin-top: 1px; text-align: right;">
-                  .co.id
-                </div>
-              </div>
-              <div style="border-left: 2px solid #cbd5e1; padding-left: 16px;">
-                <h1 style="font-size: 14px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; line-height: 1.2;">LAPORAN TRANSAKSI INVENTARIS GUDANG</h1>
-                <p style="font-size: 10px; color: #64748b; margin: 3px 0 0 0; line-height: 1.2;">Sistem Manajemen & Tracking Real-Time Gudang</p>
-              </div>
+      element.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #ea580c; padding-bottom: 12px; margin-bottom: 16px;">
+          <div style="display: flex; flex-direction: column; align-items: flex-end; padding-right: 16px; border-right: 2px solid #cbd5e1; flex-shrink: 0;">
+            <div style="display: flex; align-items: baseline; font-weight: 900; font-size: 24px; color: #0f172a; line-height: 1;">
+              <span>O</span><span style="color: #ea580c;">u</span><span>ffice</span>
             </div>
-            <div style="text-align: right; font-size: 10px; color: #475569;">
-              <p style="margin: 0;"><strong>Tanggal Cetak:</strong> ${dateNow}</p>
-              <p style="margin: 2px 0 0 0;"><strong>Total Record:</strong> ${filteredInventoryData.length} Transaksi</p>
-            </div>
+            <span style="font-size: 10px; font-weight: 800; color: #0f172a; margin-top: 2px;">.co.id</span>
           </div>
+          <div style="padding-left: 16px; flex-grow: 1;">
+            <h2 style="font-size: 16px; font-weight: 800; color: #0f172a; margin: 0; text-transform: uppercase;">Laporan Transaksi Inventaris Gudang</h2>
+            <p style="font-size: 11px; color: #64748b; margin: 2px 0 0 0;">Sistem Manajemen & Tracking Real-Time Gudang</p>
+          </div>
+        </div>
 
-          <!-- TABEL DATA PDF -->
-          <table style="width: 100%; border-collapse: collapse; text-align: left; margin-bottom: 24px;">
-            <thead>
-              <tr style="background-color: #1e293b; color: #ffffff; font-size: 10px; font-weight: 700; text-transform: uppercase;">
-                <th style="padding: 8px; text-align: center; width: 30px;">NO</th>
-                <th style="padding: 8px;">TANGGAL</th>
-                <th style="padding: 8px;">JENIS</th>
-                <th style="padding: 8px;">NAMA BARANG (BRAND)</th>
-                <th style="padding: 8px;">SERIAL NUMBER</th>
-                <th style="padding: 8px; text-align: center;">LOKASI</th>
-                <th style="padding: 8px; text-align: center;">QTY</th>
-                <th style="padding: 8px;">END USER / PROJECT</th>
-                <th style="padding: 8px; text-align: center;">STATUS</th>
+        <div style="display: flex; justify-content: space-between; font-size: 11px; color: #475569; margin-bottom: 12px; font-weight: 500;">
+          <span><strong>Tanggal Cetak:</strong> ${today}</span>
+          <span><strong>Total Record:</strong> ${filteredInventoryData.length} Transaksi</span>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; font-size: 10px; text-align: left;">
+          <thead>
+            <tr style="background-color: #1e293b; color: #ffffff; text-transform: uppercase; font-size: 9px;">
+              <th style="padding: 6px; border: 1px solid #334155; text-align: center;">No</th>
+              <th style="padding: 6px; border: 1px solid #334155;">Tanggal</th>
+              <th style="padding: 6px; border: 1px solid #334155;">Jenis</th>
+              <th style="padding: 6px; border: 1px solid #334155;">Nama Barang</th>
+              <th style="padding: 6px; border: 1px solid #334155;">Brand</th>
+              <th style="padding: 6px; border: 1px solid #334155;">Serial Number</th>
+              <th style="padding: 6px; border: 1px solid #334155; text-align: center;">Lokasi</th>
+              <th style="padding: 6px; border: 1px solid #334155; text-align: center;">Qty</th>
+              <th style="padding: 6px; border: 1px solid #334155;">End User</th>
+              <th style="padding: 6px; border: 1px solid #334155;">Pekerjaan</th>
+              <th style="padding: 6px; border: 1px solid #334155; text-align: center;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredInventoryData.map((item, idx) => `
+              <tr style="border-bottom: 1px solid #e2e8f0;">
+                <td style="padding: 6px; text-align: center; border: 1px solid #e2e8f0;">${idx + 1}</td>
+                <td style="padding: 6px; border: 1px solid #e2e8f0; white-space: nowrap;">${item.tanggal || '-'}</td>
+                <td style="padding: 6px; border: 1px solid #e2e8f0; font-weight: bold; color: ${item.jenisTransaksi === 'Masuk' ? '#047857' : '#0284c7'};">${item.jenisTransaksi === 'Masuk' ? '↓ Masuk' : '↑ Keluar'}</td>
+                <td style="padding: 6px; border: 1px solid #e2e8f0; font-weight: 600;">${item.namaBarang || '-'}</td>
+                <td style="padding: 6px; border: 1px solid #e2e8f0;">${item.brand || '-'}</td>
+                <td style="padding: 6px; border: 1px solid #e2e8f0; font-family: monospace;">${item.serialNumber ? 'SN: ' + item.serialNumber : '-'}</td>
+                <td style="padding: 6px; border: 1px solid #e2e8f0; text-align: center;">${item.lokasi || '-'}</td>
+                <td style="padding: 6px; border: 1px solid #e2e8f0; text-align: center; font-weight: bold;">${item.quantity || 0} ${item.satuan || ''}</td>
+                <td style="padding: 6px; border: 1px solid #e2e8f0;">${item.endUser || '-'}</td>
+                <td style="padding: 6px; border: 1px solid #e2e8f0;">${item.peruntukan || '-'}</td>
+                <td style="padding: 6px; border: 1px solid #e2e8f0; text-align: center; font-weight: bold; color: ${item.statusKondisi === 'Berfungsi' ? '#047857' : '#e11d48'};">${item.statusKondisi || '-'}</td>
               </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
-          </table>
+            `).join('')}
+          </tbody>
+        </table>
 
-          <!-- BLOK TANDA TANGAN -->
-          <div style="display: flex; justify-content: space-between; margin-top: 40px; padding: 0 20px; font-size: 10px; color: #334155;">
-            <div style="text-align: center; width: 200px;">
-              <p style="margin-bottom: 50px;">Dibuat Oleh,</p>
-              <p style="font-weight: bold; text-decoration: underline; margin: 0;">Petugas Gudang</p>
-            </div>
-            <div style="text-align: center; width: 200px;">
-              <p style="margin-bottom: 50px;">Disetujui Oleh,</p>
-              <p style="font-weight: bold; text-decoration: underline; margin: 0;">Kepala Gudang / Supervisor</p>
-            </div>
+        <div style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 11px; text-align: center; page-break-inside: avoid;">
+          <div style="width: 200px;">
+            <p style="margin-bottom: 50px;">Dibuat Oleh,</p>
+            <p style="font-weight: bold; text-decoration: underline;">Petugas Gudang</p>
           </div>
-        </div>`;
+          <div style="width: 200px;">
+            <p style="margin-bottom: 50px;">Disetujui Oleh,</p>
+            <p style="font-weight: bold; text-decoration: underline;">Kepala Gudang / Supervisor</p>
+          </div>
+        </div>
+      `;
 
       const opt = {
-        margin: 0.4,
+        margin: 8,
         filename: `Laporan_Inventaris_Gudang_${new Date().toISOString().split('T')[0]}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
       };
 
-      Swal.fire({
-        title: 'Menyiapkan PDF...',
-        text: 'Berkas PDF sedang diunduh.',
-        didOpen: () => { Swal.showLoading(); }
-      });
-
-      html2pdf().set(opt).from(printContainer).save().then(() => {
-        Swal.close();
-      });
+      html2pdf().set(opt).from(element).save();
     }
 
     function exportStokToPDF() {
-      const stokList = calculateStockSummary();
-      if (stokList.length === 0) {
-        Swal.fire('Peringatan', 'Tidak ada data stok!', 'warning');
-        return;
-      }
+      const element = document.createElement('div');
+      element.style.padding = '20px';
+      element.style.fontFamily = 'Inter, sans-serif';
+      element.style.color = '#1e293b';
 
-      const printContainer = document.createElement('div');
-      printContainer.className = 'p-6 bg-white text-slate-800 relative font-sans';
+      const today = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-      const dateNow = new Date().toLocaleDateString('id-ID', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-      });
-
-      let rowsHtml = stokList.map((item, idx) => {
-        const sisa = item.masuk - item.keluar;
-        return `
-          <tr style="border-bottom: 1px solid #f1f5f9; font-size: 10px;">
-            <td style="padding: 6px 8px; text-align: center;">${idx + 1}</td>
-            <td style="padding: 6px 8px; font-weight: 600; color: #0f172a;">${escapeHtml(item.namaBarang)}</td>
-            <td style="padding: 6px 8px; color: #ea580c; font-weight: 600;">${escapeHtml(item.brand)}</td>
-            <td style="padding: 6px 8px; color: #475569;">${escapeHtml(item.tipe)} / ${escapeHtml(item.seri)}</td>
-            <td style="padding: 6px 8px; text-align: center; color: #059669; font-weight: bold;">${item.masuk}</td>
-            <td style="padding: 6px 8px; text-align: center; color: #0284c7; font-weight: bold;">${item.keluar}</td>
-            <td style="padding: 6px 8px; text-align: center; font-weight: bold; color: #0f172a;">${sisa}</td>
-            <td style="padding: 6px 8px; text-align: center;">${escapeHtml(item.satuan)}</td>
-          </tr>`;
-      }).join('');
-
-      printContainer.innerHTML = `
-        <div style="position: relative; z-index: 10;">
-          <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #ea580c; padding-bottom: 12px; margin-bottom: 16px;">
-            <div style="display: flex; align-items: center;">
-              <!-- LOGO OUFFICE.CO.ID -->
-              <div style="width: 105px; margin-right: 16px; text-align: right; white-space: nowrap; flex-shrink: 0;">
-                <div style="font-family: 'Inter', sans-serif; font-weight: 900; font-size: 22px; color: #0f172a; line-height: 1; letter-spacing: -0.5px; text-align: right;">
-                  O<span style="color: #ea580c;">u</span>ffice
-                </div>
-                <div style="font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 800; color: #0f172a; line-height: 1; margin-top: 1px; text-align: right;">
-                  .co.id
-                </div>
-              </div>
-              <div style="border-left: 2px solid #cbd5e1; padding-left: 16px;">
-                <h1 style="font-size: 14px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; line-height: 1.2;">LAPORAN REKAP SISA STOK BARANG</h1>
-                <p style="font-size: 10px; color: #64748b; margin: 3px 0 0 0; line-height: 1.2;">Kalkulasi Total Barang Masuk vs Barang Keluar Gudang</p>
-              </div>
+      element.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #ea580c; padding-bottom: 12px; margin-bottom: 16px;">
+          <div style="display: flex; flex-direction: column; align-items: flex-end; padding-right: 16px; border-right: 2px solid #cbd5e1; flex-shrink: 0;">
+            <div style="display: flex; align-items: baseline; font-weight: 900; font-size: 24px; color: #0f172a; line-height: 1;">
+              <span>O</span><span style="color: #ea580c;">u</span><span>ffice</span>
             </div>
-            <div style="text-align: right; font-size: 10px; color: #475569;">
-              <p style="margin: 0;"><strong>Tanggal Cetak:</strong> ${dateNow}</p>
-            </div>
+            <span style="font-size: 10px; font-weight: 800; color: #0f172a; margin-top: 2px;">.co.id</span>
           </div>
-
-          <table style="width: 100%; border-collapse: collapse; text-align: left; margin-bottom: 24px;">
-            <thead>
-              <tr style="background-color: #1e293b; color: #ffffff; font-size: 10px; font-weight: 700; text-transform: uppercase;">
-                <th style="padding: 8px; text-align: center; width: 30px;">NO</th>
-                <th style="padding: 8px;">NAMA BARANG</th>
-                <th style="padding: 8px;">BRAND</th>
-                <th style="padding: 8px;">TIPE / SERI</th>
-                <th style="padding: 8px; text-align: center;">MASUK</th>
-                <th style="padding: 8px; text-align: center;">KELUAR</th>
-                <th style="padding: 8px; text-align: center;">SISA STOK</th>
-                <th style="padding: 8px; text-align: center;">SATUAN</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
-          </table>
-
-          <div style="display: flex; justify-content: space-between; margin-top: 40px; padding: 0 20px; font-size: 10px; color: #334155;">
-            <div style="text-align: center; width: 200px;">
-              <p style="margin-bottom: 50px;">Dibuat Oleh,</p>
-              <p style="font-weight: bold; text-decoration: underline; margin: 0;">Petugas Gudang</p>
-            </div>
-            <div style="text-align: center; width: 200px;">
-              <p style="margin-bottom: 50px;">Disetujui Oleh,</p>
-              <p style="font-weight: bold; text-decoration: underline; margin: 0;">Kepala Gudang / Supervisor</p>
-            </div>
+          <div style="padding-left: 16px; flex-grow: 1;">
+            <h2 style="font-size: 16px; font-weight: 800; color: #0f172a; margin: 0; text-transform: uppercase;">Laporan Rekap Sisa Stok Barang</h2>
+            <p style="font-size: 11px; color: #64748b; margin: 2px 0 0 0;">Kalkulasi Total Barang Masuk vs Barang Keluar Gudang</p>
           </div>
-        </div>`;
+        </div>
+
+        <div style="margin-bottom: 12px; font-size: 11px; color: #475569;">
+          <span><strong>Tanggal Cetak:</strong> ${today}</span>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; font-size: 10px; text-align: left;">
+          <thead>
+            <tr style="background-color: #1e293b; color: #ffffff; text-transform: uppercase; font-size: 9px;">
+              <th style="padding: 6px; border: 1px solid #334155; text-align: center;">No</th>
+              <th style="padding: 6px; border: 1px solid #334155;">Nama Barang</th>
+              <th style="padding: 6px; border: 1px solid #334155;">Brand</th>
+              <th style="padding: 6px; border: 1px solid #334155;">Tipe / Seri</th>
+              <th style="padding: 6px; border: 1px solid #334155; text-align: center;">Total Masuk</th>
+              <th style="padding: 6px; border: 1px solid #334155; text-align: center;">Total Keluar</th>
+              <th style="padding: 6px; border: 1px solid #334155; text-align: center;">Sisa Stok</th>
+              <th style="padding: 6px; border: 1px solid #334155; text-align: center;">Satuan</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${document.getElementById('stokTableBody').innerHTML}
+          </tbody>
+        </table>
+
+        <div style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 11px; text-align: center; page-break-inside: avoid;">
+          <div style="width: 200px;">
+            <p style="margin-bottom: 50px;">Dibuat Oleh,</p>
+            <p style="font-weight: bold; text-decoration: underline;">Petugas Gudang</p>
+          </div>
+          <div style="width: 200px;">
+            <p style="margin-bottom: 50px;">Disetujui Oleh,</p>
+            <p style="font-weight: bold; text-decoration: underline;">Kepala Gudang / Supervisor</p>
+          </div>
+        </div>
+      `;
 
       const opt = {
-        margin: 0.4,
-        filename: `Rekap_Stok_Gudang_${new Date().toISOString().split('T')[0]}.pdf`,
+        margin: 8,
+        filename: `Laporan_Rekap_Stok_${new Date().toISOString().split('T')[0]}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
 
-      Swal.fire({
-        title: 'Menyiapkan PDF Stok...',
-        didOpen: () => { Swal.showLoading(); }
-      });
-
-      html2pdf().set(opt).from(printContainer).save().then(() => {
-        Swal.close();
-      });
-    }
-
-    // HELPER UTILITY FOR HTML ESCAPING
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+      html2pdf().set(opt).from(element).save();
     }
   </script>
 </body>
