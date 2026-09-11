@@ -963,60 +963,87 @@
       if (statusTxt) statusTxt.innerText = "Meminta izin dan mengaktifkan kamera...";
       
       await stopAndClearScanner();
-      qrContainer.innerHTML = '<div class="p-6 text-slate-400 text-xs text-center"><i class="fa-solid fa-spinner fa-spin text-xl mb-2 text-orange-500 block"></i>Membuka kamera...</div>';
+
+      // Pengecekan Protokol HTTPS khusus browser Android
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+        qrContainer.innerHTML = `
+          <div class="p-5 text-center text-slate-700 text-xs">
+            <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <p class="font-bold text-slate-800 mb-1">Akses Kamera Membutuhkan HTTPS</p>
+            <p class="text-[11px] text-slate-500 max-w-xs mx-auto mb-3">Browser Android mengharuskan koneksi aman (HTTPS / GitHub Pages) untuk membuka kamera.</p>
+          </div>`;
+        if (statusTxt) statusTxt.innerText = "Kamera diblokir karena situs tidak menggunakan HTTPS.";
+        return;
+      }
+
+      qrContainer.innerHTML = '';
 
       try {
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          try {
-            const tempStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-            tempStream.getTracks().forEach(track => track.stop());
-          } catch (permErr) {
-            console.warn("Izin kamera awal via getUserMedia:", permErr);
-          }
-        }
-
         html5QrScannerInstance = new Html5Qrcode("qrReader");
-        const config = { fps: 10, qrbox: { width: 220, height: 220 } };
 
+        // Dynamic QR box calculation for optimal Android viewfinder scaling
+        const qrboxFunction = function(viewfinderWidth, viewfinderHeight) {
+          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+          const edgeSize = Math.floor(minEdge * 0.75);
+          return { width: Math.max(edgeSize, 180), height: Math.max(edgeSize, 180) };
+        };
+
+        const config = { 
+          fps: 15, 
+          qrbox: qrboxFunction,
+          aspectRatio: 1.0
+        };
+
+        // Multi-stage camera selection fallback for Android
         try {
           await html5QrScannerInstance.start(
-            { facingMode: "environment" },
+            { facingMode: { exact: "environment" } },
             config,
             onScanSuccess,
             onScanFailure
           );
-          if (statusTxt) statusTxt.innerText = "Arahkan kamera ke Barcode / QR Code Serial Number barang.";
-        } catch (envErr) {
-          console.warn("Mencoba kamera alternatif...", envErr);
-          const cameras = await Html5Qrcode.getCameras();
-          if (cameras && cameras.length > 0) {
-            const cameraId = cameras[cameras.length - 1].id;
+        } catch (e1) {
+          try {
             await html5QrScannerInstance.start(
-              cameraId,
+              { facingMode: "environment" },
               config,
               onScanSuccess,
               onScanFailure
             );
-            if (statusTxt) statusTxt.innerText = "Arahkan kamera ke Barcode / QR Code Serial Number barang.";
-          } else {
-            throw new Error("Kamera tidak ditemukan atau izin belum diberikan.");
+          } catch (e2) {
+            const cameras = await Html5Qrcode.getCameras();
+            if (cameras && cameras.length > 0) {
+              const backCam = cameras.find(c => c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('rear')) || cameras[cameras.length - 1];
+              await html5QrScannerInstance.start(
+                backCam.id,
+                config,
+                onScanSuccess,
+                onScanFailure
+              );
+            } else {
+              throw new Error("Kamera tidak ditemukan atau izin belum diberikan.");
+            }
           }
         }
+
+        if (statusTxt) statusTxt.innerText = "Arahkan kamera ke Barcode / QR Code Serial Number barang.";
       } catch (err) {
-        console.error("Eror saat mengaktifkan kamera:", err);
+        console.error("Eror saat mengaktifkan kamera Android:", err);
         qrContainer.innerHTML = `
           <div class="p-5 text-center text-slate-700 text-xs">
-            <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
+            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-3 text-xl">
               <i class="fa-solid fa-camera"></i>
             </div>
-            <p class="font-bold text-slate-800 mb-1">Akses Kamera Diperlukan</p>
-            <p class="text-[11px] text-slate-500 max-w-xs mx-auto mb-4">Silakan klik tombol di bawah ini dan pilih <strong>"Izinkan / Allow"</strong> pada pop-up izin browser Anda.</p>
+            <p class="font-bold text-slate-800 mb-1">Gagal Membuka Kamera</p>
+            <p class="text-[11px] text-slate-500 max-w-xs mx-auto mb-3">Pastikan Anda telah memberikan izin akses kamera pada browser Android dan tidak ada aplikasi lain yang sedang mengunci kamera.</p>
             <button onclick="openScannerModal('${activeScanTarget}')" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold shadow-sm transition flex items-center justify-center space-x-2 mx-auto">
-              <i class="fa-solid fa-video"></i>
-              <span>Aktifkan & Buka Kamera</span>
+              <i class="fa-solid fa-rotate-right"></i>
+              <span>Coba Lagi</span>
             </button>
           </div>`;
-        if (statusTxt) statusTxt.innerText = "Tekan tombol untuk mengaktifkan izin kamera.";
+        if (statusTxt) statusTxt.innerText = "Tekan tombol Coba Lagi setelah memberikan izin kamera.";
       }
     }
 
