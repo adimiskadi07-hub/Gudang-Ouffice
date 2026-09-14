@@ -221,7 +221,7 @@
     </div>
   </aside>
 
-  <!-- MAIN MAIN WRAPPER CONTAINER -->
+  <!-- MAIN WRAPPER CONTAINER -->
   <div class="flex-1 flex flex-col min-h-screen overflow-x-hidden">
     
     <!-- TOP HEADER BAR -->
@@ -230,7 +230,7 @@
         <div class="flex items-center justify-between gap-4">
           
           <div class="flex items-center gap-3">
-            <button onclick="toggleSidebar()" class="p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition md:hidden">
+            <button onclick="toggleSidebar()" class="p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition">
               <i class="fa-solid fa-bars text-lg"></i>
             </button>
             <h1 id="currentViewTitle" class="text-base sm:text-lg font-black text-slate-900 uppercase tracking-wide">Dashboard Utama</h1>
@@ -239,9 +239,14 @@
           <!-- Actions & Profile Info -->
           <div class="flex items-center gap-2 sm:gap-3">
             
+            <button onclick="loadDataFromBackend()" title="Sinkronkan Data" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition text-xs font-bold">
+              <i class="fa-solid fa-rotate text-xs"></i>
+              <span class="hidden sm:inline">Sync</span>
+            </button>
+
             <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 text-xs font-bold text-slate-700 bg-slate-50">
               <i class="fa-solid fa-user-circle text-orange-600 text-base"></i>
-              <span id="currentUserRoleBadge" class="uppercase font-extrabold tracking-wide text-orange-600">STAF GUDANG</span>
+              <span id="currentUserRoleBadge" class="uppercase font-extrabold tracking-wide text-orange-600">STAFF GUDANG</span>
             </div>
 
             <!-- History Login Button -->
@@ -452,7 +457,7 @@
               <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                 <i class="fa-solid fa-magnifying-glass"></i>
               </span>
-              <input type="text" id="searchInput" onkeyup="filterData()" placeholder="Cari nama barang, brand, SN, lokasi, end user, pekerjaan..." class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
+              <input type="text" id="searchInput" onkeyup="filterData()" placeholder="Cari nama barang, brand, tipe, seri, SN, lokasi, end user, pekerjaan..." class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
               <button onclick="openScannerModal('search')" title="Scan QR untuk Cari" class="absolute inset-y-0 right-0 px-3 text-orange-600 hover:text-orange-700">
                 <i class="fa-solid fa-qrcode text-base"></i>
               </button>
@@ -483,10 +488,10 @@
 
         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
           
-          <!-- Desktop Data Table -->
-          <div class="hidden md:block overflow-x-auto custom-scrollbar">
+          <!-- Desktop Data Table (Limit visible height to ~11 rows with sticky header & scrollbar) -->
+          <div class="hidden md:block max-h-[520px] overflow-y-auto custom-scrollbar">
             <table class="w-full text-left border-collapse">
-              <thead>
+              <thead class="sticky top-0 z-10">
                 <tr class="bg-slate-900 text-white text-[11px] uppercase tracking-wider font-extrabold">
                   <th class="py-3.5 px-4 text-center w-12">No</th>
                   <th class="py-3.5 px-4">Tanggal</th>
@@ -514,7 +519,7 @@
           </div>
 
           <!-- Mobile Cards Container -->
-          <div id="mobileCardsContainer" class="md:hidden divide-y divide-slate-100">
+          <div id="mobileCardsContainer" class="md:hidden divide-y divide-slate-100 max-h-[600px] overflow-y-auto custom-scrollbar">
             <div class="p-6 text-center text-slate-400">
               <i class="fa-solid fa-spinner fa-spin text-orange-500 text-xl mr-2"></i> Memuat data...
             </div>
@@ -562,36 +567,6 @@
         <div id="supplierListContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden p-4">
           <div class="p-8 text-center text-slate-400 font-medium">
             <i class="fa-solid fa-spinner fa-spin text-orange-500 text-xl mr-2"></i> Memuat data supplier...
-          </div>
-        </div>
-      </section>
-
-      <!-- VIEW 4: SUPPLIER -->
-      <section id="view-supplier" class="hidden space-y-4">
-        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-          <div>
-            <h3 class="font-bold text-slate-900 text-sm uppercase">Daftar Supplier / Vendor</h3>
-            <p class="text-xs text-slate-500">Direktori Penyedia Barang & Material</p>
-          </div>
-          <button onclick="Swal.fire('Fitur Supplier', 'Manajemen daftar mitra vendor pengadaan.', 'info')" class="px-3.5 py-2 bg-orange-600 text-white rounded-xl text-xs font-bold">+ Tambah Supplier</button>
-        </div>
-
-        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden p-4">
-          <div class="space-y-3 text-xs">
-            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
-              <div>
-                <h4 class="font-bold text-slate-800"></h4>
-                <p class="text-slate-500"></p>
-              </div>
-              <span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 font-bold rounded-lg text-[10px]">Aktif</span>
-            </div>
-            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
-              <div>
-                <h4 class="font-bold text-slate-800"></h4>
-                <p class="text-slate-500"></p>
-              </div>
-              <span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 font-bold rounded-lg text-[10px]">Aktif</span>
-            </div>
           </div>
         </div>
       </section>
@@ -1146,17 +1121,13 @@
       if (viewId === 'supplier') loadSupplier();
       if (viewId === 'stok-masuk') renderFilteredView('Masuk', 'stokMasukTableContainer');
       if (viewId === 'stok-keluar') renderFilteredView('Keluar', 'stokKeluarTableContainer');
+      if (viewId === 'delivery-order') renderDeliveryOrders();
     }
 
     function handleLoginSubmit(e) {
       e.preventDefault();
       const u = document.getElementById('loginUsername').value.trim();
       const p = document.getElementById('loginPassword').value;
-
-      if (!u || !p) {
-        Swal.fire('Error', 'Username dan Password wajib diisi!', 'error');
-        return;
-      }
 
       Swal.fire({ title: 'Memverifikasi Login...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
@@ -1202,7 +1173,7 @@
               Swal.fire('Gagal Login', res ? res.message : 'Username atau Password salah', 'error');
             }
           })
-          .catch((err) => {
+          .catch(() => {
             Swal.close();
             if (u === 'admin' && p === 'admin123') {
               currentUser = { id: 'USR-1', username: 'admin', role: 'Master Admin' };
@@ -1309,10 +1280,25 @@
             updateStatsAndDashboard();
           })
           .catch(() => {
-            renderTable(rawInventoryData);
+            renderTable([]);
             updateStatsAndDashboard();
           });
       }
+    }
+
+    function formatDateOnly(str) {
+      if (!str) return '-';
+      const s = String(str).trim();
+      const clean = s.split('T')[0].split(' ')[0];
+      if (clean.match(/^\d{4}-\d{2}-\d{2}$/)) return clean;
+      const d = new Date(s);
+      if (!isNaN(d.getTime())) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+      }
+      return clean || '-';
     }
 
     function renderTable(data) {
@@ -1328,7 +1314,13 @@
         return;
       }
 
-      tbody.innerHTML = data.map((item, idx) => {
+      // Reverse array so the newest inputs appear at the top
+      const displayData = [...data].reverse();
+
+      tbody.innerHTML = displayData.map((item, idx) => {
+        // Strip time completely and format only YYYY-MM-DD
+        const dateOnly = formatDateOnly(item.tanggal);
+
         const isMasuk = item.jenisTransaksi === 'Masuk';
         const badgeJenis = isMasuk
           ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">↓ Masuk</span>'
@@ -1356,7 +1348,7 @@
         return `
           <tr class="hover:bg-slate-50 transition">
             <td class="py-3 px-4 text-center text-slate-400 font-mono">${idx + 1}</td>
-            <td class="py-3 px-4 whitespace-nowrap font-mono text-[11px] text-slate-600">${item.tanggal || '-'}</td>
+            <td class="py-3 px-4 whitespace-nowrap font-mono text-[11px] text-slate-600">${dateOnly}</td>
             <td class="py-3 px-4 whitespace-nowrap">${badgeJenis}</td>
             <td class="py-3 px-4 font-bold text-slate-800">${item.namaBarang || '-'}</td>
             <td class="py-3 px-4 text-slate-600">${item.brand || '-'}</td>
@@ -1372,7 +1364,8 @@
         `;
       }).join('');
 
-      mobileContainer.innerHTML = data.map((item, idx) => {
+      mobileContainer.innerHTML = displayData.map((item, idx) => {
+        const dateOnly = formatDateOnly(item.tanggal);
         const isMasuk = item.jenisTransaksi === 'Masuk';
         const badgeJenis = isMasuk
           ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">↓ Masuk</span>'
@@ -1388,7 +1381,7 @@
         return `
           <div class="p-4 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-[10px] font-bold text-slate-400 font-mono">#${idx + 1} • ${item.tanggal || ''}</span>
+              <span class="text-[10px] font-bold text-slate-400 font-mono">#${idx + 1} • ${dateOnly}</span>
               <div class="flex items-center gap-1.5">
                 ${badgeJenis}
                 ${badgeStatus}
@@ -1428,6 +1421,8 @@
           if (item.statusKondisi === 'Tidak Berfungsi') tidakBerfungsi += qty;
         } else if (item.jenisTransaksi === 'Keluar') {
           totalKeluar += qty;
+          if (item.statusKondisi === 'Berfungsi') berfungsi -= qty;
+          if (item.statusKondisi === 'Tidak Berfungsi') tidakBerfungsi -= qty;
 
           const userKey = item.endUser || 'Lainnya';
           keluarDistribution[userKey] = (keluarDistribution[userKey] || 0) + qty;
@@ -1609,12 +1604,15 @@
         
         // Determine reference date (latest date from dataset or today)
         let refDate = new Date();
-        const validDates = rawInventoryData
-          .map(d => d.tanggal ? new Date(d.tanggal) : null)
-          .filter(d => d && !isNaN(d.getTime()));
+        const validTimestamps = rawInventoryData
+          .map(d => {
+            const f = formatDateOnly(d.tanggal);
+            return f !== '-' ? new Date(f).getTime() : NaN;
+          })
+          .filter(ts => !isNaN(ts));
 
-        if (validDates.length > 0) {
-          refDate = new Date(Math.max(...validDates.map(d => d.getTime())));
+        if (validTimestamps.length > 0) {
+          refDate = new Date(Math.max(...validTimestamps));
         }
 
         // Build 6 consecutive month slots ending at reference date's month
@@ -1629,7 +1627,9 @@
         // Aggregate volume per month slot
         rawInventoryData.forEach(item => {
           if (!item.tanggal) return;
-          const itemKey = item.tanggal.substring(0, 7); // YYYY-MM
+          const formattedDate = formatDateOnly(item.tanggal);
+          if (!formattedDate || formattedDate === '-') return;
+          const itemKey = formattedDate.substring(0, 7); // YYYY-MM
           const slot = monthSlots.find(s => s.key === itemKey);
           if (slot) {
             const qty = Number(item.quantity) || 0;
@@ -1644,16 +1644,20 @@
         // Render dynamic 6-month bar chart HTML
         monthlyContainer.innerHTML = monthSlots.map((slot, idx) => {
           const isLatest = idx === monthSlots.length - 1;
-          const pctMasuk = Math.max(slot.masuk > 0 ? 8 : 2, Math.round((slot.masuk / maxVol) * 100));
-          const pctKeluar = Math.max(slot.keluar > 0 ? 8 : 2, Math.round((slot.keluar / maxVol) * 100));
+          const pctMasuk = slot.masuk > 0 ? Math.max(10, Math.round((slot.masuk / maxVol) * 100)) : 4;
+          const pctKeluar = slot.keluar > 0 ? Math.max(10, Math.round((slot.keluar / maxVol) * 100)) : 4;
 
           return `
-            <div class="flex-1 flex flex-col items-center gap-2 h-full justify-end">
-              <div class="w-full flex items-end justify-center gap-1.5 h-32">
-                <div class="w-3.5 bg-emerald-500 rounded-t transition-all duration-500 hover:opacity-80" style="height: ${pctMasuk}%" title="${slot.label} - Masuk: ${slot.masuk} unit"></div>
-                <div class="w-3.5 bg-sky-500 rounded-t transition-all duration-500 hover:opacity-80" style="height: ${pctKeluar}%" title="${slot.label} - Keluar: ${slot.keluar} unit"></div>
+            <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
+              <!-- Value indicator badge -->
+              <div class="text-[9px] font-mono font-bold text-slate-400 opacity-90 group-hover:opacity-100 flex gap-1">
+                <span class="text-emerald-600 font-extrabold">${slot.masuk}</span>/<span class="text-sky-600 font-extrabold">${slot.keluar}</span>
               </div>
-              <span class="text-[10px] ${isLatest ? 'font-extrabold text-orange-600' : 'font-bold text-slate-500'}">${slot.label}</span>
+              <div class="w-full flex items-end justify-center gap-1.5 h-32">
+                <div class="w-3.5 sm:w-5 bg-emerald-500 rounded-t-md transition-all duration-500 hover:bg-emerald-600 shadow-sm" style="height: ${pctMasuk}%" title="${slot.label} - Masuk: ${slot.masuk} unit"></div>
+                <div class="w-3.5 sm:w-5 bg-sky-500 rounded-t-md transition-all duration-500 hover:bg-sky-600 shadow-sm" style="height: ${pctKeluar}%" title="${slot.label} - Keluar: ${slot.keluar} unit"></div>
+              </div>
+              <span class="text-[10px] ${isLatest ? 'font-extrabold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-200' : 'font-bold text-slate-500'}">${slot.label}</span>
             </div>
           `;
         }).join('');
@@ -1674,7 +1678,7 @@
       } else {
         recentTbody.innerHTML = recentData.map(item => `
           <tr class="hover:bg-slate-50">
-            <td class="py-2 px-3 font-mono text-[11px]">${item.tanggal || '-'}</td>
+            <td class="py-2 px-3 font-mono text-[11px]">${formatDateOnly(item.tanggal)}</td>
             <td class="py-2 px-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${item.jenisTransaksi === 'Masuk' ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-700'}">${item.jenisTransaksi === 'Masuk' ? '↓' : '↑'} ${item.jenisTransaksi}</span></td>
             <td class="py-2 px-3 font-bold text-slate-800">${item.namaBarang}</td>
             <td class="py-2 px-3 text-center font-bold font-mono">${item.quantity} ${item.satuan}</td>
@@ -1752,7 +1756,7 @@
           <tbody class="divide-y divide-slate-100">
             ${data.map(item => `
               <tr class="hover:bg-slate-50">
-                <td class="py-2.5 px-3 font-mono text-[11px]">${item.tanggal}</td>
+                <td class="py-2.5 px-3 font-mono text-[11px]">${formatDateOnly(item.tanggal)}</td>
                 <td class="py-2.5 px-3 font-bold text-slate-800">${item.namaBarang}</td>
                 <td class="py-2.5 px-3">${item.brand || '-'}</td>
                 <td class="py-2.5 px-3 text-center font-bold font-mono">${item.quantity} ${item.satuan}</td>
@@ -1762,6 +1766,188 @@
           </tbody>
         </table>
       `;
+    }
+
+    function renderDeliveryOrders() {
+      const container = document.getElementById('deliveryOrderTableContainer');
+      if (!container) return;
+      const data = rawInventoryData.filter(x => x.jenisTransaksi === 'Keluar');
+
+      if (data.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center text-slate-400">
+            <i class="fa-solid fa-truck-ramp-box text-3xl mb-2 text-slate-300"></i>
+            <p class="font-semibold text-slate-600">Belum ada transaksi barang keluar untuk Delivery Order.</p>
+            <p class="text-xs text-slate-400 mt-1">Input transaksi stok keluar baru untuk menghasilkan Surat Jalan resmi secara otomatis.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const displayData = [...data].reverse();
+
+      container.innerHTML = `
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-900 text-white uppercase text-[10px] font-extrabold">
+              <th class="py-3 px-3 text-center w-10">No</th>
+              <th class="py-3 px-3">Tanggal DO</th>
+              <th class="py-3 px-3">No. DO / ID</th>
+              <th class="py-3 px-3">Nama Barang & Brand</th>
+              <th class="py-3 px-3 text-center">Qty</th>
+              <th class="py-3 px-3">End User / Penerima</th>
+              <th class="py-3 px-3">Pekerjaan / Proyek</th>
+              <th class="py-3 px-3 text-center w-36">Aksi Dokumen</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+            ${displayData.map((item, idx) => {
+              const dateOnly = formatDateOnly(item.tanggal);
+              const doNum = `DO-${item.id.replace('INV-', '')}`;
+              const tipeSeri = [item.tipe, item.seri].filter(Boolean).join(' / ');
+              return `
+                <tr class="hover:bg-slate-50 transition">
+                  <td class="py-3 px-3 text-center text-slate-400 font-mono">${idx + 1}</td>
+                  <td class="py-3 px-3 font-mono text-[11px] text-slate-600">${dateOnly}</td>
+                  <td class="py-3 px-3 font-mono font-bold text-amber-600 text-[11px]">${doNum}</td>
+                  <td class="py-3 px-3">
+                    <span class="font-bold text-slate-900 block">${item.namaBarang || '-'}</span>
+                    <span class="text-[10px] text-slate-500">${item.brand || ''} ${tipeSeri ? '• ' + tipeSeri : ''}</span>
+                  </td>
+                  <td class="py-3 px-3 text-center font-bold font-mono text-slate-800">${item.quantity || 0} ${item.satuan || ''}</td>
+                  <td class="py-3 px-3 text-slate-800 font-semibold">${item.endUser || '-'}</td>
+                  <td class="py-3 px-3 text-slate-600">${item.peruntukan || '-'}</td>
+                  <td class="py-3 px-3 text-center">
+                    <button onclick="exportSingleDeliveryOrderPDF('${item.id}')" title="Cetak Surat Jalan / DO PDF" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 mx-auto">
+                      <i class="fa-solid fa-file-pdf text-amber-600"></i>
+                      <span>Cetak DO</span>
+                    </button>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function exportSingleDeliveryOrderPDF(id) {
+      if (!window.html2pdf) {
+        Swal.fire('Error', 'Library PDF belum siap.', 'error');
+        return;
+      }
+
+      const item = rawInventoryData.find(x => String(x.id) === String(id));
+      if (!item) {
+        Swal.fire('Error', 'Data transaksi stok keluar tidak ditemukan.', 'error');
+        return;
+      }
+
+      const dateOnly = formatDateOnly(item.tanggal);
+      const doNum = `DO-${item.id.replace('INV-', '')}`;
+      const exportUser = currentUser ? `${currentUser.username} (${currentUser.role})` : 'System Admin';
+
+      const element = document.createElement('div');
+      element.className = 'p-8 bg-white text-slate-900 text-xs font-sans space-y-6';
+
+      element.innerHTML = `
+        <!-- KOP DOKUMEN DELIVERY ORDER -->
+        <div class="border-b-2 border-slate-900 pb-4 flex justify-between items-start">
+          <div>
+            <div class="flex items-baseline font-black tracking-tight text-slate-900 text-3xl">
+              <span>O</span><span class="text-orange-600">u</span><span>ffice</span><span class="text-xs ml-1 font-bold">.co.id</span>
+            </div>
+            <p class="text-[11px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">PT. Ouffice Technology Indonesia</p>
+            <p class="text-[10px] text-slate-400">Sistem Pengelolaan & Distribusi Inventaris Gudang</p>
+          </div>
+          <div class="text-right">
+            <span class="px-3 py-1 bg-amber-100 text-amber-800 rounded font-black text-sm uppercase tracking-wider inline-block mb-1">SURAT JALAN / DELIVERY ORDER</span>
+            <div class="font-mono text-xs font-bold text-slate-700">NO: ${doNum}</div>
+            <div class="font-mono text-[11px] text-slate-500">Tanggal: ${dateOnly}</div>
+          </div>
+        </div>
+
+        <!-- INFORMASI PENERIMA & PENGIRIMAN -->
+        <div class="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div>
+            <span class="text-[10px] font-extrabold uppercase text-slate-400 block mb-1">KEPADA / PENERIMA (END USER):</span>
+            <div class="font-bold text-sm text-slate-900">${item.endUser || '-'}</div>
+            <div class="text-xs text-slate-600 mt-1"><strong>Peruntukan / Proyek:</strong> ${item.peruntukan || '-'}</div>
+          </div>
+          <div class="text-right border-l border-slate-200 pl-6">
+            <span class="text-[10px] font-extrabold uppercase text-slate-400 block mb-1">INFORMASI PENGIRIMAN:</span>
+            <div class="text-xs text-slate-700"><strong>Status Barang:</strong> ${item.statusKondisi || 'Berfungsi'}</div>
+            <div class="text-xs text-slate-700"><strong>Lokasi Asal:</strong> Gudang ${item.lokasi || 'Indoor'}</div>
+            <div class="text-xs text-slate-500 font-mono mt-1">Di-issue oleh: ${exportUser}</div>
+          </div>
+        </div>
+
+        <!-- TABEL RINCIAN BARANG -->
+        <div>
+          <h4 class="font-bold text-slate-900 uppercase text-xs mb-2">Rincian Barang Yang Dikirim:</h4>
+          <table class="w-full text-left border-collapse text-xs border border-slate-300">
+            <thead>
+              <tr class="bg-slate-900 text-white font-extrabold uppercase text-[10px]">
+                <th class="p-2.5 border border-slate-700 text-center w-10">No</th>
+                <th class="p-2.5 border border-slate-700">Nama Barang & Brand</th>
+                <th class="p-2.5 border border-slate-700">Tipe / Seri</th>
+                <th class="p-2.5 border border-slate-700">Serial Number (SN)</th>
+                <th class="p-2.5 border border-slate-700 text-center">Jumlah (Qty)</th>
+                <th class="p-2.5 border border-slate-700 text-center">Kondisi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-slate-200">
+                <td class="p-2.5 border border-slate-200 text-center font-mono">1</td>
+                <td class="p-2.5 border border-slate-200 font-bold">
+                  ${item.namaBarang}
+                  <span class="block text-[10px] font-normal text-slate-500">${item.brand || ''}</span>
+                </td>
+                <td class="p-2.5 border border-slate-200">${[item.tipe, item.seri].filter(Boolean).join(' / ') || '-'}</td>
+                <td class="p-2.5 border border-slate-200 font-mono text-[11px]">${item.serialNumber || '-'}</td>
+                <td class="p-2.5 border border-slate-200 text-center font-mono font-bold text-sm">${item.quantity} ${item.satuan}</td>
+                <td class="p-2.5 border border-slate-200 text-center font-bold text-emerald-600">${item.statusKondisi || 'Berfungsi'}</td>
+              </tr>
+            </tbody>
+          </table>
+          ${item.deskripsi ? `<div class="mt-2 text-xs text-slate-600 bg-slate-50 p-2 rounded border border-slate-200"><strong>Catatan Pengiriman:</strong> ${item.deskripsi}</div>` : ''}
+        </div>
+
+        <!-- KOLOM TANDA TANGAN SERAH TERIMA -->
+        <div class="pt-8 grid grid-cols-3 gap-4 text-center text-xs">
+          <div class="space-y-12">
+            <span class="font-extrabold text-slate-700 block text-[11px] uppercase">Yang Menyerahkan (Gudang)</span>
+            <div class="border-b border-slate-400 w-3/4 mx-auto"></div>
+            <span class="text-[10px] text-slate-500 block">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</span>
+          </div>
+
+          <div class="space-y-12">
+            <span class="font-extrabold text-slate-700 block text-[11px] uppercase">Pengemudi / Kurir</span>
+            <div class="border-b border-slate-400 w-3/4 mx-auto"></div>
+            <span class="text-[10px] text-slate-500 block">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</span>
+          </div>
+
+          <div class="space-y-12">
+            <span class="font-extrabold text-slate-700 block text-[11px] uppercase">Yang Menerima (End User)</span>
+            <div class="border-b border-slate-400 w-3/4 mx-auto"></div>
+            <span class="text-[10px] text-slate-500 block">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</span>
+          </div>
+        </div>
+
+        <div class="pt-6 border-t border-slate-200 text-[9px] text-slate-400 text-center">
+          Dokumen ini dicetak otomatis oleh Sistem Inventaris Ouffice.co.id pada ${new Date().toISOString().split('T')[0]}. Harap disimpan sebagai bukti serah terima resmi.
+        </div>
+      `;
+
+      const opt = {
+        margin: [0.3, 0.3, 0.3, 0.3],
+        filename: `Delivery_Order_${doNum}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save();
     }
 
     function openModalWithPreset(jenis) {
@@ -1786,7 +1972,7 @@
       if (!item) return;
 
       document.getElementById('formId').value = item.id;
-      document.getElementById('formTanggal').value = item.tanggal || '';
+      document.getElementById('formTanggal').value = formatDateOnly(item.tanggal);
       document.getElementById('formJenis').value = item.jenisTransaksi || 'Masuk';
       document.getElementById('formNamaBarang').value = item.namaBarang || '';
       document.getElementById('formBrand').value = item.brand || '';
@@ -2195,28 +2381,7 @@
       }
     }
 
-    function openConfigModal() {
-      document.getElementById('configGasUrlInput').value = CUSTOM_GAS_URL;
-      document.getElementById('configModal').classList.remove('hidden');
-    }
-
-    function closeConfigModal() {
-      document.getElementById('configModal').classList.add('hidden');
-    }
-
-    function saveGasUrl() {
-      const url = document.getElementById('configGasUrlInput').value.trim();
-      if (!url) return;
-      CUSTOM_GAS_URL = url;
-      localStorage.setItem('ouffice_gas_url', url);
-      closeConfigModal();
-      Swal.fire('Tersimpan!', 'URL Google Apps Script telah diperbarui.', 'success');
-      loadDataFromBackend();
-    }
-
-    /* ==========================================
-       MANAJEMEN KATEGORI (FRONTEND LOGIC)
-       ========================================== */
+    /* KATEGORI FRONTEND LOGIC */
     function loadKategori() {
       const container = document.getElementById('kategoriGrid');
       container.innerHTML = `<div class="col-span-full p-8 text-center text-slate-400 font-medium"><i class="fa-solid fa-spinner fa-spin text-orange-500 text-xl mr-2"></i> Memuat data kategori...</div>`;
@@ -2391,9 +2556,7 @@
       });
     }
 
-    /* ==========================================
-       MANAJEMEN SUPPLIER (FRONTEND LOGIC)
-       ========================================== */
+    /* SUPPLIER FRONTEND LOGIC */
     function loadSupplier() {
       const container = document.getElementById('supplierListContainer');
       container.innerHTML = `<div class="p-8 text-center text-slate-400 font-medium"><i class="fa-solid fa-spinner fa-spin text-orange-500 text-xl mr-2"></i> Memuat data supplier...</div>`;
@@ -2582,6 +2745,168 @@
             });
         }
       });
+    }
+
+    function exportToPDF() {
+      if (!window.html2pdf) {
+        Swal.fire('Error', 'Library PDF belum siap.', 'error');
+        return;
+      }
+
+      const element = document.createElement('div');
+      element.className = 'p-6 bg-white text-slate-800 text-xs font-sans space-y-4';
+
+      const exportUser = currentUser ? `${currentUser.username} (${currentUser.role})` : 'System User';
+      const today = new Date().toISOString().split('T')[0];
+
+      element.innerHTML = `
+        <div class="border-b-2 border-slate-900 pb-3 mb-4 flex justify-between items-end">
+          <div>
+            <div class="flex items-baseline font-black tracking-tight text-slate-900 text-2xl">
+              <span>O</span><span class="text-orange-600">u</span><span>ffice</span><span class="text-xs ml-1 font-bold">.co.id</span>
+            </div>
+            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Laporan Resmi Transaksi Inventaris Gudang</p>
+          </div>
+          <div class="text-right text-[10px] text-slate-600 font-mono">
+            <div><strong>Tanggal Cetak:</strong> ${today}</div>
+            <div><strong>Di-export Oleh:</strong> ${exportUser}</div>
+          </div>
+        </div>
+
+        <table class="w-full text-left border-collapse text-[10px]">
+          <thead>
+            <tr class="bg-slate-900 text-white font-bold">
+              <th class="p-2">No</th>
+              <th class="p-2">Tanggal</th>
+              <th class="p-2">Jenis</th>
+              <th class="p-2">Nama Barang</th>
+              <th class="p-2">Brand</th>
+              <th class="p-2">Tipe / Seri</th>
+              <th class="p-2">SN</th>
+              <th class="p-2">Qty</th>
+              <th class="p-2">End User</th>
+              <th class="p-2">Pekerjaan</th>
+              <th class="p-2">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredInventoryData.map((item, idx) => `
+              <tr class="border-b border-slate-200">
+                <td class="p-2 font-mono">${idx + 1}</td>
+                <td class="p-2 font-mono">${formatDateOnly(item.tanggal)}</td>
+                <td class="p-2 font-bold">${item.jenisTransaksi}</td>
+                <td class="p-2 font-bold">${item.namaBarang}</td>
+                <td class="p-2">${item.brand || '-'}</td>
+                <td class="p-2">${[item.tipe, item.seri].filter(Boolean).join(' / ') || '-'}</td>
+                <td class="p-2 font-mono">${item.serialNumber || '-'}</td>
+                <td class="p-2 font-mono font-bold">${item.quantity} ${item.satuan}</td>
+                <td class="p-2">${item.endUser || '-'}</td>
+                <td class="p-2">${item.peruntukan || '-'}</td>
+                <td class="p-2 font-bold ${item.statusKondisi === 'Berfungsi' ? 'text-emerald-600' : 'text-rose-600'}">${item.statusKondisi}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <div class="pt-8 flex justify-between items-center text-[10px] text-slate-500">
+          <div>Pengesahan Dokumen Gudang Ouffice.co.id</div>
+          <div>Halaman 1 dari 1</div>
+        </div>
+      `;
+
+      const opt = {
+        margin: [0.3, 0.3, 0.3, 0.3],
+        filename: `Laporan_Inventaris_${today}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+      };
+
+      html2pdf().set(opt).from(element).save();
+    }
+
+    function exportStokToPDF() {
+      if (!window.html2pdf) {
+        Swal.fire('Error', 'Library PDF belum siap.', 'error');
+        return;
+      }
+
+      const summary = {};
+
+      rawInventoryData.forEach((item) => {
+        const key = `${(item.namaBarang || '').trim().toLowerCase()}_${(item.brand || '').trim().toLowerCase()}`;
+        if (!summary[key]) {
+          summary[key] = {
+            namaBarang: item.namaBarang || '-',
+            brand: item.brand || '-',
+            masuk: 0,
+            keluar: 0,
+            satuan: item.satuan || ''
+          };
+        }
+
+        const qty = Number(item.quantity) || 0;
+        if (item.jenisTransaksi === 'Masuk') summary[key].masuk += qty;
+        if (item.jenisTransaksi === 'Keluar') summary[key].keluar += qty;
+      });
+
+      const list = Object.values(summary);
+      const today = new Date().toISOString().split('T')[0];
+      const exportUser = currentUser ? `${currentUser.username} (${currentUser.role})` : 'System User';
+
+      const element = document.createElement('div');
+      element.className = 'p-6 bg-white text-slate-800 text-xs font-sans space-y-4';
+
+      element.innerHTML = `
+        <div class="border-b-2 border-slate-900 pb-3 mb-4 flex justify-between items-end">
+          <div>
+            <div class="flex items-baseline font-black tracking-tight text-slate-900 text-2xl">
+              <span>O</span><span class="text-orange-600">u</span><span>ffice</span><span class="text-xs ml-1 font-bold">.co.id</span>
+            </div>
+            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Rekapitulasi Total Stok Barang Gudang</p>
+          </div>
+          <div class="text-right text-[10px] text-slate-600 font-mono">
+            <div><strong>Tanggal Cetak:</strong> ${today}</div>
+            <div><strong>Di-export Oleh:</strong> ${exportUser}</div>
+          </div>
+        </div>
+
+        <table class="w-full text-left border-collapse text-[11px]">
+          <thead>
+            <tr class="bg-slate-900 text-white font-bold">
+              <th class="p-2.5">Nama Barang</th>
+              <th class="p-2.5">Brand</th>
+              <th class="p-2.5 text-center">Total Masuk</th>
+              <th class="p-2.5 text-center">Total Keluar</th>
+              <th class="p-2.5 text-center">Sisa Stok Available</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${list.map((item) => {
+              const sisa = item.masuk - item.keluar;
+              return `
+                <tr class="border-b border-slate-200">
+                  <td class="p-2.5 font-bold">${item.namaBarang}</td>
+                  <td class="p-2.5">${item.brand}</td>
+                  <td class="p-2.5 text-center font-mono font-bold text-emerald-600">${item.masuk} ${item.satuan}</td>
+                  <td class="p-2.5 text-center font-mono font-bold text-sky-600">${item.keluar} ${item.satuan}</td>
+                  <td class="p-2.5 text-center font-mono font-bold ${sisa <= 0 ? 'text-rose-600' : 'text-slate-900'}">${sisa} ${item.satuan}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+
+      const opt = {
+        margin: [0.4, 0.4, 0.4, 0.4],
+        filename: `Rekap_Stok_${today}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save();
     }
   </script>
 </body>
