@@ -121,8 +121,13 @@
     <div>
       <!-- Sidebar Brand Header -->
       <div class="p-4 border-b border-slate-800 flex items-center justify-between">
-        <div class="cursor-pointer select-none" onclick="switchView('dashboard')">
-          <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" class="h-8 w-auto object-contain max-w-[150px] brightness-110">
+        <div class="flex flex-col items-end cursor-pointer select-none" onclick="switchView('dashboard')">
+          <div class="flex items-baseline font-black text-2xl tracking-tight leading-none text-white">
+            <span>O</span>
+            <span class="text-orange-500 font-extrabold -ml-0.5">u</span>
+            <span class="text-white -ml-0.5">ffice</span>
+          </div>
+          <span class="text-[10px] font-black text-slate-400 tracking-normal -mt-0.5 font-mono">.co.id</span>
         </div>
         <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white p-1 md:hidden">
           <i class="fa-solid fa-xmark text-lg"></i>
@@ -2028,10 +2033,10 @@
       }).join('');
 
       element.innerHTML = `
-        <div style="display: flex; justify-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 12px; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 12px; margin-bottom: 20px;">
           <div>
-            <h1 style="font-size: 24px; font-weight: 900; color: #0f172a; margin: 0;">Ouffice<span style="color: #ea580c;">.co.id</span></h1>
-            <p style="font-size: 11px; color: #64748b; margin: 2px 0 0 0; text-transform: uppercase; font-weight: bold;">Sistem Inventaris & Logistik Gudang</p>
+            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" style="width: 140px; height: auto; display: block;">
+            <p style="font-size: 10px; color: #64748b; margin: 4px 0 0 0; text-transform: uppercase; font-weight: bold;">Sistem Inventaris & Logistik Gudang</p>
           </div>
           <div style="text-align: right;">
             <h2 style="font-size: 18px; font-weight: 800; color: #d97706; margin: 0;">DELIVERY ORDER</h2>
@@ -2039,7 +2044,7 @@
           </div>
         </div>
 
-        <div style="display: flex; justify-between; margin-bottom: 20px; font-size: 12px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 12px;">
           <div>
             <p style="margin: 0 0 4px 0;"><strong>Kepada / Penerima:</strong> ${doDoc.endUser}</p>
             <p style="margin: 0 0 4px 0;"><strong>Alamat Pengiriman:</strong> ${doDoc.alamatEndUser || '-'}</p>
@@ -2245,9 +2250,15 @@
       });
 
       element.innerHTML = `
-        <div style="text-align: center; border-bottom: 2px solid #ea580c; padding-bottom: 10px; margin-bottom: 15px;">
-          <h1 style="font-size: 20px; font-weight: 900; color: #0f172a; margin: 0;">LAPORAN REKAPITULASI STOK GUDANG</h1>
-          <p style="font-size: 11px; color: #64748b; margin: 4px 0 0 0;">Ouffice.co.id Inventory Management System</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 12px; margin-bottom: 15px;">
+          <div>
+            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" style="width: 130px; height: auto; display: block;">
+            <p style="font-size: 10px; color: #64748b; margin: 4px 0 0 0; text-transform: uppercase; font-weight: bold;">Ouffice.co.id Inventory Management System</p>
+          </div>
+          <div style="text-align: right;">
+            <h1 style="font-size: 16px; font-weight: 900; color: #0f172a; margin: 0;">LAPORAN REKAPITULASI STOK GUDANG</h1>
+            <p style="font-size: 10px; color: #64748b; margin: 2px 0 0 0;">Tanggal: ${new Date().toISOString().split('T')[0]}</p>
+          </div>
         </div>
         <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
           <thead>
