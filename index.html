@@ -2044,14 +2044,14 @@
           </div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 12px;">
-          <div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 12px; gap: 20px;">
+          <div style="flex: 1; min-width: 0;">
             <p style="margin: 0 0 4px 0;"><strong>Kepada / Penerima:</strong> ${doDoc.endUser}</p>
             <p style="margin: 0 0 4px 0;"><strong>Alamat Pengiriman:</strong> ${doDoc.alamatEndUser || '-'}</p>
             <p style="margin: 0;"><strong>Peruntukan Proyek:</strong> ${doDoc.peruntukan || '-'}</p>
           </div>
-          <div style="text-align: right;">
-            <p style="margin: 0 0 4px 0;"><strong>Tanggal Pengiriman:</strong> ${doDoc.tanggal}</p>
+          <div style="width: 240px; flex-shrink: 0; text-align: right; white-space: nowrap;">
+            <p style="margin: 0 0 6px 0;"><strong>Tanggal Pengiriman:</strong> ${doDoc.tanggal}</p>
             <p style="margin: 0;"><strong>Status Dokumen:</strong> RESMI / KELUAR</p>
           </div>
         </div>
