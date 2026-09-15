@@ -2430,37 +2430,93 @@
       });
     }
 
-    function openScannerModal(target) {
+    async function openScannerModal(target) {
       activeScanTarget = target;
-      document.getElementById('scannerModal').classList.remove('hidden');
+      const modal = document.getElementById('scannerModal');
+      const statusText = document.getElementById('scannerStatusText');
+      if (modal) modal.classList.remove('hidden');
+      if (statusText) statusText.innerText = "Mengakses kamera HP...";
+
+      if (html5QrScannerInstance) {
+        try {
+          await html5QrScannerInstance.stop();
+        } catch (e) {}
+        html5QrScannerInstance = null;
+      }
+
+      try {
+        html5QrScannerInstance = new Html5Qrcode("qrReader");
+        const config = { fps: 15, qrbox: { width: 220, height: 220 } };
+
+        await html5QrScannerInstance.start(
+          { facingMode: "environment" },
+          config,
+          (decodedText) => {
+            if (activeScanTarget === 'search') {
+              const searchInput = document.getElementById('searchInput');
+              if (searchInput) searchInput.value = decodedText;
+              filterData();
+            } else if (activeScanTarget === 'form') {
+              const snInput = document.getElementById('formSerialNumber');
+              if (snInput) snInput.value = decodedText;
+            }
+            closeScannerModal();
+            Swal.fire({ icon: 'success', title: 'QR / Barcode Terbaca!', text: decodedText, timer: 1200, showConfirmButton: false });
+          },
+          (errorMessage) => {
+            // Frame scanning status
+          }
+        );
+        if (statusText) statusText.innerText = "Arahkan kamera ke QR Code / Barcode";
+      } catch (err) {
+        console.error("Camera access error:", err);
+        if (statusText) statusText.innerText = "Kamera tidak dapat diakses (Periksa izin lokasi/kamera atau gunakan tombol Foto/Upload).";
+      }
     }
 
-    function closeScannerModal() {
-      document.getElementById('scannerModal').classList.add('hidden');
+    async function closeScannerModal() {
+      if (html5QrScannerInstance) {
+        try {
+          await html5QrScannerInstance.stop();
+          html5QrScannerInstance.clear();
+        } catch (e) {}
+        html5QrScannerInstance = null;
+      }
+      const modal = document.getElementById('scannerModal');
+      if (modal) modal.classList.add('hidden');
     }
 
     function triggerFileInput() {
       document.getElementById('qrFileInput').click();
     }
 
-    function handleFileUpload(e) {
+    async function handleFileUpload(e) {
       const file = e.target.files[0];
       if (!file) return;
+
+      if (html5QrScannerInstance) {
+        try {
+          await html5QrScannerInstance.stop();
+        } catch (e) {}
+        html5QrScannerInstance = null;
+      }
 
       const html5QrCode = new Html5Qrcode("qrReader");
       html5QrCode.scanFile(file, true)
         .then(decodedText => {
           if (activeScanTarget === 'search') {
-            document.getElementById('searchInput').value = decodedText;
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = decodedText;
             filterData();
           } else if (activeScanTarget === 'form') {
-            document.getElementById('formSerialNumber').value = decodedText;
+            const snInput = document.getElementById('formSerialNumber');
+            if (snInput) snInput.value = decodedText;
           }
           closeScannerModal();
           Swal.fire({ icon: 'success', title: 'QR Terbaca!', text: decodedText, timer: 1200, showConfirmButton: false });
         })
         .catch(() => {
-          Swal.fire('Scan Gagal', 'QR Code tidak terdeteksi dari foto.', 'error');
+          Swal.fire('Scan Gagal', 'QR Code / Barcode tidak terdeteksi dari foto.', 'error');
         });
     }
 
