@@ -1863,6 +1863,7 @@
             (item.serialNumber || '').toLowerCase().includes(q) ||
             (item.lokasi || '').toLowerCase().includes(q) ||
             (item.endUser || '').toLowerCase().includes(q) ||
+            (item.alamatEndUser || '').toLowerCase().includes(q) ||
             (item.peruntukan || '').toLowerCase().includes(q)
           );
         });
@@ -1875,6 +1876,9 @@
         return;
       }
 
+      // Membalikkan urutan agar data yang terakhir di-input tampil di posisi paling atas
+      const displayData = [...data].reverse();
+
       container.innerHTML = `
         <div class="max-h-[520px] overflow-y-auto custom-scrollbar overflow-x-auto">
           <table class="w-full text-left border-collapse text-xs">
@@ -1886,10 +1890,11 @@
                 <th class="py-3.5 px-3">Tipe / Seri</th>
                 <th class="py-3.5 px-3 text-center">Qty</th>
                 <th class="py-3.5 px-3">${isMasuk ? 'Supplier' : 'End User'}</th>
+                ${!isMasuk ? '<th class="py-3.5 px-3">Alamat</th>' : ''}
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
-              ${data.map(item => {
+              ${displayData.map(item => {
                 const tipeSeri = [item.tipe, item.seri].filter(Boolean).join(' / ') || '-';
                 return `
                 <tr class="hover:bg-slate-50 transition">
@@ -1899,6 +1904,7 @@
                   <td class="py-3 px-3 font-semibold text-slate-600">${tipeSeri}</td>
                   <td class="py-3 px-3 text-center font-bold font-mono text-slate-800">${item.quantity} ${item.satuan}</td>
                   <td class="py-3 px-3 text-slate-700">${item.endUser || '-'}</td>
+                  ${!isMasuk ? `<td class="py-3 px-3 text-slate-600 text-[11px]">${item.alamatEndUser || '-'}</td>` : ''}
                 </tr>
               `;}).join('')}
             </tbody>
@@ -2188,6 +2194,13 @@
         });
       }
 
+      // Urutkan data secara alfanumerik menurut Nama Barang dan Tipe/Seri (A-Z)
+      list.sort((a, b) => {
+        const compNama = (a.namaBarang || '').localeCompare(b.namaBarang || '', 'id', { numeric: true, sensitivity: 'base' });
+        if (compNama !== 0) return compNama;
+        return (a.tipeSeri || '').localeCompare(b.tipeSeri || '', 'id', { numeric: true, sensitivity: 'base' });
+      });
+
       const tbody = document.getElementById('laporanViewStokTableBody');
       if (!tbody) return;
 
@@ -2234,6 +2247,12 @@
       });
 
       const list = Object.values(summaryMap);
+      // Urutkan data PDF secara alfanumerik menurut Nama Barang dan Tipe/Seri (A-Z)
+      list.sort((a, b) => {
+        const compNama = (a.namaBarang || '').localeCompare(b.namaBarang || '', 'id', { numeric: true, sensitivity: 'base' });
+        if (compNama !== 0) return compNama;
+        return (a.tipeSeri || '').localeCompare(b.tipeSeri || '', 'id', { numeric: true, sensitivity: 'base' });
+      });
 
       element.innerHTML = `
         <div style="text-align: center; border-bottom: 2px solid #ea580c; padding-bottom: 10px; margin-bottom: 15px;">
@@ -2455,14 +2474,187 @@
 
     function openUserManagementModal() {
       document.getElementById('userModal').classList.remove('hidden');
+      loadUsers();
     }
 
     function closeUserManagementModal() {
       document.getElementById('userModal').classList.add('hidden');
     }
 
-    function loadUsers() {}
-    function handleAddUser(e) { e.preventDefault(); }
+    let rawUsersData = [
+      { id: 'USR-1001', username: 'admin', role: 'Master Admin' },
+      { id: 'USR-1002', username: 'staff', role: 'Staff Gudang' },
+      { id: 'USR-1003', username: 'manager', role: 'Manager' }
+    ];
+
+    function loadUsers() {
+      renderUsersTables(rawUsersData);
+
+      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+      if (isGASNative) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            if (res && res.success && Array.isArray(res.users) && res.users.length > 0) {
+              rawUsersData = res.users;
+              renderUsersTables(rawUsersData);
+            }
+          })
+          .readUsers();
+      } else if (CUSTOM_GAS_URL) {
+        fetch(`${CUSTOM_GAS_URL}?action=readUsers`)
+          .then(r => r.json())
+          .then(res => {
+            if (res && res.success && Array.isArray(res.users) && res.users.length > 0) {
+              rawUsersData = res.users;
+              renderUsersTables(rawUsersData);
+            }
+          })
+          .catch(() => {});
+      }
+    }
+
+    function renderUsersTables(users) {
+      const tbodyView = document.getElementById('usersViewTableBody');
+      const tbodyModal = document.getElementById('userTableBody');
+
+      if (!users || users.length === 0) {
+        const emptyHtml = `<tr><td colspan="3" class="py-4 text-center text-slate-400">Belum ada pengguna terdaftar.</td></tr>`;
+        if (tbodyView) tbodyView.innerHTML = emptyHtml;
+        if (tbodyModal) tbodyModal.innerHTML = emptyHtml;
+        return;
+      }
+
+      const rowsHtml = users.map(u => {
+        const isMasterAdmin = (u.username || '').toLowerCase() === 'admin' || u.role === 'Master Admin';
+        const deleteBtn = isMasterAdmin ? 
+          `<span class="text-slate-400 font-semibold text-[11px]">Utama</span>` : 
+          `<button onclick="deleteUserAccount('${u.id}')" title="Hapus User" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-bold transition flex items-center gap-1 mx-auto"><i class="fa-solid fa-trash"></i> Hapus</button>`;
+
+        const roleBadge = u.role === 'Master Admin' ? 'bg-purple-100 text-purple-700' : u.role === 'Manager' ? 'bg-sky-100 text-sky-700' : 'bg-emerald-100 text-emerald-700';
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="py-3 px-3 font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-circle-user text-orange-600 text-base"></i>
+              <span>${u.username}</span>
+            </td>
+            <td class="py-3 px-3">
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${roleBadge}">${u.role}</span>
+            </td>
+            <td class="py-3 px-3 text-center">${deleteBtn}</td>
+          </tr>
+        `;
+      }).join('');
+
+      if (tbodyView) tbodyView.innerHTML = rowsHtml;
+      if (tbodyModal) tbodyModal.innerHTML = rowsHtml;
+    }
+
+    function handleAddUser(e) {
+      e.preventDefault();
+      const u = document.getElementById('newUsername').value.trim();
+      const p = document.getElementById('newPassword').value;
+      const r = document.getElementById('newRole').value;
+
+      if (!u || !p) return;
+
+      const newUser = { id: `USR-${Date.now()}`, username: u, password: p, role: r };
+
+      Swal.fire({ title: 'Menyimpan User...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+
+      if (isGASNative) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            Swal.close();
+            if (res && res.success) {
+              rawUsersData.push({ id: newUser.id, username: u, role: r });
+              document.getElementById('addUserForm').reset();
+              renderUsersTables(rawUsersData);
+              Swal.fire({ icon: 'success', title: 'User Berhasil Ditambahkan!', timer: 1200, showConfirmButton: false });
+            } else {
+              Swal.fire('Gagal', res ? res.message : 'Gagal menambah user', 'error');
+            }
+          })
+          .addUser(newUser);
+      } else if (CUSTOM_GAS_URL) {
+        fetch(CUSTOM_GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'addUser', username: u, password: p, role: r })
+        })
+          .then(res => res.json())
+          .then(res => {
+            Swal.close();
+            rawUsersData.push({ id: newUser.id, username: u, role: r });
+            document.getElementById('addUserForm').reset();
+            renderUsersTables(rawUsersData);
+            Swal.fire({ icon: 'success', title: 'User Berhasil Ditambahkan!', timer: 1200, showConfirmButton: false });
+          })
+          .catch(() => {
+            Swal.close();
+            rawUsersData.push({ id: newUser.id, username: u, role: r });
+            document.getElementById('addUserForm').reset();
+            renderUsersTables(rawUsersData);
+            Swal.fire({ icon: 'success', title: 'User Ditambahkan!', timer: 1200, showConfirmButton: false });
+          });
+      } else {
+        rawUsersData.push({ id: newUser.id, username: u, role: r });
+        document.getElementById('addUserForm').reset();
+        renderUsersTables(rawUsersData);
+        Swal.close();
+        Swal.fire({ icon: 'success', title: 'User Ditambahkan!', timer: 1200, showConfirmButton: false });
+      }
+    }
+
+    function deleteUserAccount(id) {
+      Swal.fire({
+        title: 'Hapus User ini?',
+        text: 'Pengguna tidak dapat lagi masuk ke sistem.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Ya, Hapus'
+      }).then((res) => {
+        if (res.isConfirmed) {
+          Swal.fire({ title: 'Menghapus User...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+          const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+
+          if (isGASNative) {
+            google.script.run
+              .withSuccessHandler(() => {
+                rawUsersData = rawUsersData.filter(x => x.id !== id);
+                renderUsersTables(rawUsersData);
+                Swal.fire({ icon: 'success', title: 'User Terhapus!', timer: 1000, showConfirmButton: false });
+              })
+              .deleteUser(id);
+          } else if (CUSTOM_GAS_URL) {
+            fetch(CUSTOM_GAS_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: 'deleteUser', id: id })
+            })
+              .then(() => {
+                rawUsersData = rawUsersData.filter(x => x.id !== id);
+                renderUsersTables(rawUsersData);
+                Swal.fire({ icon: 'success', title: 'User Terhapus!', timer: 1000, showConfirmButton: false });
+              })
+              .catch(() => {
+                rawUsersData = rawUsersData.filter(x => x.id !== id);
+                renderUsersTables(rawUsersData);
+                Swal.fire({ icon: 'success', title: 'User Terhapus!', timer: 1000, showConfirmButton: false });
+              });
+          } else {
+            rawUsersData = rawUsersData.filter(x => x.id !== id);
+            renderUsersTables(rawUsersData);
+            Swal.fire({ icon: 'success', title: 'User Terhapus!', timer: 1000, showConfirmButton: false });
+          }
+        }
+      });
+    }
+
     function loadKategori() {}
     function openKategoriModal() { document.getElementById('kategoriModal').classList.remove('hidden'); }
     function closeKategoriModal() { document.getElementById('kategoriModal').classList.add('hidden'); }
