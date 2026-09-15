@@ -134,7 +134,7 @@
           </div>
           <span class="text-[10px] font-extrabold text-slate-400 tracking-normal -mt-0.5">.co.id Inventory</span>
         </div>
-        <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white p-1">
+        <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white p-1 md:hidden">
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
@@ -206,7 +206,7 @@
       </nav>
     </div>
 
-    <!-- Sidebar Footer / User Quick Info -->
+    <!-- Sidebar Footer -->
     <div class="p-3 border-t border-slate-800 bg-slate-950/50 flex items-center justify-between">
       <div class="flex items-center gap-2 overflow-hidden">
         <i class="fa-solid fa-circle-user text-orange-500 text-xl flex-shrink-0"></i>
@@ -1114,6 +1114,8 @@
     let CUSTOM_GAS_URL = localStorage.getItem('ouffice_gas_url') || DEFAULT_GAS_URL;
 
     window.onload = function () {
+      loadCachedData();
+
       const savedUser = sessionStorage.getItem('ouffice_user') || localStorage.getItem('ouffice_user');
       if (savedUser) {
         try {
@@ -1132,9 +1134,31 @@
         formJenisElem.addEventListener('change', updateFormLabels);
       }
 
-      loadDataFromBackend(true);
+      loadDataFromBackend(true, true);
       startRealtimeSync();
     };
+
+    function loadCachedData() {
+      try {
+        const cached = localStorage.getItem('ouffice_cached_inventory');
+        if (cached) {
+          rawInventoryData = JSON.parse(cached);
+          filterData();
+          updateStatsAndDashboard();
+          refreshCurrentView();
+        }
+      } catch (e) {}
+    }
+
+    function refreshCurrentView() {
+      if (currentActiveView === 'laporan') calculateStockSummary();
+      if (currentActiveView === 'users') loadUsers();
+      if (currentActiveView === 'kategori') loadKategori();
+      if (currentActiveView === 'supplier') loadSupplier();
+      if (currentActiveView === 'stok-masuk') renderFilteredView('Masuk', 'stokMasukTableContainer');
+      if (currentActiveView === 'stok-keluar') renderFilteredView('Keluar', 'stokKeluarTableContainer');
+      if (currentActiveView === 'delivery-order') renderDeliveryOrders();
+    }
 
     function startRealtimeSync() {
       if (realtimeSyncTimer) clearInterval(realtimeSyncTimer);
@@ -1242,7 +1266,8 @@
         localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
         document.getElementById('loginScreen').classList.add('hidden');
         applyRolePermissions();
-        loadDataFromBackend(true);
+        isFetchingBackend = false;
+        loadDataFromBackend(false, true);
         startRealtimeSync();
         Swal.fire({ icon: 'success', title: 'Login Berhasil!', text: `Selamat datang, ${currentUser.username}`, timer: 1000, showConfirmButton: false });
         return;
@@ -1262,7 +1287,8 @@
               localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
               document.getElementById('loginScreen').classList.add('hidden');
               applyRolePermissions();
-              loadDataFromBackend(true);
+              isFetchingBackend = false;
+              loadDataFromBackend(false, true);
               startRealtimeSync();
               Swal.fire({ icon: 'success', title: 'Login Berhasil!', text: `Masuk sebagai ${currentUser.role}`, timer: 1000, showConfirmButton: false });
             } else {
@@ -1294,7 +1320,8 @@
               localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
               document.getElementById('loginScreen').classList.add('hidden');
               applyRolePermissions();
-              loadDataFromBackend(true);
+              isFetchingBackend = false;
+              loadDataFromBackend(false, true);
               startRealtimeSync();
               Swal.fire({ icon: 'success', title: 'Login Berhasil!', text: `Masuk sebagai ${currentUser.role}`, timer: 1000, showConfirmButton: false });
             } else {
@@ -1326,7 +1353,8 @@
       });
     }
 
-    function loadDataFromBackend(isSilent = false) {
+    function loadDataFromBackend(isSilent = false, force = false) {
+      if (force) isFetchingBackend = false;
       if (isFetchingBackend) return;
       isFetchingBackend = true;
 
@@ -1342,8 +1370,10 @@
             if (syncIcon) syncIcon.classList.remove('fa-spin');
             if (res && res.success && Array.isArray(res.data)) {
               rawInventoryData = res.data;
+              try { localStorage.setItem('ouffice_cached_inventory', JSON.stringify(res.data)); } catch (e) {}
               filterData();
               updateStatsAndDashboard();
+              refreshCurrentView();
             }
           })
           .withFailureHandler(() => {
@@ -1359,8 +1389,10 @@
             if (syncIcon) syncIcon.classList.remove('fa-spin');
             if (res && res.success && Array.isArray(res.data)) {
               rawInventoryData = res.data;
+              try { localStorage.setItem('ouffice_cached_inventory', JSON.stringify(res.data)); } catch (e) {}
               filterData();
               updateStatsAndDashboard();
+              refreshCurrentView();
             }
           })
           .catch(() => {
@@ -2000,7 +2032,7 @@
       }).join('');
 
       element.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 12px; margin-bottom: 20px;">
+        <div style="display: flex; justify-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 12px; margin-bottom: 20px;">
           <div>
             <h1 style="font-size: 24px; font-weight: 900; color: #0f172a; margin: 0;">Ouffice<span style="color: #ea580c;">.co.id</span></h1>
             <p style="font-size: 11px; color: #64748b; margin: 2px 0 0 0; text-transform: uppercase; font-weight: bold;">Sistem Inventaris & Logistik Gudang</p>
@@ -2011,7 +2043,7 @@
           </div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 12px;">
+        <div style="display: flex; justify-between; margin-bottom: 20px; font-size: 12px;">
           <div>
             <p style="margin: 0 0 4px 0;"><strong>Kepada / Penerima:</strong> ${doDoc.endUser}</p>
             <p style="margin: 0 0 4px 0;"><strong>Alamat Pengiriman:</strong> ${doDoc.alamatEndUser || '-'}</p>
@@ -2039,7 +2071,7 @@
           </tbody>
         </table>
 
-        <div style="display: flex; justify-content: space-between; text-align: center; margin-top: 50px; font-size: 11px;">
+        <div style="display: flex; justify-between; text-align: center; margin-top: 50px; font-size: 11px;">
           <div style="width: 30%;">
             <p style="margin-bottom: 50px;">Yang Menyerahkan,<br><strong>( Petugas Gudang )</strong></p>
             <p style="border-top: 1px solid #94a3b8; padding-top: 4px; margin: 0;">Tanda Tangan & Nama</p>
