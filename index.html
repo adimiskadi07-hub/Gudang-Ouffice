@@ -77,13 +77,14 @@
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col md:flex-row">
 
+  <!-- LOGIN SCREEN -->
   <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 relative overflow-hidden">
       <div class="absolute -right-12 -top-12 w-40 h-40 bg-orange-600/10 rounded-full blur-2xl pointer-events-none"></div>
       
       <!-- Company Logo Branding -->
       <div class="flex flex-col items-center mb-6">
-        <img src="logo.png" onerror="this.onerror=null; this.src='https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB';" alt="Logo Perusahaan" width="150" class="h-auto max-w-[150px] object-contain mb-2">
+        <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="150" crossorigin="anonymous" class="h-auto max-w-[150px] object-contain mb-2">
         <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mt-1">Sistem Inventaris Gudang</p>
       </div>
 
@@ -118,12 +119,13 @@
   <!-- SIDEBAR OVERLAY FOR MOBILE -->
   <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-40 hidden md:hidden"></div>
 
+  <!-- MAIN SIDEBAR -->
   <aside id="mainSidebar" class="fixed md:static inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 z-40 flex flex-col justify-between sidebar-transition -translate-x-full md:translate-x-0 shadow-xl border-r border-slate-800">
     <div>
       <div class="p-4 border-b border-slate-800 flex items-center justify-between">
         <div class="flex items-center cursor-pointer select-none" onclick="switchView('dashboard')">
           <div class="flex items-center">
-            <img src="logo.png" onerror="this.onerror=null; this.src='https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB';" alt="Logo Perusahaan" width="150" class="h-8 w-auto max-w-[150px] object-contain">
+            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="150" crossorigin="anonymous" class="h-8 w-auto max-w-[150px] object-contain">
           </div>
         </div>
         <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white p-1 md:hidden">
@@ -143,9 +145,9 @@
               <i class="fa-solid fa-boxes-stacked w-4 text-center"></i>
               <span>Data Produk</span>
             </button>
-            <button onclick="switchView('kategori')" id="nav-kategori" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800">
-              <i class="fa-solid fa-layer-group w-4 text-center"></i>
-              <span>Kategori</span>
+            <button onclick="switchView('client')" id="nav-client" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800">
+              <i class="fa-solid fa-building-user w-4 text-center"></i>
+              <span>Data Client</span>
             </button>
             <button onclick="switchView('supplier')" id="nav-supplier" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800">
               <i class="fa-solid fa-truck-field w-4 text-center"></i>
@@ -206,6 +208,7 @@
     </div>
   </aside>
 
+  <!-- MAIN LAYOUT WRAPPER -->
   <div class="flex-1 flex flex-col min-h-screen overflow-x-hidden">
     <!-- TOP HEADER BAR -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
@@ -238,8 +241,10 @@
       </div>
     </header>
 
-    <main class="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto pb-24 sm:pb-8">
+    <!-- CONTENT VIEWS -->
+    <main class="flex-1 p-4 sm:p-6 w-full pb-24 sm:pb-8">
       
+      <!-- DASHBOARD VIEW -->
       <section id="view-dashboard" class="space-y-6">
         <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
           <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm motion-card-glow flex flex-col justify-between">
@@ -389,6 +394,7 @@
         </div>
       </section>
 
+      <!-- DATA PRODUK VIEW -->
       <section id="view-produk" class="hidden space-y-4">
         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 space-y-3">
           <!-- Baris 1: Search Input & Export PDF -->
@@ -446,7 +452,7 @@
         </div>
 
         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-          <div class="hidden md:block max-h-[520px] overflow-y-auto custom-scrollbar">
+          <div class="hidden md:block max-h-[calc(100vh-240px)] min-h-[450px] overflow-y-auto custom-scrollbar">
             <table class="w-full text-left border-collapse">
               <thead class="sticky top-0 z-10">
                 <tr class="bg-slate-900 text-white text-[11px] uppercase tracking-wider font-extrabold">
@@ -478,20 +484,22 @@
         </div>
       </section>
 
-      <section id="view-kategori" class="hidden space-y-4">
+      <!-- DATA CLIENT VIEW -->
+      <section id="view-client" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
-            <h3 class="font-bold text-slate-900 text-sm uppercase">Kategori Produk Inventaris</h3>
-            <p class="text-xs text-slate-500">Pengelompokan Jenis Komponen & Peralatan Gudang</p>
+            <h3 class="font-bold text-slate-900 text-sm uppercase">Daftar Client / Pelanggan</h3>
+            <p class="text-xs text-slate-500">Direktori Instansi & Perusahaan Penerima Barang</p>
           </div>
-          <button id="btnTambahKategori" onclick="openKategoriModal()" class="px-3.5 py-2 bg-orange-600 text-white rounded-xl text-xs font-bold shadow-md hover:bg-orange-700 flex items-center gap-1.5">
-            <i class="fa-solid fa-plus"></i> Tambah Kategori
+          <button id="btnTambahClient" onclick="openClientModal()" class="px-3.5 py-2 bg-orange-600 text-white rounded-xl text-xs font-bold shadow-md hover:bg-orange-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-plus"></i> Tambah Client
           </button>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="kategoriGrid"></div>
+        <div id="clientListContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden p-4"></div>
       </section>
 
+      <!-- SUPPLIER VIEW -->
       <section id="view-supplier" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
@@ -506,6 +514,7 @@
         <div id="supplierListContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden p-4"></div>
       </section>
 
+      <!-- STOK MASUK VIEW -->
       <section id="view-stok-masuk" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div>
@@ -527,6 +536,7 @@
         <div id="stokMasukTableContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden text-xs"></div>
       </section>
 
+      <!-- STOK KELUAR VIEW -->
       <section id="view-stok-keluar" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div>
@@ -548,6 +558,7 @@
         <div id="stokKeluarTableContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden text-xs"></div>
       </section>
 
+      <!-- DELIVERY ORDER VIEW -->
       <section id="view-delivery-order" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
@@ -565,6 +576,7 @@
         <div id="deliveryOrderTableContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden p-4"></div>
       </section>
 
+      <!-- RETUR VIEW -->
       <section id="view-retur" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
@@ -582,6 +594,7 @@
         </div>
       </section>
 
+      <!-- USERS MANAGEMENT VIEW -->
       <section id="view-users" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
@@ -607,6 +620,7 @@
         </div>
       </section>
 
+      <!-- LAPORAN STOK VIEW -->
       <section id="view-laporan" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div>
@@ -629,7 +643,7 @@
         </div>
 
         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-          <div class="max-h-[520px] overflow-y-auto custom-scrollbar overflow-x-auto">
+          <div class="max-h-[calc(100vh-240px)] min-h-[450px] overflow-y-auto custom-scrollbar overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
               <thead class="sticky top-0 z-10">
                 <tr class="bg-slate-900 text-white uppercase text-[10px] font-extrabold">
@@ -666,6 +680,7 @@
     </button>
   </div>
 
+  <!-- MODAL INVENTARIS FORM -->
   <div id="modalForm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-5 sm:p-6 my-8 relative">
       <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
@@ -824,6 +839,7 @@
     </div>
   </div>
 
+  <!-- SCANNER MODAL -->
   <div id="scannerModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-5 relative overflow-hidden">
       <div class="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -925,43 +941,54 @@
     </div>
   </div>
 
-  <!-- KATEGORI MODAL -->
-  <div id="kategoriModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <!-- CLIENT MODAL -->
+  <div id="clientModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6 relative">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-        <h3 id="modalKategoriTitle" class="font-bold text-slate-800 uppercase text-xs tracking-wider">Tambah Kategori Produk</h3>
-        <button onclick="closeKategoriModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+        <h3 id="modalClientTitle" class="font-bold text-slate-800 uppercase text-xs tracking-wider">Tambah Data Client</h3>
+        <button onclick="closeClientModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <form id="kategoriForm" onsubmit="handleKategoriSubmit(event)" class="space-y-3 text-xs">
-        <input type="hidden" id="formKategoriId">
+      <form id="clientForm" onsubmit="handleClientSubmit(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="formClientId">
 
         <div>
-          <label class="block font-bold text-slate-700 uppercase mb-1">Nama Kategori *</label>
-          <input type="text" id="formNamaKategori" required placeholder="Contoh: Network & Fiber" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
+          <label class="block font-bold text-slate-700 uppercase mb-1">Nama Perusahaan / Client *</label>
+          <input type="text" id="formNamaClient" required placeholder="Contoh: SETJEN KEMENDAGRI" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
         </div>
 
         <div>
-          <label class="block font-bold text-slate-700 uppercase mb-1">Pilih Ikon</label>
-          <select id="formIconKategori" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
-            <option value="fa-network-wired">🌐 Network (Network Wired)</option>
-            <option value="fa-plug">🔌 Electrical (Plug)</option>
-            <option value="fa-toolbox">🧰 Hardware & Tools</option>
-            <option value="fa-desktop">🖥️ Computer & Display</option>
-            <option value="fa-boxes-stacked">📦 General / Inventaris</option>
-            <option value="fa-server">🖥️ Server & Rack</option>
-            <option value="fa-shield-halved">🛡️ Safety & Security</option>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Nama Person In Charge (PIC)</label>
+          <input type="text" id="formKontakClient" placeholder="Contoh: Bpk. Ahmad (PPK)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Email</label>
+            <input type="email" id="formEmailClient" placeholder="info@kemendagri.go.id" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">No. Telepon / WA</label>
+            <input type="text" id="formTeleponClient" placeholder="021-7919888" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Alamat Kantor / Pengiriman</label>
+          <textarea id="formAlamatClient" rows="2" placeholder="Alamat lengkap..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium"></textarea>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Status Client</label>
+          <select id="formStatusClient" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-semibold">
+            <option value="Aktif">Aktif</option>
+            <option value="Non-Aktif">Non-Aktif</option>
           </select>
         </div>
 
-        <div>
-          <label class="block font-bold text-slate-700 uppercase mb-1">Deskripsi / Contoh Barang</label>
-          <textarea id="formDeskripsiKategori" rows="2" placeholder="Contoh: Kabel UTP, SFP, Converter, Router..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium"></textarea>
-        </div>
-
         <div class="pt-3 flex justify-end gap-2">
-          <button type="button" onclick="closeKategoriModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200">Batal</button>
-          <button type="submit" class="px-5 py-2 bg-orange-600 text-white rounded-xl font-bold shadow-md hover:bg-orange-700">Simpan Kategori</button>
+          <button type="button" onclick="closeClientModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200">Batal</button>
+          <button type="submit" class="px-5 py-2 bg-orange-600 text-white rounded-xl font-bold shadow-md hover:bg-orange-700">Simpan Client</button>
         </div>
       </form>
     </div>
@@ -1015,13 +1042,13 @@
     </div>
   </div>
 
+  <!-- APPLICATION LOGIC SCRIPT -->
   <script>
     let rawInventoryData = [];
     let filteredInventoryData = [];
-    let rawKategoriData = [
-      { id: 'KAT-1', nama: 'Network & Fiber', deskripsi: 'Kabel UTP, SFP, Converter, Router, Switch', icon: 'fa-network-wired' },
-      { id: 'KAT-2', nama: 'Electrical & Power', deskripsi: 'UPS, Power Strip, Adaptor, PDU', icon: 'fa-plug' },
-      { id: 'KAT-3', nama: 'Hardware & Tools', deskripsi: 'Tang Crimp, Tester Optic, Bracket, Rack', icon: 'fa-toolbox' }
+    let rawClientData = [
+      { id: 'CLI-1', nama: 'SETJEN KEMENDAGRI', kontak: 'Bpk. Ahmad (PPK)', email: 'info@kemendagri.go.id', telepon: '021-7919888', alamat: 'Jl. Medan Merdeka Utara No. 7, Jakarta Pusat', status: 'Aktif' },
+      { id: 'CLI-2', nama: 'PT Telekomunikasi Indonesia', kontak: 'Sales Telkom', email: 'corporate@telkom.co.id', telepon: '021-5215111', alamat: 'Telkom Landmark Tower, Jl. Jend. Gatot Subroto, Jakarta', status: 'Aktif' }
     ];
     let rawSupplierData = [
       { id: 'SUP-1', nama: 'PT Fiber Optic Nusantara', kontak: 'Sales FON', email: 'sales@fon.co.id', telepon: '021-5550192', status: 'Aktif' },
@@ -1077,7 +1104,7 @@
     function refreshCurrentView() {
       if (currentActiveView === 'laporan') calculateStockSummary();
       if (currentActiveView === 'users') loadUsers();
-      if (currentActiveView === 'kategori') loadKategori();
+      if (currentActiveView === 'client') loadClient();
       if (currentActiveView === 'supplier') loadSupplier();
       if (currentActiveView === 'stok-masuk') renderFilteredView('Masuk', 'stokMasukTableContainer');
       if (currentActiveView === 'stok-keluar') renderFilteredView('Keluar', 'stokKeluarTableContainer');
@@ -1125,7 +1152,7 @@
       const viewTitleMap = {
         'dashboard': 'Dashboard Utama',
         'produk': 'Data Produk Inventaris',
-        'kategori': 'Kategori Produk',
+        'client': 'Data Client / Pelanggan',
         'supplier': 'Daftar Supplier',
         'stok-masuk': 'Transaksi Stok Masuk',
         'stok-keluar': 'Transaksi Stok Keluar',
@@ -1138,7 +1165,7 @@
       const titleElem = document.getElementById('currentViewTitle');
       if (titleElem) titleElem.innerText = viewTitleMap[viewId] || 'Sistem Inventaris';
 
-      const views = ['dashboard', 'produk', 'kategori', 'supplier', 'stok-masuk', 'stok-keluar', 'delivery-order', 'retur', 'users', 'laporan'];
+      const views = ['dashboard', 'produk', 'client', 'supplier', 'stok-masuk', 'stok-keluar', 'delivery-order', 'retur', 'users', 'laporan'];
       views.forEach(v => {
         const el = document.getElementById(`view-${v}`);
         if (el) el.classList.add('hidden');
@@ -1161,13 +1188,7 @@
         toggleSidebar();
       }
 
-      if (viewId === 'laporan') calculateStockSummary();
-      if (viewId === 'users') loadUsers();
-      if (viewId === 'kategori') loadKategori();
-      if (viewId === 'supplier') loadSupplier();
-      if (viewId === 'stok-masuk') renderFilteredView('Masuk', 'stokMasukTableContainer');
-      if (viewId === 'stok-keluar') renderFilteredView('Keluar', 'stokKeluarTableContainer');
-      if (viewId === 'delivery-order') renderDeliveryOrders();
+      refreshCurrentView();
     }
 
     function handleLoginSubmit(e) {
@@ -1812,7 +1833,7 @@
       const displayData = [...data].reverse();
 
       container.innerHTML = `
-        <div class="max-h-[520px] overflow-y-auto custom-scrollbar overflow-x-auto">
+        <div class="max-h-[calc(100vh-240px)] min-h-[450px] overflow-y-auto custom-scrollbar overflow-x-auto">
           <table class="w-full text-left border-collapse text-xs">
             <thead class="sticky top-0 z-10">
               <tr class="bg-slate-900 text-white uppercase text-[10px] font-extrabold">
@@ -1897,7 +1918,7 @@
       const doList = Object.values(doGroups).reverse();
 
       container.innerHTML = `
-        <div class="max-h-[520px] overflow-y-auto custom-scrollbar overflow-x-auto">
+        <div class="max-h-[calc(100vh-240px)] min-h-[450px] overflow-y-auto custom-scrollbar overflow-x-auto">
           <table class="w-full text-left border-collapse text-xs">
             <thead class="sticky top-0 z-10">
               <tr class="bg-slate-900 text-white uppercase text-[10px] font-extrabold">
@@ -1976,7 +1997,6 @@
       }).join('');
 
       element.innerHTML = `
-        <!-- HEADER LOGO & ADDRESS BOX SECTION -->
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px;">
           <tr>
             <td style="width: 58%; vertical-align: middle;">
@@ -2003,12 +2023,9 @@
           </tr>
         </table>
 
-        <!-- SHIP TO & BILL TO STACKED (LEFT) + METADATA TABLE (RIGHT) -->
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5px;">
           <tr>
-            <!-- LEFT COLUMN: SHIP TO & BILL TO STACKED -->
             <td style="width: 58%; vertical-align: top;">
-              <!-- SHIP TO BOX -->
               <div style="border: 1px solid #0f172a; margin-bottom: 6px;">
                 <div style="padding: 4px 8px; border-bottom: 1px solid #0f172a; font-weight: bold; background-color: #f8fafc;">
                   Ship To &nbsp;&nbsp;&nbsp;: <span style="text-transform: uppercase;">${doDoc.endUser}</span>
@@ -2019,7 +2036,6 @@
                 </div>
               </div>
 
-              <!-- BILL TO BOX -->
               <div style="border: 1px solid #0f172a;">
                 <div style="padding: 4px 8px; border-bottom: 1px solid #0f172a; font-weight: bold; background-color: #f8fafc;">
                   Bill To &nbsp;&nbsp;&nbsp;&nbsp;: <span style="text-transform: uppercase;">${doDoc.endUser}</span>
@@ -2033,7 +2049,6 @@
 
             <td style="width: 2%;"></td>
 
-            <!-- RIGHT COLUMN: DELIVERY DETAILS TABLE -->
             <td style="width: 40%; vertical-align: top;">
               <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; border: 1px solid #0f172a; text-align: left;">
                 <tr style="border-bottom: 1px solid #0f172a; background-color: #f8fafc;">
@@ -2057,7 +2072,6 @@
           </tr>
         </table>
 
-        <!-- ITEMS TABLE WITH SERIAL NUMBER -->
         <table style="width: 100%; border-collapse: collapse; border: 1px solid #0f172a; margin-bottom: 12px; font-size: 9.5px;">
           <thead>
             <tr style="background-color: #ea580c; color: white; border-bottom: 1px solid #0f172a; font-weight: bold;">
@@ -2074,7 +2088,6 @@
           </tbody>
         </table>
 
-        <!-- SIGNATURES & DESCRIPTION FOOTER -->
         <table style="width: 100%; border-collapse: collapse; border: 1px solid #0f172a; font-size: 9.5px;">
           <tr>
             <td style="border-right: 1px solid #0f172a; width: 65%; vertical-align: top; padding: 0;">
@@ -2324,9 +2337,7 @@
       closeModal();
       filterData();
       updateStatsAndDashboard();
-      if (currentActiveView === 'stok-masuk') renderFilteredView('Masuk', 'stokMasukTableContainer');
-      if (currentActiveView === 'stok-keluar') renderFilteredView('Keluar', 'stokKeluarTableContainer');
-      if (currentActiveView === 'delivery-order') renderDeliveryOrders();
+      refreshCurrentView();
 
       const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
       if (isGASNative) {
@@ -2387,9 +2398,7 @@
           rawInventoryData = rawInventoryData.filter(x => x.id !== id);
           filterData();
           updateStatsAndDashboard();
-          if (currentActiveView === 'stok-masuk') renderFilteredView('Masuk', 'stokMasukTableContainer');
-          if (currentActiveView === 'stok-keluar') renderFilteredView('Keluar', 'stokKeluarTableContainer');
-          if (currentActiveView === 'delivery-order') renderDeliveryOrders();
+          refreshCurrentView();
 
           const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
           if (isGASNative) {
@@ -2896,103 +2905,135 @@
           item.customDoNumber = doNum;
           item.endUser = endUser;
           item.alamatEndUser = alamat;
+        }
+      });
 
-          const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
-          if (isGASNative) {
-            google.script.run.updateData(id, item);
-          } else if (CUSTOM_GAS_URL) {
+      closeEditDOModal();
+      renderDeliveryOrders();
+      filterData();
+      updateStatsAndDashboard();
+
+      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+      if (isGASNative) {
+        itemIds.forEach(id => {
+          const item = rawInventoryData.find(x => x.id === id);
+          if (item) google.script.run.updateData(id, item);
+        });
+      } else if (CUSTOM_GAS_URL) {
+        itemIds.forEach(id => {
+          const item = rawInventoryData.find(x => x.id === id);
+          if (item) {
             fetch(CUSTOM_GAS_URL, {
               method: 'POST',
               headers: { 'Content-Type': 'text/plain;charset=utf-8' },
               body: JSON.stringify({ action: 'update', id: id, ...item })
             }).catch(() => {});
           }
-        }
-      });
+        });
+      }
 
-      closeEditDOModal();
-      refreshCurrentView();
-      Swal.fire({ icon: 'success', title: 'Delivery Order Diperbarui!', timer: 1000, showConfirmButton: false });
+      Swal.fire({ icon: 'success', title: 'DO Berhasil diperbarui!', timer: 1000, showConfirmButton: false });
     }
 
-    function loadKategori() {
-      renderKategori(rawKategoriData);
+    function loadClient() {
+      renderClient(rawClientData);
       const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
       if (isGASNative) {
         google.script.run.withSuccessHandler((res) => {
-          if (res && res.success) { rawKategoriData = res.kategori; renderKategori(rawKategoriData); }
-        }).readKategori();
+          if (res && res.success && Array.isArray(res.client)) { rawClientData = res.client; renderClient(rawClientData); }
+        }).readClient();
       } else if (CUSTOM_GAS_URL) {
-        fetch(`${CUSTOM_GAS_URL}?action=readKategori`)
+        fetch(`${CUSTOM_GAS_URL}?action=readClient`)
           .then(r => r.json()).then(res => {
-            if (res && res.success) { rawKategoriData = res.kategori; renderKategori(rawKategoriData); }
+            if (res && res.success && Array.isArray(res.client)) { rawClientData = res.client; renderClient(rawClientData); }
           }).catch(()=>{});
       }
     }
 
-    function renderKategori(data) {
-      const container = document.getElementById('kategoriGrid');
+    function renderClient(data) {
+      const container = document.getElementById('clientListContainer');
       if (!container) return;
       if (!data || data.length === 0) {
-        container.innerHTML = `<div class="col-span-3 p-6 text-center text-slate-400 text-xs">Belum ada kategori produk.</div>`;
+        container.innerHTML = `<div class="p-6 text-center text-slate-400">Belum ada data client.</div>`;
         return;
       }
-      container.innerHTML = data.map(k => `
-        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-start gap-3">
-          <div class="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center flex-shrink-0">
-            <i class="fa-solid ${k.icon || 'fa-boxes-stacked'} text-base"></i>
-          </div>
-          <div class="flex-1">
-            <h4 class="font-bold text-slate-800 text-sm mb-0.5">${k.nama}</h4>
-            <p class="text-[11px] text-slate-500 mb-2">${k.deskripsi || '-'}</p>
-          </div>
-          <button onclick="deleteKategori('${k.id}')" class="text-slate-400 hover:text-rose-600 transition p-1"><i class="fa-solid fa-trash text-xs"></i></button>
-        </div>
-      `).join('');
+      container.innerHTML = `
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 uppercase text-[10px] font-extrabold">
+              <th class="py-3 px-4">Nama Client</th>
+              <th class="py-3 px-4">Kontak (PIC)</th>
+              <th class="py-3 px-4">Email / Telepon</th>
+              <th class="py-3 px-4">Alamat</th>
+              <th class="py-3 px-4 text-center">Status</th>
+              <th class="py-3 px-4 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+            ${data.map(c => `
+              <tr class="hover:bg-slate-50 transition">
+                <td class="py-3 px-4 font-bold text-slate-800">${c.nama}</td>
+                <td class="py-3 px-4">${c.kontak || '-'}</td>
+                <td class="py-3 px-4 text-[11px] text-slate-500">${c.email || '-'}<br>${c.telepon || '-'}</td>
+                <td class="py-3 px-4 text-[11px] text-slate-600 max-w-xs truncate">${c.alamat || '-'}</td>
+                <td class="py-3 px-4 text-center">
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${c.status === 'Aktif' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}">${c.status}</span>
+                </td>
+                <td class="py-3 px-4 text-center">
+                  <button onclick="deleteClient('${c.id}')" class="w-7 h-7 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-600 transition inline-flex items-center justify-center"><i class="fa-solid fa-trash"></i></button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
     }
 
-    function openKategoriModal() { 
-      document.getElementById('kategoriForm').reset();
-      document.getElementById('formKategoriId').value = '';
-      document.getElementById('kategoriModal').classList.remove('hidden'); 
+    function openClientModal() { 
+      document.getElementById('clientForm').reset();
+      document.getElementById('formClientId').value = '';
+      document.getElementById('clientModal').classList.remove('hidden'); 
     }
     
-    function closeKategoriModal() { document.getElementById('kategoriModal').classList.add('hidden'); }
+    function closeClientModal() { document.getElementById('clientModal').classList.add('hidden'); }
     
-    function handleKategoriSubmit(e) { 
+    function handleClientSubmit(e) { 
       e.preventDefault(); 
       const payload = {
-        id: document.getElementById('formKategoriId').value || `KAT-${Date.now()}`,
-        nama: document.getElementById('formNamaKategori').value,
-        icon: document.getElementById('formIconKategori').value,
-        deskripsi: document.getElementById('formDeskripsiKategori').value
+        id: document.getElementById('formClientId').value || `CLI-${Date.now()}`,
+        nama: document.getElementById('formNamaClient').value,
+        kontak: document.getElementById('formKontakClient').value,
+        email: document.getElementById('formEmailClient').value,
+        telepon: document.getElementById('formTeleponClient').value,
+        alamat: document.getElementById('formAlamatClient').value,
+        status: document.getElementById('formStatusClient').value
       };
       Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-      rawKategoriData.push(payload);
-      renderKategori(rawKategoriData);
-      closeKategoriModal();
+      rawClientData.push(payload);
+      renderClient(rawClientData);
+      closeClientModal();
 
       const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
       if (isGASNative) {
-        google.script.run.withSuccessHandler(() => Swal.fire({ icon: 'success', title: 'Tersimpan!', timer: 1000, showConfirmButton: false })).addKategori(payload);
+        google.script.run.withSuccessHandler(() => Swal.fire({ icon: 'success', title: 'Tersimpan!', timer: 1000, showConfirmButton: false })).addClient(payload);
       } else if (CUSTOM_GAS_URL) {
-        fetch(CUSTOM_GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'addKategori', ...payload }) })
+        fetch(CUSTOM_GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'addClient', ...payload }) })
           .then(() => Swal.fire({ icon: 'success', title: 'Tersimpan!', timer: 1000, showConfirmButton: false })).catch(()=>{});
       } else {
         Swal.fire({ icon: 'success', title: 'Tersimpan!', timer: 1000, showConfirmButton: false });
       }
     }
 
-    function deleteKategori(id) {
+    function deleteClient(id) {
       Swal.fire({
-        title: 'Hapus Kategori?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus'
+        title: 'Hapus Client?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus'
       }).then((res) => {
         if (res.isConfirmed) {
-          rawKategoriData = rawKategoriData.filter(x => x.id !== id);
-          renderKategori(rawKategoriData);
+          rawClientData = rawClientData.filter(x => x.id !== id);
+          renderClient(rawClientData);
           const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
-          if (isGASNative) google.script.run.deleteKategori(id);
-          else if (CUSTOM_GAS_URL) fetch(CUSTOM_GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteKategori', id: id }) }).catch(()=>{});
+          if (isGASNative) google.script.run.deleteClient(id);
+          else if (CUSTOM_GAS_URL) fetch(CUSTOM_GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteClient', id: id }) }).catch(()=>{});
         }
       });
     }
