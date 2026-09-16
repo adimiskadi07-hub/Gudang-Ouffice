@@ -242,7 +242,6 @@
 
     <main class="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto pb-24 sm:pb-8">
       
-      <!-- DASHBOARD VIEW -->
       <section id="view-dashboard" class="space-y-6">
         <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
           <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm motion-card-glow flex flex-col justify-between">
@@ -392,37 +391,58 @@
         </div>
       </section>
 
-      <!-- PRODUK VIEW -->
       <section id="view-produk" class="hidden space-y-4">
-        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4">
-          <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4">
-            <div class="relative flex-1">
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 space-y-3">
+          <!-- Baris 1: Search Input & Export PDF -->
+          <div class="flex flex-col sm:flex-row items-center gap-3">
+            <div class="relative flex-1 w-full">
               <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                 <i class="fa-solid fa-magnifying-glass"></i>
               </span>
-              <input type="text" id="searchInput" onkeyup="filterData()" placeholder="Cari nama barang, brand, tipe, seri, SN, lokasi, end user..." class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
-              <button onclick="openScannerModal('search')" title="Scan QR untuk Cari" class="absolute inset-y-0 right-0 px-3 text-orange-600 hover:text-orange-700">
+              <input type="text" id="searchInput" onkeyup="filterData()" placeholder="Cari nama barang, brand, tipe, seri, SN, lokasi, end user..." class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium transition">
+              <button onclick="openScannerModal('search')" title="Scan QR untuk Cari" class="absolute inset-y-0 right-0 px-3 text-orange-600 hover:text-orange-700 transition">
                 <i class="fa-solid fa-qrcode text-base"></i>
               </button>
             </div>
+            <button onclick="exportDataProdukPDF()" class="w-full sm:w-auto px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-sm transition flex items-center justify-center gap-2 flex-shrink-0">
+              <i class="fa-solid fa-file-pdf text-rose-400"></i>
+              <span>Export PDF</span>
+            </button>
+          </div>
 
-            <div class="flex flex-wrap items-center gap-2">
-              <select id="filterJenis" onchange="filterData()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
-                <option value="">Semua Transaksi</option>
-                <option value="Masuk">↓ Masuk</option>
-                <option value="Keluar">↑ Keluar</option>
-              </select>
+          <!-- Baris 2: Filter Rentang Waktu & Dropdown Filter Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-2 border-t border-slate-100">
+            <!-- Filter Tanggal Dari -->
+            <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs">
+              <span class="text-slate-500 font-bold text-[11px] whitespace-nowrap flex items-center gap-1.5"><i class="fa-regular fa-calendar-days text-orange-600"></i> Dari:</span>
+              <input type="date" id="filterStartDate" onchange="filterData()" class="w-full bg-transparent text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer">
+            </div>
 
-              <select id="filterKondisi" onchange="filterData()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
-                <option value="">Semua Kondisi</option>
-                <option value="Berfungsi">Berfungsi</option>
-                <option value="Tidak Berfungsi">Tidak Berfungsi</option>
-              </select>
-
-              <button onclick="exportToPDF()" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-sm transition flex items-center gap-1.5">
-                <i class="fa-solid fa-file-pdf text-rose-400"></i>
-                <span>Export PDF</span>
+            <!-- Filter Tanggal Sampai -->
+            <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs">
+              <span class="text-slate-500 font-bold text-[11px] whitespace-nowrap flex items-center gap-1.5"><i class="fa-regular fa-calendar-days text-orange-600"></i> s/d:</span>
+              <input type="date" id="filterEndDate" onchange="filterData()" class="w-full bg-transparent text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer">
+              <button onclick="clearDateFilter()" title="Reset Tanggal" class="text-slate-400 hover:text-rose-600 text-xs font-bold transition px-1">
+                <i class="fa-solid fa-circle-xmark"></i>
               </button>
+            </div>
+
+            <!-- Filter Jenis Transaksi -->
+            <div>
+              <select id="filterJenis" onchange="filterData()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                <option value="">Semua Jenis Transaksi</option>
+                <option value="Masuk">↓ Masuk (Penerimaan)</option>
+                <option value="Keluar">↑ Keluar (Pengeluaran)</option>
+              </select>
+            </div>
+
+            <!-- Filter Status Kondisi -->
+            <div>
+              <select id="filterKondisi" onchange="filterData()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                <option value="">Semua Status Kondisi</option>
+                <option value="Berfungsi">Berfungsi (Baik)</option>
+                <option value="Tidak Berfungsi">Tidak Berfungsi (Rusak)</option>
+              </select>
             </div>
           </div>
         </div>
@@ -460,7 +480,6 @@
         </div>
       </section>
 
-      <!-- KATEGORI VIEW -->
       <section id="view-kategori" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
@@ -475,7 +494,6 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="kategoriGrid"></div>
       </section>
 
-      <!-- SUPPLIER VIEW -->
       <section id="view-supplier" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
@@ -490,7 +508,6 @@
         <div id="supplierListContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden p-4"></div>
       </section>
 
-      <!-- STOK MASUK VIEW -->
       <section id="view-stok-masuk" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div>
@@ -512,7 +529,6 @@
         <div id="stokMasukTableContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden text-xs"></div>
       </section>
 
-      <!-- STOK KELUAR VIEW -->
       <section id="view-stok-keluar" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div>
@@ -534,7 +550,6 @@
         <div id="stokKeluarTableContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden text-xs"></div>
       </section>
 
-      <!-- DELIVERY ORDER VIEW -->
       <section id="view-delivery-order" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
@@ -552,7 +567,6 @@
         <div id="deliveryOrderTableContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden p-4"></div>
       </section>
 
-      <!-- RETUR VIEW -->
       <section id="view-retur" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
@@ -570,7 +584,6 @@
         </div>
       </section>
 
-      <!-- USERS VIEW -->
       <section id="view-users" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
@@ -596,7 +609,6 @@
         </div>
       </section>
 
-      <!-- LAPORAN VIEW -->
       <section id="view-laporan" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div>
@@ -656,7 +668,6 @@
     </button>
   </div>
 
-  <!-- INVENTORY FORM MODAL -->
   <div id="modalForm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-5 sm:p-6 my-8 relative">
       <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
@@ -707,11 +718,12 @@
           <div class="col-span-2">
             <label class="block font-bold text-slate-700 uppercase mb-1">Serial Number (SN)</label>
             <div class="relative">
-              <input type="text" id="formSerialNumber" placeholder="Masukkan SN / Scan" class="w-full pl-3 pr-9 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono text-xs">
+              <input type="text" id="formSerialNumber" onkeydown="handleSnKeyDown(event)" oninput="updateSnBadge()" placeholder="Ketik SN lalu tekan Spasi / Enter..." class="w-full pl-3 pr-9 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono text-xs">
               <button type="button" onclick="openScannerModal('form')" title="Scan QR SN" class="absolute inset-y-0 right-0 px-2.5 text-orange-600 hover:text-orange-700">
                 <i class="fa-solid fa-qrcode text-sm"></i>
               </button>
             </div>
+            <div id="snHelperBadge" class="mt-2 flex flex-wrap gap-1.5 items-center hidden"></div>
           </div>
           <div>
             <label class="block font-bold text-slate-700 uppercase mb-1">Lokasi</label>
@@ -727,7 +739,7 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-slate-700 uppercase mb-1">Quantity *</label>
-            <input type="number" id="formQuantity" required min="1" value="1" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono font-bold">
+            <input type="number" id="formQuantity" oninput="updateSnBadge()" required min="1" value="1" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono font-bold">
           </div>
           <div>
             <label class="block font-bold text-slate-700 uppercase mb-1">Satuan</label>
@@ -814,7 +826,6 @@
     </div>
   </div>
 
-  <!-- QR SCANNER MODAL -->
   <div id="scannerModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-5 relative overflow-hidden">
       <div class="flex items-center justify-between pb-3 border-b border-slate-100">
@@ -1006,7 +1017,6 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT LOGIC -->
   <script>
     let rawInventoryData = [];
     let filteredInventoryData = [];
@@ -1726,6 +1736,8 @@
       const q = qInput ? qInput.value.toLowerCase() : '';
       const jenis = document.getElementById('filterJenis').value;
       const kondisi = document.getElementById('filterKondisi').value;
+      const startDate = document.getElementById('filterStartDate') ? document.getElementById('filterStartDate').value : '';
+      const endDate = document.getElementById('filterEndDate') ? document.getElementById('filterEndDate').value : '';
 
       filteredInventoryData = rawInventoryData.filter((item) => {
         const matchQ = !q || (
@@ -1742,10 +1754,21 @@
         const matchJenis = !jenis || item.jenisTransaksi === jenis;
         const matchKondisi = !kondisi || item.statusKondisi === kondisi;
 
-        return matchQ && matchJenis && matchKondisi;
+        const itemDate = formatDateOnly(item.tanggal);
+        let matchDate = true;
+        if (startDate && itemDate < startDate) matchDate = false;
+        if (endDate && itemDate > endDate) matchDate = false;
+
+        return matchQ && matchJenis && matchKondisi && matchDate;
       });
 
       renderTable(filteredInventoryData);
+    }
+
+    function clearDateFilter() {
+      if (document.getElementById('filterStartDate')) document.getElementById('filterStartDate').value = '';
+      if (document.getElementById('filterEndDate')) document.getElementById('filterEndDate').value = '';
+      filterData();
     }
 
     function renderFilteredView(jenis, containerId) {
@@ -1924,31 +1947,32 @@
       if (!doDoc) return;
 
       const element = document.createElement('div');
-      element.style.padding = '15px';
+      element.style.padding = '12px';
       element.style.fontFamily = 'Inter, sans-serif';
-      element.style.fontSize = '11px';
+      element.style.fontSize = '10px';
       element.style.color = '#0f172a';
       element.style.backgroundColor = '#ffffff';
 
       const itemsRows = doDoc.items.map((item, idx) => {
         const tipeSeri = [item.brand, item.tipe, item.seri].filter(Boolean).join(' ');
         const descText = `${item.namaBarang}${tipeSeri ? ' ' + tipeSeri : ''}`;
-        const snText = item.serialNumber ? `<br><span style="font-family: monospace; font-size: 10px; color: #475569;">SN : ${item.serialNumber}</span>` : '';
+        const snText = item.serialNumber || '-';
         
         return `
           <tr style="border-bottom: 1px solid #cbd5e1;">
-            <td style="padding: 8px 6px; text-align: center; border-right: 1px solid #cbd5e1;">${idx + 1}</td>
-            <td style="padding: 8px 8px; font-weight: bold; border-right: 1px solid #cbd5e1;">${item.namaBarang}</td>
-            <td style="padding: 8px 8px; border-right: 1px solid #cbd5e1;">${descText}${snText}</td>
-            <td style="padding: 8px 6px; text-align: center; font-family: monospace; font-weight: bold; border-right: 1px solid #cbd5e1;">${item.quantity}</td>
-            <td style="padding: 8px 6px; text-align: center;">${item.satuan || 'Unit'}</td>
+            <td style="padding: 6px 4px; text-align: center; border-right: 1px solid #cbd5e1;">${idx + 1}</td>
+            <td style="padding: 6px 8px; font-weight: bold; border-right: 1px solid #cbd5e1;">${item.namaBarang}</td>
+            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1;">${descText}</td>
+            <td style="padding: 6px 4px; text-align: center; font-family: monospace; border-right: 1px solid #cbd5e1;">${snText}</td>
+            <td style="padding: 6px 4px; text-align: center; font-family: monospace; font-weight: bold; border-right: 1px solid #cbd5e1;">${item.quantity}</td>
+            <td style="padding: 6px 4px; text-align: center;">${item.satuan || 'Unit'}</td>
           </tr>
         `;
       }).join('');
 
       element.innerHTML = `
-        <!-- TOP CORPORATE HEADER WITH LOGO OUTSIDE & ADDRESS INSIDE DASHED BOX -->
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+        <!-- HEADER LOGO & TITLE SECTION -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px;">
           <tr>
             <td style="width: 58%; vertical-align: top;">
               <table style="width: 100%; border-collapse: collapse;">
@@ -1956,8 +1980,8 @@
                   <td style="width: 160px; vertical-align: top; padding-right: 10px;">
                     <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="150" style="display: block; max-width: 145px; height: auto;">
                   </td>
-                  <td style="vertical-align: top; border: 1px dashed #64748b; padding: 10px;">
-                    <div style="font-size: 10px; line-height: 1.4; color: #1e293b;">
+                  <td style="vertical-align: top; border: 1px dashed #64748b; padding: 8px;">
+                    <div style="font-size: 9.5px; line-height: 1.4; color: #1e293b;">
                       <strong>PT. CITRA SARI KENCANA</strong><br>
                       Jl. Rambutan No. 4, Manggarai Selatan<br>
                       Tebet, Jakarta Selatan 12860<br>
@@ -1968,70 +1992,76 @@
               </table>
             </td>
             <td style="width: 2%;"></td>
-            <td style="width: 40%; vertical-align: middle; text-align: right;">
-              <div style="font-size: 24px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px;">Delivery Order</div>
+            <td style="width: 40%; vertical-align: top; text-align: center;">
+              <div style="font-size: 35px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px; margin-bottom: 8px;">Delivery Order</div>
             </td>
           </tr>
         </table>
 
-        <!-- SHIP TO & BILL TO BOXES -->
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 10px;">
+        <!-- SHIP TO & BILL TO STACKED (LEFT) + METADATA TABLE (RIGHT) -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5px;">
           <tr>
-            <td style="width: 58%; vertical-align: top; border: 1px solid #0f172a; padding: 0;">
-              <div style="padding: 5px 8px; border-bottom: 1px solid #0f172a; font-weight: bold;">
-                Ship To &nbsp;&nbsp;&nbsp;: <span style="text-transform: uppercase;">${doDoc.endUser}</span>
+            <!-- LEFT COLUMN: SHIP TO & BILL TO STACKED -->
+            <td style="width: 58%; vertical-align: top;">
+              <!-- SHIP TO BOX -->
+              <div style="border: 1px solid #0f172a; margin-bottom: 6px;">
+                <div style="padding: 4px 8px; border-bottom: 1px solid #0f172a; font-weight: bold; background-color: #f8fafc;">
+                  Ship To &nbsp;&nbsp;&nbsp;: <span style="text-transform: uppercase;">${doDoc.endUser}</span>
+                </div>
+                <div style="padding: 6px 8px; line-height: 1.4; min-height: 36px;">
+                  ${doDoc.alamatEndUser || '-'}<br>
+                  Phone. 021 -
+                </div>
               </div>
-              <div style="padding: 8px; line-height: 1.4; min-height: 50px;">
-                ${doDoc.alamatEndUser || '-'}<br>
-                Phone. 021 -
-              </div>
-            </td>
-            <td style="width: 2%;"></td>
-            <td style="width: 40%; vertical-align: top; border: 1px solid #0f172a; padding: 0;">
-              <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
-                <tr style="border-bottom: 1px solid #0f172a;">
-                  <td style="padding: 5px 8px; border-right: 1px solid #0f172a; width: 50%;">Delivery Date</td>
-                  <td style="padding: 5px 8px;">Delivery No.</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #0f172a; font-family: monospace; font-weight: bold;">
-                  <td style="padding: 5px 8px; border-right: 1px solid #0f172a; text-align: center;">${doDoc.tanggal}</td>
-                  <td style="padding: 5px 8px; text-align: center;">${doDoc.id}</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #0f172a;">
-                  <td style="padding: 5px 8px; border-right: 1px solid #0f172a;">Ship Via</td>
-                  <td style="padding: 5px 8px;">PO Number</td>
-                </tr>
-                <tr>
-                  <td style="padding: 5px 8px; border-right: 1px solid #0f172a; font-weight: bold;">OPS</td>
-                  <td style="padding: 5px 8px;">-</td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td colspan="3" style="padding-top: 8px;">
-              <div style="border: 1px solid #0f172a; padding: 0;">
-                <div style="padding: 5px 8px; border-bottom: 1px solid #0f172a; font-weight: bold;">
+
+              <!-- BILL TO BOX (EXACT SAME WIDTH & LENGTH AS SHIP TO) -->
+              <div style="border: 1px solid #0f172a;">
+                <div style="padding: 4px 8px; border-bottom: 1px solid #0f172a; font-weight: bold; background-color: #f8fafc;">
                   Bill To &nbsp;&nbsp;&nbsp;&nbsp;: <span style="text-transform: uppercase;">${doDoc.endUser}</span>
                 </div>
-                <div style="padding: 8px; line-height: 1.4;">
+                <div style="padding: 6px 8px; line-height: 1.4; min-height: 36px;">
                   ${doDoc.alamatEndUser || '-'}<br>
                   Phone. 021 -
                 </div>
               </div>
             </td>
+
+            <td style="width: 2%;"></td>
+
+            <!-- RIGHT COLUMN: DELIVERY DETAILS TABLE -->
+            <td style="width: 40%; vertical-align: top;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; border: 1px solid #0f172a; text-align: left;">
+                <tr style="border-bottom: 1px solid #0f172a; background-color: #f8fafc;">
+                  <td style="padding: 4px 6px; border-right: 1px solid #0f172a; width: 50%; font-weight: bold;">Delivery Date</td>
+                  <td style="padding: 4px 6px; font-weight: bold;">Delivery No.</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #0f172a; font-family: monospace; font-weight: bold;">
+                  <td style="padding: 5px 6px; border-right: 1px solid #0f172a; text-align: center;">${doDoc.tanggal}</td>
+                  <td style="padding: 5px 6px; text-align: center;">${doDoc.id}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #0f172a; background-color: #f8fafc;">
+                  <td style="padding: 4px 6px; border-right: 1px solid #0f172a; font-weight: bold;">Ship Via</td>
+                  <td style="padding: 4px 6px; font-weight: bold;">PO Number</td>
+                </tr>
+                <tr>
+                  <td style="padding: 5px 6px; border-right: 1px solid #0f172a; text-align: center; font-weight: bold;">OPS</td>
+                  <td style="padding: 5px 6px; text-align: center;">-</td>
+                </tr>
+              </table>
+            </td>
           </tr>
         </table>
 
         <!-- ITEMS TABLE -->
-        <table style="width: 100%; border-collapse: collapse; border: 1px solid #0f172a; margin-bottom: 15px; font-size: 10px;">
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid #0f172a; margin-bottom: 12px; font-size: 9.5px;">
           <thead>
-            <tr style="background-color: #f97316; color: white; border-bottom: 1px solid #0f172a; font-weight: bold;">
-              <th style="padding: 6px; width: 35px; text-align: center; border-right: 1px solid #cbd5e1;">NO</th>
-              <th style="padding: 6px; width: 130px; text-align: left; border-right: 1px solid #cbd5e1;">ITEM</th>
-              <th style="padding: 6px; text-align: left; border-right: 1px solid #cbd5e1;">ITEM DESCRIPTION</th>
-              <th style="padding: 6px; width: 50px; text-align: center; border-right: 1px solid #cbd5e1;">QTY</th>
-              <th style="padding: 6px; width: 60px; text-align: center;">UNIT</th>
+            <tr style="background-color: #ea580c; color: white; border-bottom: 1px solid #0f172a; font-weight: bold;">
+              <th style="padding: 5px; width: 30px; text-align: center; border-right: 1px solid #cbd5e1;">NO</th>
+              <th style="padding: 5px; width: 110px; text-align: center; border-right: 1px solid #cbd5e1;">ITEM</th>
+              <th style="padding: 5px; text-align: center; border-right: 1px solid #cbd5e1;">ITEM DESCRIPTION</th>
+              <th style="padding: 5px; width: 110px; text-align: center; border-right: 1px solid #cbd5e1;">SERIAL NUMBER</th>
+              <th style="padding: 5px; width: 45px; text-align: center; border-right: 1px solid #cbd5e1;">QTY</th>
+              <th style="padding: 5px; width: 55px; text-align: center;">UNIT</th>
             </tr>
           </thead>
           <tbody>
@@ -2039,34 +2069,34 @@
           </tbody>
         </table>
 
-        <!-- FOOTER SIGNATURES & DESCRIPTION -->
-        <table style="width: 100%; border-collapse: collapse; border: 1px solid #0f172a; font-size: 10px;">
+        <!-- SIGNATURES & DESCRIPTION FOOTER -->
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid #0f172a; font-size: 9.5px;">
           <tr>
             <td style="border-right: 1px solid #0f172a; width: 65%; vertical-align: top; padding: 0;">
               <table style="width: 100%; border-collapse: collapse; text-align: center;">
-                <tr style="border-bottom: 1px solid #0f172a;">
-                  <td style="padding: 6px; border-right: 1px solid #0f172a; width: 25%;">Prepared By</td>
-                  <td style="padding: 6px; border-right: 1px solid #0f172a; width: 25%;">Approved By</td>
-                  <td style="padding: 6px; border-right: 1px solid #0f172a; width: 25%;">Shipped By</td>
-                  <td style="padding: 6px; width: 25%;">Received By</td>
+                <tr style="border-bottom: 1px solid #0f172a; background-color: #f8fafc; font-weight: bold;">
+                  <td style="padding: 5px; border-right: 1px solid #0f172a; width: 25%;">Prepared By</td>
+                  <td style="padding: 5px; border-right: 1px solid #0f172a; width: 25%;">Approved By</td>
+                  <td style="padding: 5px; border-right: 1px solid #0f172a; width: 25%;">Shipped By</td>
+                  <td style="padding: 5px; width: 25%;">Received By</td>
                 </tr>
                 <tr>
-                  <td style="height: 55px; border-right: 1px solid #0f172a;"></td>
-                  <td style="height: 55px; border-right: 1px solid #0f172a;"></td>
-                  <td style="height: 55px; border-right: 1px solid #0f172a;"></td>
-                  <td style="height: 55px;"></td>
+                  <td style="height: 50px; border-right: 1px solid #0f172a;"></td>
+                  <td style="height: 50px; border-right: 1px solid #0f172a;"></td>
+                  <td style="height: 50px; border-right: 1px solid #0f172a;"></td>
+                  <td style="height: 50px;"></td>
                 </tr>
                 <tr style="border-top: 1px solid #0f172a; background-color: #f8fafc;">
-                  <td style="padding: 5px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
-                  <td style="padding: 5px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
-                  <td style="padding: 5px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
-                  <td style="padding: 5px; text-align: left;">Date:</td>
+                  <td style="padding: 4px 5px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
+                  <td style="padding: 4px 5px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
+                  <td style="padding: 4px 5px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
+                  <td style="padding: 4px 5px; text-align: left;">Date:</td>
                 </tr>
               </table>
             </td>
             <td style="vertical-align: top; padding: 6px 8px;">
               <strong>Description :</strong><br>
-              <span style="color: #475569; font-size: 9.5px;">Proyek: ${doDoc.peruntukan || '-'}</span>
+              <span style="color: #475569; font-size: 9px; line-height: 1.3;">Proyek: ${doDoc.peruntukan || '-'}</span>
             </td>
           </tr>
         </table>
@@ -2083,200 +2113,89 @@
       html2pdf().set(opt).from(element).save();
     }
 
-    function openEditDOModal(doId, currentEndUser, currentAlamat, itemIds) {
-      const modal = document.getElementById('editDOModal');
-      const inputIds = document.getElementById('editDOItemIds');
-      const inputNumber = document.getElementById('editDONumber');
-      const inputEndUser = document.getElementById('editDOEndUser');
-      const inputAlamat = document.getElementById('editDOAlamat');
-
-      if (inputIds) inputIds.value = JSON.stringify(itemIds);
-      if (inputNumber) inputNumber.value = doId || '';
-      if (inputEndUser) inputEndUser.value = currentEndUser || '';
-      if (inputAlamat) inputAlamat.value = currentAlamat || '';
-      if (modal) modal.classList.remove('hidden');
-    }
-
-    function closeEditDOModal() {
-      const modal = document.getElementById('editDOModal');
-      if (modal) modal.classList.add('hidden');
-    }
-
-    function handleEditDOSubmit(e) {
-      e.preventDefault();
-      const itemIdsRaw = document.getElementById('editDOItemIds').value;
-      const newDoNumber = document.getElementById('editDONumber').value.trim();
-      const newEndUser = document.getElementById('editDOEndUser').value.trim();
-      const newAlamat = document.getElementById('editDOAlamat').value.trim();
-
-      let itemIds = [];
-      try { itemIds = JSON.parse(itemIdsRaw); } catch (err) { itemIds = []; }
-
-      if (!itemIds || itemIds.length === 0) {
-        closeEditDOModal();
-        return;
+    function exportDataProdukPDF() {
+      const startDate = document.getElementById('filterStartDate') ? document.getElementById('filterStartDate').value : '';
+      const endDate = document.getElementById('filterEndDate') ? document.getElementById('filterEndDate').value : '';
+      const jenis = document.getElementById('filterJenis') ? document.getElementById('filterJenis').value : '';
+      const kondisi = document.getElementById('filterKondisi') ? document.getElementById('filterKondisi').value : '';
+      
+      let periodeText = 'Semua Periode';
+      if (startDate && endDate) {
+        periodeText = `${startDate} s/d ${endDate}`;
+      } else if (startDate) {
+        periodeText = `Mulai ${startDate}`;
+      } else if (endDate) {
+        periodeText = `Sampai ${endDate}`;
       }
 
-      Swal.fire({ title: 'Memperbarui DO...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-      let updatedCount = 0;
-      itemIds.forEach(id => {
-        const item = rawInventoryData.find(x => x.id === id);
-        if (item) {
-          item.endUser = newEndUser;
-          item.customDoNumber = newDoNumber;
-          item.alamatEndUser = newAlamat;
-          updatedCount++;
-        }
-      });
-
-      closeEditDOModal();
-      renderDeliveryOrders();
-      Swal.fire({ icon: 'success', title: 'DO Diperbarui!', text: `${updatedCount} item transaksi berhasil disesuaikan.`, timer: 1200, showConfirmButton: false });
-    }
-
-    function calculateStockSummary() {
-      const searchInput = document.getElementById('searchLaporanStok');
-      const q = searchInput ? searchInput.value.toLowerCase().trim() : '';
-
-      const summaryMap = {};
-
-      rawInventoryData.forEach(item => {
-        const key = `${(item.namaBarang || '').trim()}_${(item.brand || '').trim()}_${(item.tipe || '').trim()}_${(item.seri || '').trim()}`;
-        if (!summaryMap[key]) {
-          summaryMap[key] = {
-            namaBarang: item.namaBarang || '-',
-            brand: item.brand || '-',
-            tipeSeri: [item.tipe, item.seri].filter(Boolean).join(' / ') || '-',
-            totalMasuk: 0,
-            totalKeluar: 0,
-            sisaStok: 0,
-            satuan: item.satuan || 'Pcs'
-          };
-        }
-
-        const qty = Number(item.quantity) || 0;
-        if (item.jenisTransaksi === 'Masuk') summaryMap[key].totalMasuk += qty;
-        if (item.jenisTransaksi === 'Keluar') summaryMap[key].totalKeluar += qty;
-        summaryMap[key].sisaStok = summaryMap[key].totalMasuk - summaryMap[key].totalKeluar;
-      });
-
-      let list = Object.values(summaryMap);
-
-      if (q) {
-        list = list.filter(item => {
-          return (
-            item.namaBarang.toLowerCase().includes(q) ||
-            item.brand.toLowerCase().includes(q) ||
-            item.tipeSeri.toLowerCase().includes(q)
-          );
-        });
-      }
-
-      list.sort((a, b) => {
-        const compNama = (a.namaBarang || '').localeCompare(b.namaBarang || '', 'id', { numeric: true, sensitivity: 'base' });
-        if (compNama !== 0) return compNama;
-        return (a.tipeSeri || '').localeCompare(b.tipeSeri || '', 'id', { numeric: true, sensitivity: 'base' });
-      });
-
-      const tbody = document.getElementById('laporanViewStokTableBody');
-      if (!tbody) return;
-
-      if (list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">Tidak ada data rekap stok.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = list.map(item => `
-        <tr class="hover:bg-slate-50 transition">
-          <td class="py-3 px-3 font-bold text-slate-800">${item.namaBarang}</td>
-          <td class="py-3 px-3 text-slate-600">${item.brand}</td>
-          <td class="py-3 px-3 font-semibold text-slate-600">${item.tipeSeri}</td>
-          <td class="py-3 px-3 text-center font-bold font-mono text-emerald-600">+${item.totalMasuk} ${item.satuan}</td>
-          <td class="py-3 px-3 text-center font-bold font-mono text-sky-600">-${item.totalKeluar} ${item.satuan}</td>
-          <td class="py-3 px-3 text-center font-bold font-mono ${item.sisaStok < 5 ? 'text-rose-600' : 'text-slate-900'}">${item.sisaStok} ${item.satuan}</td>
-        </tr>
-      `).join('');
-    }
-
-    function exportStokToPDF() {
       const element = document.createElement('div');
-      element.style.padding = '20px';
+      element.style.padding = '15px';
       element.style.fontFamily = 'Inter, sans-serif';
 
-      const summaryMap = {};
-      rawInventoryData.forEach(item => {
-        const key = `${(item.namaBarang || '').trim()}_${(item.brand || '').trim()}_${(item.tipe || '').trim()}_${(item.seri || '').trim()}`;
-        if (!summaryMap[key]) {
-          summaryMap[key] = {
-            namaBarang: item.namaBarang || '-',
-            brand: item.brand || '-',
-            tipeSeri: [item.tipe, item.seri].filter(Boolean).join(' / ') || '-',
-            totalMasuk: 0,
-            totalKeluar: 0,
-            sisaStok: 0,
-            satuan: item.satuan || 'Pcs'
-          };
-        }
-        const qty = Number(item.quantity) || 0;
-        if (item.jenisTransaksi === 'Masuk') summaryMap[key].totalMasuk += qty;
-        if (item.jenisTransaksi === 'Keluar') summaryMap[key].totalKeluar += qty;
-        summaryMap[key].sisaStok = summaryMap[key].totalMasuk - summaryMap[key].totalKeluar;
-      });
-
-      const list = Object.values(summaryMap);
-      list.sort((a, b) => {
-        const compNama = (a.namaBarang || '').localeCompare(b.namaBarang || '', 'id', { numeric: true, sensitivity: 'base' });
-        if (compNama !== 0) return compNama;
-        return (a.tipeSeri || '').localeCompare(b.tipeSeri || '', 'id', { numeric: true, sensitivity: 'base' });
-      });
+      const dataToExport = [...filteredInventoryData].reverse();
 
       element.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 12px; margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 10px; margin-bottom: 12px;">
           <div>
-            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="150" style="display: block; max-width: 150px; height: auto;">
-            <p style="font-size: 10px; color: #64748b; margin: 4px 0 0 0; text-transform: uppercase; font-weight: bold;">Ouffice.co.id Inventory Management System</p>
+            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="130" style="display: block; max-width: 130px; height: auto;">
+            <p style="font-size: 9px; color: #64748b; margin: 3px 0 0 0; text-transform: uppercase; font-weight: bold;">Inventory Management System</p>
           </div>
           <div style="text-align: right;">
-            <h1 style="font-size: 16px; font-weight: 900; color: #0f172a; margin: 0;">LAPORAN REKAPITULASI STOK GUDANG</h1>
-            <p style="font-size: 10px; color: #64748b; margin: 2px 0 0 0;">Tanggal: ${new Date().toISOString().split('T')[0]}</p>
+            <h1 style="font-size: 14px; font-weight: 900; color: #0f172a; margin: 0; text-transform: uppercase;">LAPORAN TRANSAKSI DATA PRODUK</h1>
+            <p style="font-size: 9.5px; color: #475569; margin: 2px 0 0 0;">Periode: <strong>${periodeText}</strong> | Transaksi: <strong>${jenis || 'Semua'}</strong> | Kondisi: <strong>${kondisi || 'Semua'}</strong></p>
+            <p style="font-size: 8.5px; color: #94a3b8; margin: 1px 0 0 0;">Total Item: ${dataToExport.length} Transaksi | Cetak: ${new Date().toISOString().split('T')[0]}</p>
           </div>
         </div>
-        <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
           <thead>
             <tr style="background-color: #0f172a; color: white;">
-              <th style="padding: 6px; text-align: left;">Nama Barang</th>
-              <th style="padding: 6px; text-align: left;">Brand</th>
-              <th style="padding: 6px; text-align: left;">Tipe / Seri</th>
-              <th style="padding: 6px; text-align: center;">Masuk</th>
-              <th style="padding: 6px; text-align: center;">Keluar</th>
-              <th style="padding: 6px; text-align: center;">Sisa Stok</th>
+              <th style="padding: 5px 4px; text-align: center; width: 25px;">No</th>
+              <th style="padding: 5px 4px; text-align: left; width: 65px;">Tanggal</th>
+              <th style="padding: 5px 4px; text-align: center; width: 45px;">Jenis</th>
+              <th style="padding: 5px 6px; text-align: left;">Nama Barang</th>
+              <th style="padding: 5px 6px; text-align: left;">Brand / Tipe / Seri</th>
+              <th style="padding: 5px 4px; text-align: center; width: 85px;">Serial Number</th>
+              <th style="padding: 5px 4px; text-align: center; width: 45px;">Qty</th>
+              <th style="padding: 5px 6px; text-align: left;">Supplier / End User</th>
+              <th style="padding: 5px 4px; text-align: center; width: 60px;">Status</th>
             </tr>
           </thead>
           <tbody>
-            ${list.map(item => `
-              <tr style="border-bottom: 1px solid #e2e8f0;">
-                <td style="padding: 6px;"><strong>${item.namaBarang}</strong></td>
-                <td style="padding: 6px;">${item.brand}</td>
-                <td style="padding: 6px;">${item.tipeSeri}</td>
-                <td style="padding: 6px; text-align: center;">${item.totalMasuk}</td>
-                <td style="padding: 6px; text-align: center;">${item.totalKeluar}</td>
-                <td style="padding: 6px; text-align: center; font-weight: bold;">${item.sisaStok} ${item.satuan}</td>
-              </tr>
-            `).join('')}
+            ${dataToExport.map((item, idx) => {
+              const tipeSeri = [item.brand, item.tipe, item.seri].filter(Boolean).join(' / ');
+              const isMasuk = item.jenisTransaksi === 'Masuk';
+              const dateOnly = formatDateOnly(item.tanggal);
+              return `
+                <tr style="border-bottom: 1px solid #e2e8f0; ${idx % 2 === 1 ? 'background-color: #f8fafc;' : ''}">
+                  <td style="padding: 4px; text-align: center; font-family: monospace;">${idx + 1}</td>
+                  <td style="padding: 4px; font-family: monospace;">${dateOnly}</td>
+                  <td style="padding: 4px; text-align: center; font-weight: bold; color: ${isMasuk ? '#047857' : '#0284c7'};">${isMasuk ? '↓ Masuk' : '↑ Keluar'}</td>
+                  <td style="padding: 4px 6px; font-weight: bold; color: #1e293b;">${item.namaBarang || '-'}</td>
+                  <td style="padding: 4px 6px; color: #475569;">${tipeSeri || '-'}</td>
+                  <td style="padding: 4px; text-align: center; font-family: monospace; font-size: 8px;">${item.serialNumber || '-'}</td>
+                  <td style="padding: 4px; text-align: center; font-weight: bold; font-family: monospace;">${item.quantity || 0} ${item.satuan || ''}</td>
+                  <td style="padding: 4px 6px; color: #334155;">${item.endUser || '-'}</td>
+                  <td style="padding: 4px; text-align: center; font-weight: bold; color: ${item.statusKondisi === 'Berfungsi' ? '#059669' : '#e11d48'};">${item.statusKondisi || '-'}</td>
+                </tr>
+              `;
+            }).join('')}
           </tbody>
         </table>
       `;
 
       const opt = {
-        margin: 10,
-        filename: `Laporan_Stok_Gudang_${new Date().toISOString().split('T')[0]}.pdf`,
+        margin: 6,
+        filename: `Laporan_Data_Produk_${periodeText.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
       };
 
       html2pdf().set(opt).from(element).save();
+    }
+
+    function exportToPDF() {
+      exportDataProdukPDF();
     }
 
     function exportToPDF() {
@@ -2307,6 +2226,7 @@
       document.getElementById('modalTitle').innerText = 'Tambah Data Inventaris';
       document.getElementById('formTanggal').value = new Date().toISOString().split('T')[0];
       updateFormLabels();
+      updateSnBadge();
       document.getElementById('modalForm').classList.remove('hidden');
     }
 
@@ -2321,6 +2241,55 @@
 
     function closeModal() {
       document.getElementById('modalForm').classList.add('hidden');
+    }
+
+    function handleSnKeyDown(e) {
+      const input = e.target;
+      if (e.key === ' ' || e.key === 'Enter') {
+        const val = input.value.trim();
+        if (val.length > 0 && !val.endsWith(',')) {
+          e.preventDefault();
+          const tokens = val.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
+          input.value = tokens.join(', ') + ', ';
+          updateSnBadge();
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+        }
+      }
+    }
+
+    function updateSnBadge() {
+      const input = document.getElementById('formSerialNumber');
+      const qtyInput = document.getElementById('formQuantity');
+      const qty = Number(qtyInput ? qtyInput.value : 1) || 1;
+      const badge = document.getElementById('snHelperBadge');
+      if (!input || !badge) return;
+
+      const rawVal = input.value;
+      const snList = rawVal.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
+
+      if (snList.length > 0) {
+        badge.classList.remove('hidden');
+        let chipsHtml = snList.map((sn, idx) => `
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold ${idx < qty ? 'bg-orange-100 text-orange-800 border border-orange-200' : 'bg-rose-100 text-rose-800 border border-rose-200'}">
+            <i class="fa-solid fa-barcode text-[9px]"></i> #${idx + 1}: ${sn}
+          </span>
+        `).join('');
+
+        const statusColor = snList.length === qty 
+          ? 'text-emerald-700 bg-emerald-50 border-emerald-200' 
+          : (snList.length > qty ? 'text-rose-700 bg-rose-50 border-rose-200' : 'text-amber-700 bg-amber-50 border-amber-200');
+
+        chipsHtml += `
+          <span class="ml-auto px-2 py-0.5 rounded-md text-[10px] font-bold border ${statusColor}">
+            ${snList.length} / ${qty} SN Terisi
+          </span>
+        `;
+        badge.innerHTML = chipsHtml;
+      } else {
+        badge.classList.add('hidden');
+        badge.innerHTML = '';
+      }
     }
 
     function handleFormSubmit(e) {
@@ -2362,6 +2331,21 @@
       if (currentActiveView === 'stok-keluar') renderFilteredView('Keluar', 'stokKeluarTableContainer');
       if (currentActiveView === 'delivery-order') renderDeliveryOrders();
 
+      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+      if (isGASNative) {
+        if (id) {
+          google.script.run.updateData(id, payload);
+        } else {
+          google.script.run.addData(payload);
+        }
+      } else if (CUSTOM_GAS_URL) {
+        fetch(CUSTOM_GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: id ? 'update' : 'add', id: id, ...payload })
+        }).catch(() => {});
+      }
+
       Swal.fire({ icon: 'success', title: 'Data Tersimpan!', timer: 1000, showConfirmButton: false });
     }
 
@@ -2390,6 +2374,7 @@
       document.getElementById('formDeskripsi').value = item.deskripsi || '';
 
       updateFormLabels();
+      updateSnBadge();
     }
 
     function deleteData(id) {
@@ -2408,32 +2393,39 @@
           if (currentActiveView === 'stok-masuk') renderFilteredView('Masuk', 'stokMasukTableContainer');
           if (currentActiveView === 'stok-keluar') renderFilteredView('Keluar', 'stokKeluarTableContainer');
           if (currentActiveView === 'delivery-order') renderDeliveryOrders();
-          Swal.fire({ icon: 'success', title: 'Terhapus!', timer: 1000, showConfirmButton: false });
+
+          const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+          if (isGASNative) {
+            google.script.run.deleteData(id);
+          } else if (CUSTOM_GAS_URL) {
+            fetch(CUSTOM_GAS_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: 'delete', id: id })
+            }).catch(() => {});
+          }
+          Swal.fire({ icon: 'success', title: 'Data Terhapus!', timer: 1000, showConfirmButton: false });
         }
       });
     }
 
     async function openScannerModal(target) {
-      activeScanTarget = target;
+      activeScanTarget = target || 'search';
       const modal = document.getElementById('scannerModal');
       const statusText = document.getElementById('scannerStatusText');
       if (modal) modal.classList.remove('hidden');
-      if (statusText) statusText.innerText = "Mengakses kamera HP...";
 
-      if (html5QrScannerInstance) {
-        try {
-          await html5QrScannerInstance.stop();
-        } catch (e) {}
-        html5QrScannerInstance = null;
-      }
+      if (statusText) statusText.innerText = 'Menginisialisasi kamera...';
 
       try {
-        html5QrScannerInstance = new Html5Qrcode("qrReader");
-        const config = { fps: 15, qrbox: { width: 220, height: 220 } };
+        if (html5QrScannerInstance) {
+          try { await html5QrScannerInstance.stop(); } catch(e){}
+        }
 
+        html5QrScannerInstance = new Html5Qrcode("qrReader");
         await html5QrScannerInstance.start(
           { facingMode: "environment" },
-          config,
+          { fps: 10, qrbox: { width: 220, height: 220 } },
           (decodedText) => {
             if (activeScanTarget === 'search') {
               const searchInput = document.getElementById('searchInput');
@@ -2441,17 +2433,20 @@
               filterData();
             } else if (activeScanTarget === 'form') {
               const snInput = document.getElementById('formSerialNumber');
-              if (snInput) snInput.value = decodedText;
+              if (snInput) {
+                const currentVal = snInput.value.trim();
+                snInput.value = currentVal ? `${currentVal}, ${decodedText}` : decodedText;
+                updateSnBadge();
+              }
             }
             closeScannerModal();
-            Swal.fire({ icon: 'success', title: 'QR / Barcode Terbaca!', text: decodedText, timer: 1200, showConfirmButton: false });
+            Swal.fire({ icon: 'success', title: 'QR Terbaca!', text: decodedText, timer: 1200, showConfirmButton: false });
           },
-          (errorMessage) => {}
+          () => {}
         );
-        if (statusText) statusText.innerText = "Arahkan kamera ke QR Code / Barcode";
+        if (statusText) statusText.innerText = 'Arahkan kamera ke QR Code / Barcode';
       } catch (err) {
-        console.error("Camera access error:", err);
-        if (statusText) statusText.innerText = "Kamera tidak dapat diakses (Periksa izin lokasi/kamera atau gunakan tombol Foto/Upload).";
+        if (statusText) statusText.innerText = 'Gagal mengakses kamera. Gunakan opsi foto/upload.';
       }
     }
 
@@ -2491,7 +2486,11 @@
             filterData();
           } else if (activeScanTarget === 'form') {
             const snInput = document.getElementById('formSerialNumber');
-            if (snInput) snInput.value = decodedText;
+            if (snInput) {
+              const currentVal = snInput.value.trim();
+              snInput.value = currentVal ? `${currentVal}, ${decodedText}` : decodedText;
+              updateSnBadge();
+            }
           }
           closeScannerModal();
           Swal.fire({ icon: 'success', title: 'QR Terbaca!', text: decodedText, timer: 1200, showConfirmButton: false });
