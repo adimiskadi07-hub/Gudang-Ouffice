@@ -24,8 +24,6 @@ Who has access (Siapa saja yang memiliki akses): Anyone (Siapa Saja)
 
 Klik Deploy. Berikan otorisasi izin jika diminta oleh Google.
 
-Salin Web App Executable URL yang dihasilkan (contoh: https://script.google.com/macros/s/AKfycb.../exec).
-
 📦 LANGKAH 2: Setup Repository di GitHub
 
 Buat repository baru di GitHub (misalnya: ouffice-inventaris-gudang).
