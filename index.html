@@ -38,7 +38,6 @@
       border-radius: 4px;
     }
 
-    /* MOTION GRAPHICS & ANIMATIONS */
     @keyframes scanLaser {
       0% { top: 0%; opacity: 0.2; }
       50% { opacity: 1; }
@@ -71,7 +70,6 @@
       border-radius: 0.75rem;
     }
 
-    /* Sidebar Transitions */
     .sidebar-transition {
       transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
     }
@@ -638,9 +636,9 @@
                   <th class="py-3.5 px-3">Nama Barang</th>
                   <th class="py-3.5 px-3">Brand</th>
                   <th class="py-3.5 px-3">Tipe / Seri</th>
-                  <th class="py-3.5 px-3 text-center">Total Masuk</th>
-                  <th class="py-3.5 px-3 text-center">Total Keluar</th>
-                  <th class="py-3.5 px-3 text-center">Sisa Stok</th>
+                  <th class="py-3.5 px-3 text-right">Total Masuk</th>
+                  <th class="py-3.5 px-3 text-right">Total Keluar</th>
+                  <th class="py-3.5 px-3 text-right">Sisa Stok</th>
                 </tr>
               </thead>
               <tbody id="laporanViewStokTableBody" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
@@ -1020,8 +1018,15 @@
   <script>
     let rawInventoryData = [];
     let filteredInventoryData = [];
-    let rawKategoriData = [];
-    let rawSupplierData = [];
+    let rawKategoriData = [
+      { id: 'KAT-1', nama: 'Network & Fiber', deskripsi: 'Kabel UTP, SFP, Converter, Router, Switch', icon: 'fa-network-wired' },
+      { id: 'KAT-2', nama: 'Electrical & Power', deskripsi: 'UPS, Power Strip, Adaptor, PDU', icon: 'fa-plug' },
+      { id: 'KAT-3', nama: 'Hardware & Tools', deskripsi: 'Tang Crimp, Tester Optic, Bracket, Rack', icon: 'fa-toolbox' }
+    ];
+    let rawSupplierData = [
+      { id: 'SUP-1', nama: 'PT Fiber Optic Nusantara', kontak: 'Sales FON', email: 'sales@fon.co.id', telepon: '021-5550192', status: 'Aktif' },
+      { id: 'SUP-2', nama: 'CV Network Solusindo', kontak: 'Hendra', email: 'info@netsolusindo.com', telepon: '0812-9988-7766', status: 'Aktif' }
+    ];
     let html5QrScannerInstance = null;
     let activeScanTarget = 'search';
     let currentUser = null;
@@ -1948,7 +1953,7 @@
 
       const element = document.createElement('div');
       element.style.padding = '12px';
-      element.style.fontFamily = 'Inter, sans-serif';
+      element.style.fontFamily = 'Arial, sans-serif';
       element.style.fontSize = '10px';
       element.style.color = '#0f172a';
       element.style.backgroundColor = '#ffffff';
@@ -1971,18 +1976,18 @@
       }).join('');
 
       element.innerHTML = `
-        <!-- HEADER LOGO & TITLE SECTION -->
+        <!-- HEADER LOGO & ADDRESS BOX SECTION -->
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px;">
           <tr>
-            <td style="width: 58%; vertical-align: top;">
+            <td style="width: 58%; vertical-align: middle;">
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                  <td style="width: 160px; vertical-align: top; padding-right: 10px;">
-                    <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="150" style="display: block; max-width: 145px; height: auto;">
+                  <td style="width: 145px; vertical-align: middle; padding-right: 8px;">
+                    <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="135" style="height: 68px; object-fit: contain; display: block;">
                   </td>
-                  <td style="vertical-align: top; border: 1px dashed #64748b; padding: 8px;">
-                    <div style="font-size: 9.5px; line-height: 1.4; color: #1e293b;">
-                      <strong>PT. CITRA SARI KENCANA</strong><br>
+                  <td style="vertical-align: middle; border: 1px dashed #64748b; padding: 6px 8px; height: 68px;">
+                    <div style="font-size: 9.5px; line-height: 1.35; color: #1e293b; font-family: 'Trebuchet MS', sans-serif;">
+                      <strong style="font-size: 12px; font-weight: 900; letter-spacing: 0.3px; display: inline-block; margin-bottom: 2px; color: #0f172a;">PT. CITRA SARI KENCANA</strong><br>
                       Jl. Rambutan No. 4, Manggarai Selatan<br>
                       Tebet, Jakarta Selatan 12860<br>
                       Phone. [021] 835 1388
@@ -1992,8 +1997,8 @@
               </table>
             </td>
             <td style="width: 2%;"></td>
-            <td style="width: 40%; vertical-align: top; text-align: center;">
-              <div style="font-size: 30px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px; margin-bottom: 8px;">Delivery Order</div>
+            <td style="width: 40%; vertical-align: middle; text-align: right;">
+              <div style="font-size: 30px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px; font-family: 'Trebuchet MS', sans-serif;">Delivery Order</div>
             </td>
           </tr>
         </table>
@@ -2014,7 +2019,7 @@
                 </div>
               </div>
 
-              <!-- BILL TO BOX (EXACT SAME WIDTH & LENGTH AS SHIP TO) -->
+              <!-- BILL TO BOX -->
               <div style="border: 1px solid #0f172a;">
                 <div style="padding: 4px 8px; border-bottom: 1px solid #0f172a; font-weight: bold; background-color: #f8fafc;">
                   Bill To &nbsp;&nbsp;&nbsp;&nbsp;: <span style="text-transform: uppercase;">${doDoc.endUser}</span>
@@ -2052,7 +2057,7 @@
           </tr>
         </table>
 
-        <!-- ITEMS TABLE -->
+        <!-- ITEMS TABLE WITH SERIAL NUMBER -->
         <table style="width: 100%; border-collapse: collapse; border: 1px solid #0f172a; margin-bottom: 12px; font-size: 9.5px;">
           <thead>
             <tr style="background-color: #ea580c; color: white; border-bottom: 1px solid #0f172a; font-weight: bold;">
@@ -2074,7 +2079,7 @@
           <tr>
             <td style="border-right: 1px solid #0f172a; width: 65%; vertical-align: top; padding: 0;">
               <table style="width: 100%; border-collapse: collapse; text-align: center;">
-                <tr style="border-bottom: 1px solid #0f172a; background-color: #f8fafc; font-weight: bold;">
+                <tr style="border-bottom: 1px solid #0f172a; background-color: #f8fafc; font-weight: bold; font-family: 'Trebuchet MS', sans-serif;">
                   <td style="padding: 5px; border-right: 1px solid #0f172a; width: 25%;">Prepared By</td>
                   <td style="padding: 5px; border-right: 1px solid #0f172a; width: 25%;">Approved By</td>
                   <td style="padding: 5px; border-right: 1px solid #0f172a; width: 25%;">Shipped By</td>
@@ -2086,7 +2091,7 @@
                   <td style="height: 50px; border-right: 1px solid #0f172a;"></td>
                   <td style="height: 50px;"></td>
                 </tr>
-                <tr style="border-top: 1px solid #0f172a; background-color: #f8fafc;">
+                <tr style="border-top: 1px solid #0f172a; background-color: #f8fafc; font-family: 'Trebuchet MS', sans-serif;">
                   <td style="padding: 4px 5px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
                   <td style="padding: 4px 5px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
                   <td style="padding: 4px 5px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
@@ -2192,14 +2197,6 @@
       };
 
       html2pdf().set(opt).from(element).save();
-    }
-
-    function exportToPDF() {
-      exportDataProdukPDF();
-    }
-
-    function exportToPDF() {
-      exportStokToPDF();
     }
 
     function updateFormLabels() {
@@ -2754,19 +2751,17 @@
       tbody.innerHTML = items.map(item => {
         const sisa = item.masuk - item.keluar;
         const tipeSeri = [item.tipe, item.seri].filter(Boolean).join(' / ') || '-';
-        const sisaBadgeClass = sisa < 5 ? 'text-rose-600 bg-rose-50 border-rose-200' : 'text-emerald-600 bg-emerald-50 border-emerald-200';
+        const sisaTextClass = sisa < 5 ? 'text-rose-600 font-bold' : 'text-emerald-600 font-bold';
 
         return `
           <tr class="hover:bg-slate-50 transition">
             <td class="py-3 px-3 font-bold text-slate-800">${item.nama}</td>
             <td class="py-3 px-3 text-slate-600">${item.brand}</td>
             <td class="py-3 px-3 font-semibold text-slate-600">${tipeSeri}</td>
-            <td class="py-3 px-3 text-center font-bold font-mono text-emerald-600">${item.masuk} ${item.satuan}</td>
-            <td class="py-3 px-3 text-center font-bold font-mono text-sky-600">${item.keluar} ${item.satuan}</td>
-            <td class="py-3 px-3 text-center">
-              <span class="px-2.5 py-1 rounded-lg border font-mono font-bold text-xs ${sisaBadgeClass}">
-                ${sisa} ${item.satuan}
-              </span>
+            <td class="py-3 px-3 text-right font-bold font-mono text-emerald-600">${item.masuk} ${item.satuan}</td>
+            <td class="py-3 px-3 text-right font-bold font-mono text-sky-600">${item.keluar} ${item.satuan}</td>
+            <td class="py-3 px-3 text-right font-mono ${sisaTextClass}">
+              ${sisa} ${item.satuan}
             </td>
           </tr>
         `;
@@ -2819,7 +2814,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 10px; margin-bottom: 12px;">
           <div>
             <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="130" style="display: block; max-width: 130px; height: auto;">
-            <p style="font-size: 9px; color: #64748b; margin: 3px 0 0 0; text-transform: uppercase; font-weight: bold;">Ouffice.co.id Inventory Management System</p>
+            <p style="font-size: 9px; color: #64748b; margin: 3px 0 0 0; text-transform: uppercase; font-weight: bold;">Inventory Management System</p>
           </div>
           <div style="text-align: right;">
             <h1 style="font-size: 14px; font-weight: 900; color: #0f172a; margin: 0; text-transform: uppercase;">LAPORAN REKAPITULASI STOK GUDANG</h1>
@@ -2833,9 +2828,9 @@
               <th style="padding: 5px; text-align: left;">Nama Barang</th>
               <th style="padding: 5px; text-align: left;">Brand</th>
               <th style="padding: 5px; text-align: left;">Tipe / Seri</th>
-              <th style="padding: 5px; text-align: center; width: 70px;">Total Masuk</th>
-              <th style="padding: 5px; text-align: center; width: 70px;">Total Keluar</th>
-              <th style="padding: 5px; text-align: center; width: 70px;">Sisa Stok</th>
+              <th style="padding: 5px; text-align: right; width: 70px;">Total Masuk</th>
+              <th style="padding: 5px; text-align: right; width: 70px;">Total Keluar</th>
+              <th style="padding: 5px; text-align: right; width: 70px;">Sisa Stok</th>
             </tr>
           </thead>
           <tbody>
@@ -2848,9 +2843,9 @@
                   <td style="padding: 5px; font-weight: bold; color: #1e293b;">${item.nama}</td>
                   <td style="padding: 5px; color: #475569;">${item.brand}</td>
                   <td style="padding: 5px; color: #475569;">${tipeSeri}</td>
-                  <td style="padding: 5px; text-align: center; font-weight: bold; color: #047857; font-family: monospace;">${item.masuk} ${item.satuan}</td>
-                  <td style="padding: 5px; text-align: center; font-weight: bold; color: #0284c7; font-family: monospace;">${item.keluar} ${item.satuan}</td>
-                  <td style="padding: 5px; text-align: center; font-weight: bold; color: ${sisa < 5 ? '#e11d48' : '#059669'}; font-family: monospace;">${sisa} ${item.satuan}</td>
+                  <td style="padding: 5px; text-align: right; font-weight: bold; color: #047857; font-family: monospace;">${item.masuk} ${item.satuan}</td>
+                  <td style="padding: 5px; text-align: right; font-weight: bold; color: #0284c7; font-family: monospace;">${item.keluar} ${item.satuan}</td>
+                  <td style="padding: 5px; text-align: right; font-weight: bold; color: ${sisa < 5 ? '#e11d48' : '#059669'}; font-family: monospace;">${sisa} ${item.satuan}</td>
                 </tr>
               `;
             }).join('')}
@@ -2916,18 +2911,191 @@
       });
 
       closeEditDOModal();
-      renderDeliveryOrders();
+      refreshCurrentView();
       Swal.fire({ icon: 'success', title: 'Delivery Order Diperbarui!', timer: 1000, showConfirmButton: false });
     }
 
-    function loadKategori() {}
-    function openKategoriModal() { document.getElementById('kategoriModal').classList.remove('hidden'); }
+    function loadKategori() {
+      renderKategori(rawKategoriData);
+      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+      if (isGASNative) {
+        google.script.run.withSuccessHandler((res) => {
+          if (res && res.success) { rawKategoriData = res.kategori; renderKategori(rawKategoriData); }
+        }).readKategori();
+      } else if (CUSTOM_GAS_URL) {
+        fetch(`${CUSTOM_GAS_URL}?action=readKategori`)
+          .then(r => r.json()).then(res => {
+            if (res && res.success) { rawKategoriData = res.kategori; renderKategori(rawKategoriData); }
+          }).catch(()=>{});
+      }
+    }
+
+    function renderKategori(data) {
+      const container = document.getElementById('kategoriGrid');
+      if (!container) return;
+      if (!data || data.length === 0) {
+        container.innerHTML = `<div class="col-span-3 p-6 text-center text-slate-400 text-xs">Belum ada kategori produk.</div>`;
+        return;
+      }
+      container.innerHTML = data.map(k => `
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-start gap-3">
+          <div class="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center flex-shrink-0">
+            <i class="fa-solid ${k.icon || 'fa-boxes-stacked'} text-base"></i>
+          </div>
+          <div class="flex-1">
+            <h4 class="font-bold text-slate-800 text-sm mb-0.5">${k.nama}</h4>
+            <p class="text-[11px] text-slate-500 mb-2">${k.deskripsi || '-'}</p>
+          </div>
+          <button onclick="deleteKategori('${k.id}')" class="text-slate-400 hover:text-rose-600 transition p-1"><i class="fa-solid fa-trash text-xs"></i></button>
+        </div>
+      `).join('');
+    }
+
+    function openKategoriModal() { 
+      document.getElementById('kategoriForm').reset();
+      document.getElementById('formKategoriId').value = '';
+      document.getElementById('kategoriModal').classList.remove('hidden'); 
+    }
+    
     function closeKategoriModal() { document.getElementById('kategoriModal').classList.add('hidden'); }
-    function handleKategoriSubmit(e) { e.preventDefault(); closeKategoriModal(); }
-    function loadSupplier() {}
-    function openSupplierModal() { document.getElementById('supplierModal').classList.remove('hidden'); }
+    
+    function handleKategoriSubmit(e) { 
+      e.preventDefault(); 
+      const payload = {
+        id: document.getElementById('formKategoriId').value || `KAT-${Date.now()}`,
+        nama: document.getElementById('formNamaKategori').value,
+        icon: document.getElementById('formIconKategori').value,
+        deskripsi: document.getElementById('formDeskripsiKategori').value
+      };
+      Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      rawKategoriData.push(payload);
+      renderKategori(rawKategoriData);
+      closeKategoriModal();
+
+      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+      if (isGASNative) {
+        google.script.run.withSuccessHandler(() => Swal.fire({ icon: 'success', title: 'Tersimpan!', timer: 1000, showConfirmButton: false })).addKategori(payload);
+      } else if (CUSTOM_GAS_URL) {
+        fetch(CUSTOM_GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'addKategori', ...payload }) })
+          .then(() => Swal.fire({ icon: 'success', title: 'Tersimpan!', timer: 1000, showConfirmButton: false })).catch(()=>{});
+      } else {
+        Swal.fire({ icon: 'success', title: 'Tersimpan!', timer: 1000, showConfirmButton: false });
+      }
+    }
+
+    function deleteKategori(id) {
+      Swal.fire({
+        title: 'Hapus Kategori?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus'
+      }).then((res) => {
+        if (res.isConfirmed) {
+          rawKategoriData = rawKategoriData.filter(x => x.id !== id);
+          renderKategori(rawKategoriData);
+          const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+          if (isGASNative) google.script.run.deleteKategori(id);
+          else if (CUSTOM_GAS_URL) fetch(CUSTOM_GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteKategori', id: id }) }).catch(()=>{});
+        }
+      });
+    }
+
+    function loadSupplier() {
+      renderSupplier(rawSupplierData);
+      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+      if (isGASNative) {
+        google.script.run.withSuccessHandler((res) => {
+          if (res && res.success) { rawSupplierData = res.supplier; renderSupplier(rawSupplierData); }
+        }).readSupplier();
+      } else if (CUSTOM_GAS_URL) {
+        fetch(`${CUSTOM_GAS_URL}?action=readSupplier`)
+          .then(r => r.json()).then(res => {
+            if (res && res.success) { rawSupplierData = res.supplier; renderSupplier(rawSupplierData); }
+          }).catch(()=>{});
+      }
+    }
+
+    function renderSupplier(data) {
+      const container = document.getElementById('supplierListContainer');
+      if (!container) return;
+      if (!data || data.length === 0) {
+        container.innerHTML = `<div class="p-6 text-center text-slate-400">Belum ada data supplier.</div>`;
+        return;
+      }
+      container.innerHTML = `
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 uppercase text-[10px] font-extrabold">
+              <th class="py-3 px-4">Nama Supplier</th>
+              <th class="py-3 px-4">Kontak (PIC)</th>
+              <th class="py-3 px-4">Email / Telepon</th>
+              <th class="py-3 px-4 text-center">Status</th>
+              <th class="py-3 px-4 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+            ${data.map(s => `
+              <tr class="hover:bg-slate-50 transition">
+                <td class="py-3 px-4 font-bold text-slate-800">${s.nama}</td>
+                <td class="py-3 px-4">${s.kontak || '-'}</td>
+                <td class="py-3 px-4 text-[11px] text-slate-500">${s.email || '-'}<br>${s.telepon || '-'}</td>
+                <td class="py-3 px-4 text-center">
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${s.status === 'Aktif' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}">${s.status}</span>
+                </td>
+                <td class="py-3 px-4 text-center">
+                  <button onclick="deleteSupplier('${s.id}')" class="w-7 h-7 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-600 transition inline-flex items-center justify-center"><i class="fa-solid fa-trash"></i></button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function openSupplierModal() { 
+      document.getElementById('supplierForm').reset();
+      document.getElementById('formSupplierId').value = '';
+      document.getElementById('supplierModal').classList.remove('hidden'); 
+    }
+    
     function closeSupplierModal() { document.getElementById('supplierModal').classList.add('hidden'); }
-    function handleSupplierSubmit(e) { e.preventDefault(); closeSupplierModal(); }
+    
+    function handleSupplierSubmit(e) { 
+      e.preventDefault(); 
+      const payload = {
+        id: document.getElementById('formSupplierId').value || `SUP-${Date.now()}`,
+        nama: document.getElementById('formNamaSupplier').value,
+        kontak: document.getElementById('formKontakSupplier').value,
+        email: document.getElementById('formEmailSupplier').value,
+        telepon: document.getElementById('formTeleponSupplier').value,
+        status: document.getElementById('formStatusSupplier').value
+      };
+      Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      rawSupplierData.push(payload);
+      renderSupplier(rawSupplierData);
+      closeSupplierModal();
+
+      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+      if (isGASNative) {
+        google.script.run.withSuccessHandler(() => Swal.fire({ icon: 'success', title: 'Tersimpan!', timer: 1000, showConfirmButton: false })).addSupplier(payload);
+      } else if (CUSTOM_GAS_URL) {
+        fetch(CUSTOM_GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'addSupplier', ...payload }) })
+          .then(() => Swal.fire({ icon: 'success', title: 'Tersimpan!', timer: 1000, showConfirmButton: false })).catch(()=>{});
+      } else {
+        Swal.fire({ icon: 'success', title: 'Tersimpan!', timer: 1000, showConfirmButton: false });
+      }
+    }
+
+    function deleteSupplier(id) {
+      Swal.fire({
+        title: 'Hapus Supplier?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus'
+      }).then((res) => {
+        if (res.isConfirmed) {
+          rawSupplierData = rawSupplierData.filter(x => x.id !== id);
+          renderSupplier(rawSupplierData);
+          const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+          if (isGASNative) google.script.run.deleteSupplier(id);
+          else if (CUSTOM_GAS_URL) fetch(CUSTOM_GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteSupplier', id: id }) }).catch(()=>{});
+        }
+      });
+    }
   </script>
 </body>
 </html>
