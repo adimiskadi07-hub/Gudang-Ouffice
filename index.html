@@ -1993,7 +1993,7 @@
             </td>
             <td style="width: 2%;"></td>
             <td style="width: 40%; vertical-align: top; text-align: center;">
-              <div style="font-size: 35px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px; margin-bottom: 8px;">Delivery Order</div>
+              <div style="font-size: 30px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px; margin-bottom: 8px;">Delivery Order</div>
             </td>
           </tr>
         </table>
@@ -2689,6 +2689,235 @@
           }
         }
       });
+    }
+
+    function calculateStockSummary() {
+      const tbody = document.getElementById('laporanViewStokTableBody');
+      if (!tbody) return;
+
+      const qInput = document.getElementById('searchLaporanStok');
+      const q = qInput ? qInput.value.toLowerCase().trim() : '';
+
+      const summaryMap = {};
+
+      rawInventoryData.forEach(item => {
+        const nama = (item.namaBarang || '').trim();
+        const brand = (item.brand || '').trim();
+        const tipe = (item.tipe || '').trim();
+        const seri = (item.seri || '').trim();
+        const key = `${nama.toLowerCase()}___${brand.toLowerCase()}___${tipe.toLowerCase()}___${seri.toLowerCase()}`;
+
+        if (!summaryMap[key]) {
+          summaryMap[key] = {
+            nama: nama || '-',
+            brand: brand || '-',
+            tipe: tipe || '',
+            seri: seri || '',
+            masuk: 0,
+            keluar: 0,
+            satuan: item.satuan || 'Pcs'
+          };
+        }
+
+        const qty = Number(item.quantity) || 0;
+        if (item.jenisTransaksi === 'Masuk') {
+          summaryMap[key].masuk += qty;
+        } else if (item.jenisTransaksi === 'Keluar') {
+          summaryMap[key].keluar += qty;
+        }
+      });
+
+      let items = Object.values(summaryMap);
+
+      if (q) {
+        items = items.filter(i => 
+          i.nama.toLowerCase().includes(q) ||
+          i.brand.toLowerCase().includes(q) ||
+          i.tipe.toLowerCase().includes(q) ||
+          i.seri.toLowerCase().includes(q)
+        );
+      }
+
+      items.sort((a, b) => {
+        const compNama = a.nama.localeCompare(b.nama, undefined, { numeric: true, sensitivity: 'base' });
+        if (compNama !== 0) return compNama;
+        const tipeSeriA = `${a.tipe} ${a.seri}`.trim();
+        const tipeSeriB = `${b.tipe} ${b.seri}`.trim();
+        return tipeSeriA.localeCompare(tipeSeriB, undefined, { numeric: true, sensitivity: 'base' });
+      });
+
+      if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400 font-medium">Tidak ada data rekap stok.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = items.map(item => {
+        const sisa = item.masuk - item.keluar;
+        const tipeSeri = [item.tipe, item.seri].filter(Boolean).join(' / ') || '-';
+        const sisaBadgeClass = sisa < 5 ? 'text-rose-600 bg-rose-50 border-rose-200' : 'text-emerald-600 bg-emerald-50 border-emerald-200';
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="py-3 px-3 font-bold text-slate-800">${item.nama}</td>
+            <td class="py-3 px-3 text-slate-600">${item.brand}</td>
+            <td class="py-3 px-3 font-semibold text-slate-600">${tipeSeri}</td>
+            <td class="py-3 px-3 text-center font-bold font-mono text-emerald-600">${item.masuk} ${item.satuan}</td>
+            <td class="py-3 px-3 text-center font-bold font-mono text-sky-600">${item.keluar} ${item.satuan}</td>
+            <td class="py-3 px-3 text-center">
+              <span class="px-2.5 py-1 rounded-lg border font-mono font-bold text-xs ${sisaBadgeClass}">
+                ${sisa} ${item.satuan}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function exportStokToPDF() {
+      const summaryMap = {};
+      rawInventoryData.forEach(item => {
+        const nama = (item.namaBarang || '').trim();
+        const brand = (item.brand || '').trim();
+        const tipe = (item.tipe || '').trim();
+        const seri = (item.seri || '').trim();
+        const key = `${nama.toLowerCase()}___${brand.toLowerCase()}___${tipe.toLowerCase()}___${seri.toLowerCase()}`;
+
+        if (!summaryMap[key]) {
+          summaryMap[key] = {
+            nama: nama || '-',
+            brand: brand || '-',
+            tipe: tipe || '',
+            seri: seri || '',
+            masuk: 0,
+            keluar: 0,
+            satuan: item.satuan || 'Pcs'
+          };
+        }
+
+        const qty = Number(item.quantity) || 0;
+        if (item.jenisTransaksi === 'Masuk') {
+          summaryMap[key].masuk += qty;
+        } else if (item.jenisTransaksi === 'Keluar') {
+          summaryMap[key].keluar += qty;
+        }
+      });
+
+      let items = Object.values(summaryMap);
+      items.sort((a, b) => {
+        const compNama = a.nama.localeCompare(b.nama, undefined, { numeric: true, sensitivity: 'base' });
+        if (compNama !== 0) return compNama;
+        const tipeSeriA = `${a.tipe} ${a.seri}`.trim();
+        const tipeSeriB = `${b.tipe} ${b.seri}`.trim();
+        return tipeSeriA.localeCompare(tipeSeriB, undefined, { numeric: true, sensitivity: 'base' });
+      });
+
+      const element = document.createElement('div');
+      element.style.padding = '15px';
+      element.style.fontFamily = 'Inter, sans-serif';
+
+      element.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 10px; margin-bottom: 12px;">
+          <div>
+            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="130" style="display: block; max-width: 130px; height: auto;">
+            <p style="font-size: 9px; color: #64748b; margin: 3px 0 0 0; text-transform: uppercase; font-weight: bold;">Ouffice.co.id Inventory Management System</p>
+          </div>
+          <div style="text-align: right;">
+            <h1 style="font-size: 14px; font-weight: 900; color: #0f172a; margin: 0; text-transform: uppercase;">LAPORAN REKAPITULASI STOK GUDANG</h1>
+            <p style="font-size: 8.5px; color: #94a3b8; margin: 2px 0 0 0;">Tanggal Cetak: ${new Date().toISOString().split('T')[0]}</p>
+          </div>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
+          <thead>
+            <tr style="background-color: #0f172a; color: white;">
+              <th style="padding: 5px; text-align: center; width: 30px;">No</th>
+              <th style="padding: 5px; text-align: left;">Nama Barang</th>
+              <th style="padding: 5px; text-align: left;">Brand</th>
+              <th style="padding: 5px; text-align: left;">Tipe / Seri</th>
+              <th style="padding: 5px; text-align: center; width: 70px;">Total Masuk</th>
+              <th style="padding: 5px; text-align: center; width: 70px;">Total Keluar</th>
+              <th style="padding: 5px; text-align: center; width: 70px;">Sisa Stok</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.map((item, idx) => {
+              const sisa = item.masuk - item.keluar;
+              const tipeSeri = [item.tipe, item.seri].filter(Boolean).join(' / ') || '-';
+              return `
+                <tr style="border-bottom: 1px solid #e2e8f0; ${idx % 2 === 1 ? 'background-color: #f8fafc;' : ''}">
+                  <td style="padding: 5px; text-align: center; font-family: monospace;">${idx + 1}</td>
+                  <td style="padding: 5px; font-weight: bold; color: #1e293b;">${item.nama}</td>
+                  <td style="padding: 5px; color: #475569;">${item.brand}</td>
+                  <td style="padding: 5px; color: #475569;">${tipeSeri}</td>
+                  <td style="padding: 5px; text-align: center; font-weight: bold; color: #047857; font-family: monospace;">${item.masuk} ${item.satuan}</td>
+                  <td style="padding: 5px; text-align: center; font-weight: bold; color: #0284c7; font-family: monospace;">${item.keluar} ${item.satuan}</td>
+                  <td style="padding: 5px; text-align: center; font-weight: bold; color: ${sisa < 5 ? '#e11d48' : '#059669'}; font-family: monospace;">${sisa} ${item.satuan}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+
+      const opt = {
+        margin: 8,
+        filename: `Laporan_Rekap_Stok_${new Date().toISOString().split('T')[0]}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save();
+    }
+
+    function openEditDOModal(doNumber, endUser, alamat, itemIds) {
+      document.getElementById('editDONumber').value = doNumber || '';
+      document.getElementById('editDOEndUser').value = endUser || '';
+      document.getElementById('editDOAlamat').value = alamat || '';
+      document.getElementById('editDOItemIds').value = JSON.stringify(itemIds || []);
+      document.getElementById('editDOModal').classList.remove('hidden');
+    }
+
+    function closeEditDOModal() {
+      document.getElementById('editDOModal').classList.add('hidden');
+    }
+
+    function handleEditDOSubmit(e) {
+      e.preventDefault();
+      const doNum = document.getElementById('editDONumber').value.trim();
+      const endUser = document.getElementById('editDOEndUser').value.trim();
+      const alamat = document.getElementById('editDOAlamat').value.trim();
+      let itemIds = [];
+      try {
+        itemIds = JSON.parse(document.getElementById('editDOItemIds').value);
+      } catch(err) {}
+
+      if (!doNum || itemIds.length === 0) return;
+
+      Swal.fire({ title: 'Memperbarui Delivery Order...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+      itemIds.forEach(id => {
+        const item = rawInventoryData.find(x => x.id === id);
+        if (item) {
+          item.customDoNumber = doNum;
+          item.endUser = endUser;
+          item.alamatEndUser = alamat;
+
+          const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+          if (isGASNative) {
+            google.script.run.updateData(id, item);
+          } else if (CUSTOM_GAS_URL) {
+            fetch(CUSTOM_GAS_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: 'update', id: id, ...item })
+            }).catch(() => {});
+          }
+        }
+      });
+
+      closeEditDOModal();
+      renderDeliveryOrders();
+      Swal.fire({ icon: 'success', title: 'Delivery Order Diperbarui!', timer: 1000, showConfirmButton: false });
     }
 
     function loadKategori() {}
