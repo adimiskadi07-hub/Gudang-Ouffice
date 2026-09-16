@@ -1979,6 +1979,7 @@
                 <th class="py-3.5 px-3">Penerima / End User</th>
                 <th class="py-3.5 px-3">Alamat Pengiriman</th>
                 <th class="py-3.5 px-3">Daftar Barang</th>
+                <th class="py-3.5 px-3 text-center">Quantity per Item</th>
                 <th class="py-3.5 px-3 text-center">Total Item</th>
                 <th class="py-3.5 px-3 text-center w-36">Aksi</th>
               </tr>
@@ -1988,7 +1989,11 @@
                 const totalQty = doDoc.items.reduce((sum, i) => sum + (Number(i.quantity) || 0), 0);
                 const itemsSummary = doDoc.items.map(i => {
                   const tipeSeri = [i.tipe, i.seri].filter(Boolean).join('/');
-                  return `<div class="py-0.5">• <strong>${i.namaBarang}</strong> ${i.brand ? '('+i.brand+')' : ''} ${tipeSeri ? '['+tipeSeri+']' : ''} - <span class="font-mono font-bold">${i.quantity} ${i.satuan||'Pcs'}</span> ${i.serialNumber ? '<span class="text-slate-400 font-mono">(SN: '+i.serialNumber+')</span>' : ''}</div>`;
+                  return `<div class="py-0.5">• <strong>${i.namaBarang}</strong> ${i.brand ? '('+i.brand+')' : ''} ${tipeSeri ? '['+tipeSeri+']' : ''} ${i.serialNumber ? '<span class="text-slate-400 font-mono">(SN: '+i.serialNumber+')</span>' : ''}</div>`;
+                }).join('');
+
+                const itemsQtySummary = doDoc.items.map(i => {
+                  return `<div class="py-0.5 font-mono font-bold text-slate-800">${i.quantity} ${i.satuan||'Pcs'}</div>`;
                 }).join('');
 
                 const doDocEscaped = JSON.stringify(doDoc).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
@@ -2001,6 +2006,7 @@
                     <td class="py-3 px-3 font-bold text-slate-800">${doDoc.endUser}</td>
                     <td class="py-3 px-3 text-slate-600 text-[11px]">${doDoc.alamatEndUser || '-'}</td>
                     <td class="py-3 px-3 text-slate-700">${itemsSummary}</td>
+                    <td class="py-3 px-3 text-center bg-slate-50/50">${itemsQtySummary}</td>
                     <td class="py-3 px-3 text-center font-bold font-mono text-slate-800">${totalQty}</td>
                     <td class="py-3 px-3 text-center">
                       <div class="flex items-center justify-center gap-1.5">
