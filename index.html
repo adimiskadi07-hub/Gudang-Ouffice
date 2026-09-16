@@ -1608,22 +1608,59 @@
         }
       }
 
+      // Sinkronisasi Peringatan Stok Rendah menggunakan kalkulasi rekapitulasi yang sama persis dengan laporan stok
       const lowStockEl = document.getElementById('lowStockList');
-      const lowStockItems = Object.values(stockSummary).filter(x => x.sisa < 5);
+      const reportSummaryMap = {};
+      rawInventoryData.forEach(item => {
+        const nama = (item.namaBarang || '').trim();
+        const brand = (item.brand || '').trim();
+        const tipe = (item.tipe || '').trim();
+        const seri = (item.seri || '').trim();
+        const key = `${nama.toLowerCase()}___${brand.toLowerCase()}___${tipe.toLowerCase()}___${seri.toLowerCase()}`;
+
+        if (!reportSummaryMap[key]) {
+          reportSummaryMap[key] = {
+            nama: nama || '-',
+            brand: brand || '-',
+            tipe: tipe || '',
+            seri: seri || '',
+            masuk: 0,
+            keluar: 0,
+            satuan: item.satuan || 'Pcs'
+          };
+        }
+
+        const qty = Number(item.quantity) || 0;
+        if (item.jenisTransaksi === 'Masuk') {
+          reportSummaryMap[key].masuk += qty;
+        } else if (item.jenisTransaksi === 'Keluar') {
+          reportSummaryMap[key].keluar += qty;
+        }
+      });
+
+      const aggregatedStockList = Object.values(reportSummaryMap).map(i => ({
+        ...i,
+        sisa: i.masuk - i.keluar
+      }));
+
+      const lowStockItems = aggregatedStockList.filter(x => x.sisa < 5);
 
       if (lowStockEl) {
         if (lowStockItems.length === 0) {
           lowStockEl.innerHTML = `<div class="p-3 text-center text-slate-400 text-xs font-semibold bg-slate-50 rounded-xl">Stok aman (&gt;= 5 unit)</div>`;
         } else {
-          lowStockEl.innerHTML = lowStockItems.map(x => `
-            <div class="p-2.5 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-between text-xs">
-              <div>
-                <span class="font-bold text-slate-900 block">${x.nama}</span>
-                <span class="text-[10px] text-slate-500">${x.brand}</span>
+          lowStockEl.innerHTML = lowStockItems.map(x => {
+            const tipeSeri = [x.tipe, x.seri].filter(Boolean).join(' / ');
+            return `
+              <div class="p-2.5 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-between text-xs">
+                <div>
+                  <span class="font-bold text-slate-900 block">${x.nama}</span>
+                  <span class="text-[10px] text-slate-500">${x.brand || ''} ${tipeSeri ? '• ' + tipeSeri : ''}</span>
+                </div>
+                <span class="font-mono font-bold text-rose-600 bg-white px-2 py-0.5 rounded-lg border border-rose-200">${x.sisa} ${x.satuan}</span>
               </div>
-              <span class="font-mono font-bold text-rose-600 bg-white px-2 py-0.5 rounded-lg border border-rose-200">${x.sisa} ${x.satuan}</span>
-            </div>
-          `).join('');
+            `;
+          }).join('');
         }
       }
 
