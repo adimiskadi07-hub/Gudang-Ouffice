@@ -64,6 +64,13 @@
       pointer-events: none;
     }
 
+    #qrReader video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      border-radius: 0.75rem;
+    }
+
     /* Sidebar Transitions */
     .sidebar-transition {
       transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
@@ -72,16 +79,13 @@
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col md:flex-row">
 
-  <!-- LOGIN SCREEN -->
   <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 relative overflow-hidden">
       <div class="absolute -right-12 -top-12 w-40 h-40 bg-orange-600/10 rounded-full blur-2xl pointer-events-none"></div>
       
-      <!-- Logo Branding -->
+      <!-- Company Logo Branding -->
       <div class="flex flex-col items-center mb-6">
-        <div class="flex flex-col items-end cursor-pointer mb-2">
-        <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="150"></span>
-        </div>
+        <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="150" class="h-auto max-w-[150px] object-contain mb-2">
         <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mt-1">Sistem Inventaris Gudang</p>
       </div>
 
@@ -116,23 +120,20 @@
   <!-- SIDEBAR OVERLAY FOR MOBILE -->
   <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-40 hidden md:hidden"></div>
 
-  <!-- MAIN SIDEBAR -->
   <aside id="mainSidebar" class="fixed md:static inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 z-40 flex flex-col justify-between sidebar-transition -translate-x-full md:translate-x-0 shadow-xl border-r border-slate-800">
     <div>
-      <!-- Sidebar Brand Header -->
       <div class="p-4 border-b border-slate-800 flex items-center justify-between">
-        <div class="flex flex-col items-start cursor-pointer select-none py-1" onclick="switchView('dashboard')">
-          <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" class="h-8 w-auto max-w-[150px] object-contain">
+        <div class="flex items-center cursor-pointer select-none" onclick="switchView('dashboard')">
+          <div class="flex items-center">
+            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="150" class="h-8 w-auto max-w-[150px] object-contain">
+          </div>
         </div>
         <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white p-1 md:hidden">
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
 
-      <!-- Navigation Menu Categories -->
       <nav class="p-3 space-y-6 overflow-y-auto max-h-[calc(100vh-140px)] custom-scrollbar text-xs font-medium">
-        
-        <!-- SECTION 1: UTAMA -->
         <div>
           <div class="px-3 mb-2 text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Utama</div>
           <div class="space-y-1">
@@ -155,7 +156,6 @@
           </div>
         </div>
 
-        <!-- SECTION 2: TRANSAKSI STOK -->
         <div>
           <div class="px-3 mb-2 text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Transaksi Stok</div>
           <div class="space-y-1">
@@ -178,7 +178,6 @@
           </div>
         </div>
 
-        <!-- SECTION 3: ADMIN & DATA -->
         <div>
           <div class="px-3 mb-2 text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Admin & Data</div>
           <div class="space-y-1">
@@ -192,11 +191,9 @@
             </button>
           </div>
         </div>
-
       </nav>
     </div>
 
-    <!-- Sidebar Footer -->
     <div class="p-3 border-t border-slate-800 bg-slate-950/50 flex items-center justify-between">
       <div class="flex items-center gap-2 overflow-hidden">
         <i class="fa-solid fa-circle-user text-orange-500 text-xl flex-shrink-0"></i>
@@ -211,14 +208,11 @@
     </div>
   </aside>
 
-  <!-- MAIN WRAPPER -->
   <div class="flex-1 flex flex-col min-h-screen overflow-x-hidden">
-    
     <!-- TOP HEADER BAR -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
       <div class="px-4 sm:px-6 py-3">
         <div class="flex items-center justify-between gap-4">
-          
           <div class="flex items-center gap-3">
             <button onclick="toggleSidebar()" class="p-2 text-slate-600 hover:bg-slate-100 rounded-xl transition">
               <i class="fa-solid fa-bars text-lg"></i>
@@ -226,7 +220,6 @@
             <h1 id="currentViewTitle" class="text-base sm:text-lg font-black text-slate-900 uppercase tracking-wide">Dashboard Utama</h1>
           </div>
 
-          <!-- Actions & Profile Info -->
           <div class="flex items-center gap-2 sm:gap-3">
             <button onclick="loadDataFromBackend(false)" title="Sinkronkan Data Manual" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition text-xs font-bold">
               <i id="syncIcon" class="fa-solid fa-rotate text-xs"></i>
@@ -238,26 +231,20 @@
               <span id="currentUserRoleBadge" class="uppercase font-extrabold tracking-wide text-orange-600">STAFF GUDANG</span>
             </div>
 
-            <!-- History Login Button -->
             <button id="btnHistoryLogin" onclick="openHistoryModal()" class="hidden sm:flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl transition">
               <i class="fa-solid fa-clock-rotate-left text-slate-500"></i>
               <span class="hidden lg:inline">Log Login</span>
             </button>
           </div>
-
         </div>
       </div>
     </header>
 
-    <!-- CONTENT VIEWS AREA -->
     <main class="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto pb-24 sm:pb-8">
       
-      <!-- VIEW 1: DASHBOARD UTAMA -->
+      <!-- DASHBOARD VIEW -->
       <section id="view-dashboard" class="space-y-6">
-        
-        <!-- Summary Stats Cards -->
         <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-          
           <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm motion-card-glow flex flex-col justify-between">
             <div class="flex items-center justify-between text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">
               <span>Total Masuk</span>
@@ -302,7 +289,6 @@
             </div>
           </div>
 
-          <!-- KARTU KELAYAKAN STOK DENGAN PIZZA SLICE PIE CHART -->
           <div class="col-span-2 lg:col-span-1 bg-slate-900 text-white p-4 rounded-2xl shadow-lg relative overflow-hidden flex flex-col justify-between">
             <div class="flex items-center justify-between z-10">
               <div>
@@ -311,7 +297,6 @@
                 <p class="text-[11px] text-slate-400 font-medium mt-0.5">Rasio Kelayakan Utama</p>
               </div>
 
-              <!-- PIZZA SLICE PIE CHART -->
               <div class="relative flex items-center justify-center z-10 w-20 h-20 flex-shrink-0">
                 <svg class="w-20 h-20" viewBox="0 0 100 100">
                   <path id="pieSliceSiap" fill="#10b981" d="" />
@@ -322,7 +307,6 @@
               </div>
             </div>
 
-            <!-- PERSENTASE BARANG SIAP PAKAI VS RUSAK -->
             <div class="mt-3 pt-2.5 border-t border-slate-800/80 z-10 flex items-center justify-between text-[11px] font-bold">
               <div class="flex items-center gap-1.5 text-emerald-400">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -334,13 +318,9 @@
               </div>
             </div>
           </div>
-
         </div>
 
-        <!-- VISUAL DATA CHARTS SECTION -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          <!-- 1. Alur Transaksi Bulanan -->
           <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
             <div class="flex items-center justify-between mb-4">
               <div>
@@ -352,9 +332,7 @@
               <span id="chartPeriodLabel" class="text-xs font-bold text-slate-400 font-mono">6 Bulan Terakhir</span>
             </div>
 
-            <div id="monthlyChartContainer" class="h-48 flex items-end justify-between gap-2 pt-6 pb-2 px-2 bg-slate-50 rounded-xl border border-slate-100">
-              <!-- Dynamically rendered -->
-            </div>
+            <div id="monthlyChartContainer" class="h-48 flex items-end justify-between gap-2 pt-6 pb-2 px-2 bg-slate-50 rounded-xl border border-slate-100"></div>
 
             <div class="flex items-center justify-center gap-6 mt-3 text-xs font-bold text-slate-600">
               <div class="flex items-center gap-2"><span class="w-3 h-3 bg-emerald-500 rounded-sm"></span> Transaksi Masuk</div>
@@ -362,7 +340,6 @@
             </div>
           </div>
 
-          <!-- 2. Proporsi Stok Keluar -->
           <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
             <div>
               <h3 class="font-extrabold text-slate-900 text-sm uppercase tracking-wider mb-1 flex items-center gap-2">
@@ -370,20 +347,15 @@
               </h3>
               <p class="text-xs text-slate-500 mb-4">Distribusi Pengeluaran vs Total Barang Masuk</p>
 
-              <div id="proporsiStokContainer" class="space-y-3">
-                <!-- Dynamically Populated -->
-              </div>
+              <div id="proporsiStokContainer" class="space-y-3"></div>
             </div>
             <div class="pt-4 border-t border-slate-100 text-[11px] text-slate-400 font-medium text-center">
               Persentase pengeluaran dibanding total barang masuk
             </div>
           </div>
-
         </div>
 
-        <!-- LOWER DASHBOARD ROW -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <!-- 3. Peringatan Stok Rendah -->
           <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
             <div class="flex items-center justify-between mb-4">
               <h3 class="font-extrabold text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2 text-rose-600">
@@ -392,12 +364,9 @@
               <span class="px-2 py-0.5 bg-rose-100 text-rose-700 font-mono text-[10px] font-extrabold rounded-full">&lt; 5 Unit</span>
             </div>
 
-            <div id="lowStockList" class="space-y-2.5 max-h-60 overflow-y-auto custom-scrollbar">
-              <!-- Dynamically populated -->
-            </div>
+            <div id="lowStockList" class="space-y-2.5 max-h-60 overflow-y-auto custom-scrollbar"></div>
           </div>
 
-          <!-- 4. Daftar Transaksi Terkini -->
           <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
             <div class="flex items-center justify-between mb-4">
               <h3 class="font-extrabold text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
@@ -416,24 +385,17 @@
                     <th class="py-2 px-3 text-center">Qty</th>
                   </tr>
                 </thead>
-                <tbody id="recentTransactionsTable" class="divide-y divide-slate-100 font-medium text-slate-700">
-                  <!-- Dynamically populated -->
-                </tbody>
+                <tbody id="recentTransactionsTable" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
               </table>
             </div>
           </div>
-
         </div>
-
       </section>
 
-      <!-- VIEW 2: DATA PRODUK / INVENTARIS MASTER -->
+      <!-- PRODUK VIEW -->
       <section id="view-produk" class="hidden space-y-4">
-        
         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4">
           <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4">
-            
-            <!-- Live Search Input -->
             <div class="relative flex-1">
               <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                 <i class="fa-solid fa-magnifying-glass"></i>
@@ -444,7 +406,6 @@
               </button>
             </div>
 
-            <!-- Filters & Actions -->
             <div class="flex flex-wrap items-center gap-2">
               <select id="filterJenis" onchange="filterData()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
                 <option value="">Semua Transaksi</option>
@@ -463,13 +424,10 @@
                 <span>Export PDF</span>
               </button>
             </div>
-
           </div>
         </div>
 
         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-          
-          <!-- Desktop Data Table (Limit visible height to ~11 rows with sticky header & scrollbar) -->
           <div class="hidden md:block max-h-[520px] overflow-y-auto custom-scrollbar">
             <table class="w-full text-left border-collapse">
               <thead class="sticky top-0 z-10">
@@ -489,32 +447,20 @@
                   <th class="py-3.5 px-4 text-center w-24">Aksi</th>
                 </tr>
               </thead>
-              <tbody id="inventoryTableBody" class="divide-y divide-slate-100 text-xs font-medium text-slate-700">
-                <tr>
-                  <td colspan="13" class="py-8 text-center text-slate-400 font-medium">
-                    <i class="fa-solid fa-spinner fa-spin text-orange-500 text-xl mr-2"></i> Memuat data inventaris...
-                  </td>
-                </tr>
-              </tbody>
+              <tbody id="inventoryTableBody" class="divide-y divide-slate-100 text-xs font-medium text-slate-700"></tbody>
             </table>
           </div>
 
-          <!-- Mobile Cards Container -->
-          <div id="mobileCardsContainer" class="md:hidden divide-y divide-slate-100 max-h-[600px] overflow-y-auto custom-scrollbar">
-            <div class="p-6 text-center text-slate-400">
-              <i class="fa-solid fa-spinner fa-spin text-orange-500 text-xl mr-2"></i> Memuat data...
-            </div>
-          </div>
+          <div id="mobileCardsContainer" class="md:hidden divide-y divide-slate-100 max-h-[600px] overflow-y-auto custom-scrollbar"></div>
 
           <div class="bg-slate-50 border-t border-slate-100 px-4 py-3 flex items-center justify-between text-xs text-slate-500 font-semibold">
             <span id="recordCountInfo">Menampilkan 0 dari 0 data</span>
             <span class="text-orange-600">Ouffice.co.id Inventory</span>
           </div>
-
         </div>
       </section>
 
-      <!-- VIEW 3: KATEGORI PRODUK -->
+      <!-- KATEGORI VIEW -->
       <section id="view-kategori" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
@@ -526,14 +472,10 @@
           </button>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="kategoriGrid">
-          <div class="col-span-full p-8 text-center text-slate-400 font-medium">
-            <i class="fa-solid fa-spinner fa-spin text-orange-500 text-xl mr-2"></i> Memuat data kategori...
-          </div>
-        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="kategoriGrid"></div>
       </section>
 
-      <!-- VIEW 4: SUPPLIER -->
+      <!-- SUPPLIER VIEW -->
       <section id="view-supplier" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
@@ -545,14 +487,10 @@
           </button>
         </div>
 
-        <div id="supplierListContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden p-4">
-          <div class="p-8 text-center text-slate-400 font-medium">
-            <i class="fa-solid fa-spinner fa-spin text-orange-500 text-xl mr-2"></i> Memuat data supplier...
-          </div>
-        </div>
+        <div id="supplierListContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden p-4"></div>
       </section>
 
-      <!-- VIEW 5: STOK MASUK -->
+      <!-- STOK MASUK VIEW -->
       <section id="view-stok-masuk" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div>
@@ -571,12 +509,10 @@
             <button onclick="openModalWithPreset('Masuk')" class="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-md hover:bg-emerald-700 flex-shrink-0">+ Input Stok Masuk</button>
           </div>
         </div>
-        <div id="stokMasukTableContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden text-xs">
-          <!-- Populated via JS -->
-        </div>
+        <div id="stokMasukTableContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden text-xs"></div>
       </section>
 
-      <!-- VIEW 6: STOK KELUAR -->
+      <!-- STOK KELUAR VIEW -->
       <section id="view-stok-keluar" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div>
@@ -595,12 +531,10 @@
             <button onclick="openModalWithPreset('Keluar')" class="px-4 py-2 bg-sky-600 text-white rounded-xl text-xs font-bold shadow-md hover:bg-sky-700 flex-shrink-0">+ Input Stok Keluar</button>
           </div>
         </div>
-        <div id="stokKeluarTableContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden text-xs">
-          <!-- Populated via JS -->
-        </div>
+        <div id="stokKeluarTableContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden text-xs"></div>
       </section>
 
-      <!-- VIEW 7: DELIVERY ORDER (SURAT JALAN) -->
+      <!-- DELIVERY ORDER VIEW -->
       <section id="view-delivery-order" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
@@ -615,14 +549,10 @@
           </button>
         </div>
 
-        <div id="deliveryOrderTableContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden p-4">
-          <div class="p-8 text-center text-slate-400 font-medium">
-            <i class="fa-solid fa-spinner fa-spin text-amber-500 text-xl mr-2"></i> Memuat daftar Delivery Order...
-          </div>
-        </div>
+        <div id="deliveryOrderTableContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden p-4"></div>
       </section>
 
-      <!-- VIEW 8: RETUR BARANG -->
+      <!-- RETUR VIEW -->
       <section id="view-retur" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
@@ -640,7 +570,7 @@
         </div>
       </section>
 
-      <!-- VIEW 9: MANAJEMEN USER -->
+      <!-- USERS VIEW -->
       <section id="view-users" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
           <div>
@@ -661,14 +591,12 @@
                 <th class="py-2.5 px-3 text-center">Aksi</th>
               </tr>
             </thead>
-            <tbody id="usersViewTableBody" class="divide-y divide-slate-100 font-medium text-slate-700">
-              <!-- Dynamically populated -->
-            </tbody>
+            <tbody id="usersViewTableBody" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
           </table>
         </div>
       </section>
 
-      <!-- VIEW 10: LAPORAN STOK -->
+      <!-- LAPORAN VIEW -->
       <section id="view-laporan" class="hidden space-y-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div>
@@ -703,18 +631,15 @@
                   <th class="py-3.5 px-3 text-center">Sisa Stok</th>
                 </tr>
               </thead>
-              <tbody id="laporanViewStokTableBody" class="divide-y divide-slate-100 font-medium text-slate-700">
-                <!-- Dynamically populated -->
-              </tbody>
+              <tbody id="laporanViewStokTableBody" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
             </table>
           </div>
         </div>
       </section>
-
     </main>
   </div>
 
-  <!-- MOBILE BOTTOM NAVIGATION BAR -->
+  <!-- MOBILE BOTTOM NAVIGATION -->
   <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30 px-6 py-2 sm:hidden shadow-lg flex items-center justify-around">
     <button onclick="switchView('laporan')" class="flex flex-col items-center gap-1 text-slate-600 hover:text-orange-600">
       <i class="fa-solid fa-boxes-stacked text-lg"></i>
@@ -731,7 +656,7 @@
     </button>
   </div>
 
-  <!-- FORM MODAL (ADD / EDIT INVENTORY ITEM) -->
+  <!-- INVENTORY FORM MODAL -->
   <div id="modalForm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-5 sm:p-6 my-8 relative">
       <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
@@ -821,7 +746,6 @@
           </div>
         </div>
 
-        <!-- DO & ALAMAT FIELDS FOR STOK KELUAR -->
         <div id="doFieldsGroup" class="hidden grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-slate-700 uppercase mb-1">No. Delivery Order (DO)</label>
@@ -852,12 +776,11 @@
             <i class="fa-solid fa-floppy-disk"></i> Simpan Data
           </button>
         </div>
-
       </form>
     </div>
   </div>
 
-  <!-- EDIT DELIVERY ORDER MODAL -->
+  <!-- EDIT DO MODAL -->
   <div id="editDOModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6 relative">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
@@ -940,9 +863,7 @@
               <th class="py-3 px-3 text-center">Status</th>
             </tr>
           </thead>
-          <tbody id="historyTableBody" class="divide-y divide-slate-100 font-medium text-slate-700">
-            <!-- Dynamically populated -->
-          </tbody>
+          <tbody id="historyTableBody" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
         </table>
       </div>
 
@@ -985,9 +906,7 @@
               <th class="py-2.5 px-3 text-center">Aksi</th>
             </tr>
           </thead>
-          <tbody id="userTableBody" class="divide-y divide-slate-100 font-medium text-slate-700">
-            <!-- Populated via JS -->
-          </tbody>
+          <tbody id="userTableBody" class="divide-y divide-slate-100 font-medium text-slate-700"></tbody>
         </table>
       </div>
 
@@ -997,7 +916,7 @@
     </div>
   </div>
 
-  <!-- MODAL FORM KATEGORI -->
+  <!-- KATEGORI MODAL -->
   <div id="kategoriModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6 relative">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
@@ -1039,7 +958,7 @@
     </div>
   </div>
 
-  <!-- MODAL FORM SUPPLIER -->
+  <!-- SUPPLIER MODAL -->
   <div id="supplierModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6 relative">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
@@ -1655,7 +1574,6 @@
         }
       }
 
-      // Populate Low Stock Warnings
       const lowStockEl = document.getElementById('lowStockList');
       const lowStockItems = Object.values(stockSummary).filter(x => x.sisa < 5);
 
@@ -1675,7 +1593,6 @@
         }
       }
 
-      // Populate Outgoing Distribution
       const propEl = document.getElementById('proporsiStokContainer');
       const baseTotalForProporsi = totalMasuk > 0 ? totalMasuk : 1;
       const topKeluar = Object.entries(keluarDistribution).slice(0, 4);
@@ -1701,7 +1618,6 @@
         }
       }
 
-      // Populate Monthly Trend Bar Visualizer
       const monthlyContainer = document.getElementById('monthlyChartContainer');
       if (monthlyContainer) {
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
@@ -1766,7 +1682,6 @@
         }
       }
 
-      // Populate Recent Transactions Feed
       const recentTbody = document.getElementById('recentTransactionsTable');
       const recentData = [...rawInventoryData].reverse().slice(0, 5);
 
@@ -1866,7 +1781,6 @@
         return;
       }
 
-      // Membalikkan urutan agar data yang terakhir di-input tampil di posisi paling atas
       const displayData = [...data].reverse();
 
       container.innerHTML = `
@@ -2010,56 +1924,114 @@
       if (!doDoc) return;
 
       const element = document.createElement('div');
-      element.style.padding = '20px';
+      element.style.padding = '15px';
       element.style.fontFamily = 'Inter, sans-serif';
+      element.style.fontSize = '11px';
+      element.style.color = '#0f172a';
+      element.style.backgroundColor = '#ffffff';
 
       const itemsRows = doDoc.items.map((item, idx) => {
-        const tipeSeri = [item.tipe, item.seri].filter(Boolean).join(' / ') || '-';
+        const tipeSeri = [item.brand, item.tipe, item.seri].filter(Boolean).join(' ');
+        const descText = `${item.namaBarang}${tipeSeri ? ' ' + tipeSeri : ''}`;
+        const snText = item.serialNumber ? `<br><span style="font-family: monospace; font-size: 10px; color: #475569;">SN : ${item.serialNumber}</span>` : '';
+        
         return `
-          <tr style="border-bottom: 1px solid #e2e8f0;">
-            <td style="padding: 8px; text-align: center;">${idx + 1}</td>
-            <td style="padding: 8px;"><strong>${item.namaBarang}</strong></td>
-            <td style="padding: 8px;">${item.brand || '-'}</td>
-            <td style="padding: 8px;">${tipeSeri}</td>
-            <td style="padding: 8px; font-family: monospace;">${item.serialNumber || '-'}</td>
-            <td style="padding: 8px; text-align: center; font-weight: bold;">${item.quantity} ${item.satuan || 'Pcs'}</td>
+          <tr style="border-bottom: 1px solid #cbd5e1;">
+            <td style="padding: 8px 6px; text-align: center; border-right: 1px solid #cbd5e1;">${idx + 1}</td>
+            <td style="padding: 8px 8px; font-weight: bold; border-right: 1px solid #cbd5e1;">${item.namaBarang}</td>
+            <td style="padding: 8px 8px; border-right: 1px solid #cbd5e1;">${descText}${snText}</td>
+            <td style="padding: 8px 6px; text-align: center; font-family: monospace; font-weight: bold; border-right: 1px solid #cbd5e1;">${item.quantity}</td>
+            <td style="padding: 8px 6px; text-align: center;">${item.satuan || 'Unit'}</td>
           </tr>
         `;
       }).join('');
 
       element.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 12px; margin-bottom: 20px;">
-          <div>
-            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" style="width: 140px; height: auto; display: block;">
-            <p style="font-size: 10px; color: #64748b; margin: 4px 0 0 0; text-transform: uppercase; font-weight: bold;">Sistem Inventaris & Logistik Gudang</p>
-          </div>
-          <div style="text-align: right;">
-            <h2 style="font-size: 18px; font-weight: 800; color: #d97706; margin: 0;">DELIVERY ORDER</h2>
-            <p style="font-size: 12px; font-family: monospace; font-weight: bold; margin: 2px 0 0 0;">${doDoc.id}</p>
-          </div>
-        </div>
+        <!-- TOP CORPORATE HEADER WITH LOGO OUTSIDE & ADDRESS INSIDE DASHED BOX -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+          <tr>
+            <td style="width: 58%; vertical-align: top;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="width: 160px; vertical-align: top; padding-right: 10px;">
+                    <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="150" style="display: block; max-width: 145px; height: auto;">
+                  </td>
+                  <td style="vertical-align: top; border: 1px dashed #64748b; padding: 10px;">
+                    <div style="font-size: 10px; line-height: 1.4; color: #1e293b;">
+                      <strong>PT. CITRA SARI KENCANA</strong><br>
+                      Jl. Rambutan No. 4, Manggarai Selatan<br>
+                      Tebet, Jakarta Selatan 12860<br>
+                      Phone. [021] 835 1388
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+            <td style="width: 2%;"></td>
+            <td style="width: 40%; vertical-align: middle; text-align: right;">
+              <div style="font-size: 24px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px;">Delivery Order</div>
+            </td>
+          </tr>
+        </table>
 
-        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 12px; gap: 20px;">
-          <div style="flex: 1; min-width: 0;">
-            <p style="margin: 0 0 4px 0;"><strong>Kepada / Penerima:</strong> ${doDoc.endUser}</p>
-            <p style="margin: 0 0 4px 0;"><strong>Alamat Pengiriman:</strong> ${doDoc.alamatEndUser || '-'}</p>
-            <p style="margin: 0;"><strong>Peruntukan Proyek:</strong> ${doDoc.peruntukan || '-'}</p>
-          </div>
-          <div style="width: 240px; flex-shrink: 0; text-align: right; white-space: nowrap;">
-            <p style="margin: 0 0 6px 0;"><strong>Tanggal Pengiriman:</strong> ${doDoc.tanggal}</p>
-            <p style="margin: 0;"><strong>Status Dokumen:</strong> RESMI / KELUAR</p>
-          </div>
-        </div>
+        <!-- SHIP TO & BILL TO BOXES -->
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 10px;">
+          <tr>
+            <td style="width: 58%; vertical-align: top; border: 1px solid #0f172a; padding: 0;">
+              <div style="padding: 5px 8px; border-bottom: 1px solid #0f172a; font-weight: bold;">
+                Ship To &nbsp;&nbsp;&nbsp;: <span style="text-transform: uppercase;">${doDoc.endUser}</span>
+              </div>
+              <div style="padding: 8px; line-height: 1.4; min-height: 50px;">
+                ${doDoc.alamatEndUser || '-'}<br>
+                Phone. 021 -
+              </div>
+            </td>
+            <td style="width: 2%;"></td>
+            <td style="width: 40%; vertical-align: top; border: 1px solid #0f172a; padding: 0;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                <tr style="border-bottom: 1px solid #0f172a;">
+                  <td style="padding: 5px 8px; border-right: 1px solid #0f172a; width: 50%;">Delivery Date</td>
+                  <td style="padding: 5px 8px;">Delivery No.</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #0f172a; font-family: monospace; font-weight: bold;">
+                  <td style="padding: 5px 8px; border-right: 1px solid #0f172a; text-align: center;">${doDoc.tanggal}</td>
+                  <td style="padding: 5px 8px; text-align: center;">${doDoc.id}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #0f172a;">
+                  <td style="padding: 5px 8px; border-right: 1px solid #0f172a;">Ship Via</td>
+                  <td style="padding: 5px 8px;">PO Number</td>
+                </tr>
+                <tr>
+                  <td style="padding: 5px 8px; border-right: 1px solid #0f172a; font-weight: bold;">OPS</td>
+                  <td style="padding: 5px 8px;">-</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="3" style="padding-top: 8px;">
+              <div style="border: 1px solid #0f172a; padding: 0;">
+                <div style="padding: 5px 8px; border-bottom: 1px solid #0f172a; font-weight: bold;">
+                  Bill To &nbsp;&nbsp;&nbsp;&nbsp;: <span style="text-transform: uppercase;">${doDoc.endUser}</span>
+                </div>
+                <div style="padding: 8px; line-height: 1.4;">
+                  ${doDoc.alamatEndUser || '-'}<br>
+                  Phone. 021 -
+                </div>
+              </div>
+            </td>
+          </tr>
+        </table>
 
-        <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 30px;">
+        <!-- ITEMS TABLE -->
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid #0f172a; margin-bottom: 15px; font-size: 10px;">
           <thead>
-            <tr style="background-color: #0f172a; color: white;">
-              <th style="padding: 8px; width: 30px; text-align: center;">No</th>
-              <th style="padding: 8px; text-align: left;">Nama Barang</th>
-              <th style="padding: 8px; text-align: left;">Brand</th>
-              <th style="padding: 8px; text-align: left;">Tipe / Seri</th>
-              <th style="padding: 8px; text-align: left;">Serial Number</th>
-              <th style="padding: 8px; text-align: center; width: 70px;">Qty</th>
+            <tr style="background-color: #f97316; color: white; border-bottom: 1px solid #0f172a; font-weight: bold;">
+              <th style="padding: 6px; width: 35px; text-align: center; border-right: 1px solid #cbd5e1;">NO</th>
+              <th style="padding: 6px; width: 130px; text-align: left; border-right: 1px solid #cbd5e1;">ITEM</th>
+              <th style="padding: 6px; text-align: left; border-right: 1px solid #cbd5e1;">ITEM DESCRIPTION</th>
+              <th style="padding: 6px; width: 50px; text-align: center; border-right: 1px solid #cbd5e1;">QTY</th>
+              <th style="padding: 6px; width: 60px; text-align: center;">UNIT</th>
             </tr>
           </thead>
           <tbody>
@@ -2067,24 +2039,41 @@
           </tbody>
         </table>
 
-        <div style="display: flex; justify-between; text-align: center; margin-top: 50px; font-size: 11px;">
-          <div style="width: 30%;">
-            <p style="margin-bottom: 50px;">Yang Menyerahkan,<br><strong>( Petugas Gudang )</strong></p>
-            <p style="border-top: 1px solid #94a3b8; padding-top: 4px; margin: 0;">Tanda Tangan & Nama</p>
-          </div>
-          <div style="width: 30%;">
-            <p style="margin-bottom: 50px;">Pengemudi / Kurir,<br><strong>( Ekspedisi / Driver )</strong></p>
-            <p style="border-top: 1px solid #94a3b8; padding-top: 4px; margin: 0;">Tanda Tangan & Nama</p>
-          </div>
-          <div style="width: 30%;">
-            <p style="margin-bottom: 50px;">Yang Menerima,<br><strong>( End User / Client )</strong></p>
-            <p style="border-top: 1px solid #94a3b8; padding-top: 4px; margin: 0;">Tanda Tangan & Nama</p>
-          </div>
-        </div>
+        <!-- FOOTER SIGNATURES & DESCRIPTION -->
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid #0f172a; font-size: 10px;">
+          <tr>
+            <td style="border-right: 1px solid #0f172a; width: 65%; vertical-align: top; padding: 0;">
+              <table style="width: 100%; border-collapse: collapse; text-align: center;">
+                <tr style="border-bottom: 1px solid #0f172a;">
+                  <td style="padding: 6px; border-right: 1px solid #0f172a; width: 25%;">Prepared By</td>
+                  <td style="padding: 6px; border-right: 1px solid #0f172a; width: 25%;">Approved By</td>
+                  <td style="padding: 6px; border-right: 1px solid #0f172a; width: 25%;">Shipped By</td>
+                  <td style="padding: 6px; width: 25%;">Received By</td>
+                </tr>
+                <tr>
+                  <td style="height: 55px; border-right: 1px solid #0f172a;"></td>
+                  <td style="height: 55px; border-right: 1px solid #0f172a;"></td>
+                  <td style="height: 55px; border-right: 1px solid #0f172a;"></td>
+                  <td style="height: 55px;"></td>
+                </tr>
+                <tr style="border-top: 1px solid #0f172a; background-color: #f8fafc;">
+                  <td style="padding: 5px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
+                  <td style="padding: 5px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
+                  <td style="padding: 5px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
+                  <td style="padding: 5px; text-align: left;">Date:</td>
+                </tr>
+              </table>
+            </td>
+            <td style="vertical-align: top; padding: 6px 8px;">
+              <strong>Description :</strong><br>
+              <span style="color: #475569; font-size: 9.5px;">Proyek: ${doDoc.peruntukan || '-'}</span>
+            </td>
+          </tr>
+        </table>
       `;
 
       const opt = {
-        margin: 10,
+        margin: 8,
         filename: `Delivery_Order_${doDoc.id}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2 },
@@ -2184,7 +2173,6 @@
         });
       }
 
-      // Urutkan data secara alfanumerik menurut Nama Barang dan Tipe/Seri (A-Z)
       list.sort((a, b) => {
         const compNama = (a.namaBarang || '').localeCompare(b.namaBarang || '', 'id', { numeric: true, sensitivity: 'base' });
         if (compNama !== 0) return compNama;
@@ -2237,7 +2225,6 @@
       });
 
       const list = Object.values(summaryMap);
-      // Urutkan data PDF secara alfanumerik menurut Nama Barang dan Tipe/Seri (A-Z)
       list.sort((a, b) => {
         const compNama = (a.namaBarang || '').localeCompare(b.namaBarang || '', 'id', { numeric: true, sensitivity: 'base' });
         if (compNama !== 0) return compNama;
@@ -2247,7 +2234,7 @@
       element.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 12px; margin-bottom: 15px;">
           <div>
-            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" style="width: 130px; height: auto; display: block;">
+            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="150" style="display: block; max-width: 150px; height: auto;">
             <p style="font-size: 10px; color: #64748b; margin: 4px 0 0 0; text-transform: uppercase; font-weight: bold;">Ouffice.co.id Inventory Management System</p>
           </div>
           <div style="text-align: right;">
@@ -2459,9 +2446,7 @@
             closeScannerModal();
             Swal.fire({ icon: 'success', title: 'QR / Barcode Terbaca!', text: decodedText, timer: 1200, showConfirmButton: false });
           },
-          (errorMessage) => {
-            // Frame scanning status
-          }
+          (errorMessage) => {}
         );
         if (statusText) statusText.innerText = "Arahkan kamera ke QR Code / Barcode";
       } catch (err) {
