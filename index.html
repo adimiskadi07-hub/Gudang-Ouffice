@@ -120,73 +120,73 @@
   <div id="sidebarOverlay" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-40 hidden md:hidden"></div>
 
   <!-- MAIN SIDEBAR -->
-  <aside id="mainSidebar" class="fixed md:static inset-y-0 left-0 w-64 bg-slate-900 text-slate-300 z-40 flex flex-col justify-between sidebar-transition -translate-x-full md:translate-x-0 shadow-xl border-r border-slate-800">
+  <aside id="mainSidebar" class="fixed md:static inset-y-0 left-0 w-64 bg-slate-200 text-slate-900 z-40 flex flex-col justify-between sidebar-transition -translate-x-full md:translate-x-0 shadow-xl border-r border-slate-300">
     <div>
-      <div class="p-4 border-b border-slate-800 flex items-center justify-between">
-        <div class="flex items-center cursor-pointer select-none" onclick="switchView('dashboard')">
-          <div class="flex items-center">
-            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="150" crossorigin="anonymous" class="h-8 w-auto max-w-[150px] object-contain">
+      <div class="p-4 border-b border-slate-300 flex items-center justify-between">
+        <div class="flex items-center cursor-pointer select-none flex-1 pr-2" onclick="switchView('dashboard')">
+          <div class="flex items-center w-full">
+            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="180" crossorigin="anonymous" class="w-full max-w-[180px] h-auto object-contain py-1">
           </div>
         </div>
-        <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white p-1 md:hidden">
+        <button onclick="toggleSidebar()" class="text-slate-900 hover:text-black p-1 md:hidden flex-shrink-0">
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
 
       <nav class="p-3 space-y-6 overflow-y-auto max-h-[calc(100vh-140px)] custom-scrollbar text-xs font-medium">
         <div>
-          <div class="px-3 mb-2 text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Utama</div>
+          <div class="px-3 mb-2 text-[10px] font-extrabold text-slate-900 uppercase tracking-wider">Utama</div>
           <div class="space-y-1">
             <button onclick="switchView('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition font-semibold text-white bg-orange-600">
               <i class="fa-solid fa-chart-pie w-4 text-center"></i>
               <span>Dashboard</span>
             </button>
-            <button onclick="switchView('produk')" id="nav-produk" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800">
-              <i class="fa-solid fa-boxes-stacked w-4 text-center"></i>
+            <button onclick="switchView('produk')" id="nav-produk" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 font-bold hover:text-black hover:bg-slate-300/60">
+              <i class="fa-solid fa-boxes-stacked w-4 text-center text-slate-900"></i>
               <span>Data Produk</span>
             </button>
-            <button onclick="switchView('client')" id="nav-client" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800">
-              <i class="fa-solid fa-building-user w-4 text-center"></i>
+            <button onclick="switchView('client')" id="nav-client" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 font-bold hover:text-black hover:bg-slate-300/60">
+              <i class="fa-solid fa-building-user w-4 text-center text-slate-900"></i>
               <span>Data Client</span>
             </button>
-            <button onclick="switchView('supplier')" id="nav-supplier" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800">
-              <i class="fa-solid fa-truck-field w-4 text-center"></i>
+            <button onclick="switchView('supplier')" id="nav-supplier" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 font-bold hover:text-black hover:bg-slate-300/60">
+              <i class="fa-solid fa-truck-field w-4 text-center text-slate-900"></i>
               <span>Supplier</span>
             </button>
           </div>
         </div>
 
         <div>
-          <div class="px-3 mb-2 text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Transaksi Stok</div>
+          <div class="px-3 mb-2 text-[10px] font-extrabold text-slate-900 uppercase tracking-wider">Transaksi Stok</div>
           <div class="space-y-1">
-            <button onclick="switchView('stok-masuk')" id="nav-stok-masuk" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800">
-              <i class="fa-solid fa-arrow-down-long w-4 text-center text-emerald-400"></i>
+            <button onclick="switchView('stok-masuk')" id="nav-stok-masuk" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 font-bold hover:text-black hover:bg-slate-300/60">
+              <i class="fa-solid fa-arrow-down-long w-4 text-center text-emerald-600"></i>
               <span>Stok Masuk</span>
             </button>
-            <button onclick="switchView('stok-keluar')" id="nav-stok-keluar" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800">
-              <i class="fa-solid fa-arrow-up-long w-4 text-center text-sky-400"></i>
+            <button onclick="switchView('stok-keluar')" id="nav-stok-keluar" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 font-bold hover:text-black hover:bg-slate-300/60">
+              <i class="fa-solid fa-arrow-up-long w-4 text-center text-sky-600"></i>
               <span>Stok Keluar</span>
             </button>
-            <button onclick="switchView('delivery-order')" id="nav-delivery-order" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800">
-              <i class="fa-solid fa-file-invoice-dollar w-4 text-center text-amber-400"></i>
+            <button onclick="switchView('delivery-order')" id="nav-delivery-order" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 font-bold hover:text-black hover:bg-slate-300/60">
+              <i class="fa-solid fa-file-invoice-dollar w-4 text-center text-amber-600"></i>
               <span>Delivery Order</span>
             </button>
-            <button onclick="switchView('retur')" id="nav-retur" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800">
-              <i class="fa-solid fa-rotate-left w-4 text-center text-rose-400"></i>
+            <button onclick="switchView('retur')" id="nav-retur" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 font-bold hover:text-black hover:bg-slate-300/60">
+              <i class="fa-solid fa-rotate-left w-4 text-center text-rose-600"></i>
               <span>Retur Barang</span>
             </button>
           </div>
         </div>
 
         <div>
-          <div class="px-3 mb-2 text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Admin & Data</div>
+          <div class="px-3 mb-2 text-[10px] font-extrabold text-slate-900 uppercase tracking-wider">Admin & Data</div>
           <div class="space-y-1">
-            <button id="btnNavUsers" onclick="switchView('users')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800">
-              <i class="fa-solid fa-users-gear w-4 text-center"></i>
+            <button id="btnNavUsers" onclick="switchView('users')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 font-bold hover:text-black hover:bg-slate-300/60">
+              <i class="fa-solid fa-users-gear w-4 text-center text-slate-900"></i>
               <span>Manajemen User</span>
             </button>
-            <button onclick="switchView('laporan')" id="nav-laporan" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800">
-              <i class="fa-solid fa-file-pdf w-4 text-center text-rose-400"></i>
+            <button onclick="switchView('laporan')" id="nav-laporan" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 font-bold hover:text-black hover:bg-slate-300/60">
+              <i class="fa-solid fa-file-pdf w-4 text-center text-rose-600"></i>
               <span>Laporan Stok</span>
             </button>
           </div>
@@ -194,15 +194,15 @@
       </nav>
     </div>
 
-    <div class="p-3 border-t border-slate-800 bg-slate-950/50 flex items-center justify-between">
+    <div class="p-3 border-t border-slate-300 bg-slate-300/40 flex items-center justify-between">
       <div class="flex items-center gap-2 overflow-hidden">
-        <i class="fa-solid fa-circle-user text-orange-500 text-xl flex-shrink-0"></i>
+        <i class="fa-solid fa-circle-user text-orange-600 text-xl flex-shrink-0"></i>
         <div class="truncate">
-          <span id="sidebarUsername" class="block font-bold text-white text-xs truncate">Admin</span>
-          <span id="sidebarRole" class="block text-[10px] text-slate-400 uppercase font-semibold">Master Admin</span>
+          <span id="sidebarUsername" class="block font-bold text-slate-900 text-xs truncate">Admin</span>
+          <span id="sidebarRole" class="block text-[10px] text-slate-700 uppercase font-semibold">Master Admin</span>
         </div>
       </div>
-      <button onclick="handleLogout()" title="Logout" class="p-2 text-slate-400 hover:text-rose-400 rounded-lg hover:bg-slate-800 transition">
+      <button onclick="handleLogout()" title="Logout" class="p-2 text-slate-900 hover:text-rose-600 rounded-lg hover:bg-slate-300/60 transition">
         <i class="fa-solid fa-power-off"></i>
       </button>
     </div>
@@ -1171,7 +1171,7 @@
         if (el) el.classList.add('hidden');
         const navBtn = document.getElementById(`nav-${v}`);
         if (navBtn) {
-          navBtn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-400 hover:text-white hover:bg-slate-800 font-medium";
+          navBtn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 hover:text-black hover:bg-slate-700/60 font-bold";
         }
       });
 
