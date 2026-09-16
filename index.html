@@ -1354,13 +1354,19 @@
       if (!str) return '-';
       const s = String(str).trim();
       const clean = s.split('T')[0].split(' ')[0];
-      if (clean.match(/^\d{4}-\d{2}-\d{2}$/)) return clean;
+      
+      // If clean is in YYYY-MM-DD format, convert to DD-MM-YYYY
+      if (clean.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const parts = clean.split('-');
+        return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+
       const d = new Date(s);
       if (!isNaN(d.getTime())) {
         const yyyy = d.getFullYear();
         const mm = String(d.getMonth() + 1).padStart(2, '0');
         const dd = String(d.getDate()).padStart(2, '0');
-        return `${yyyy}-${mm}-${dd}`;
+        return `${dd}-${mm}-${yyyy}`;
       }
       return clean || '-';
     }
