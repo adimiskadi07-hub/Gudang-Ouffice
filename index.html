@@ -577,20 +577,27 @@
 
       <!-- RETUR VIEW -->
       <section id="view-retur" class="hidden space-y-4">
-        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div>
             <h3 class="font-bold text-rose-600 text-sm uppercase flex items-center gap-2">
               <i class="fa-solid fa-rotate-left"></i> Retur Barang (Pengembalian)
             </h3>
-            <p class="text-xs text-slate-500">Catatan Barang Kembali dari End User / Rusak</p>
+            <p class="text-xs text-slate-500">Catatan Barang Kembali dari End User / Proyek</p>
           </div>
-          <button onclick="Swal.fire('Retur Barang', 'Input catatan barang kembali dari proyek/user.', 'info')" class="px-3.5 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold">+ Input Retur</button>
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1 sm:w-64">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </span>
+              <input type="text" id="searchRetur" onkeyup="filterReturData()" placeholder="Cari retur barang..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 font-medium">
+            </div>
+            <button onclick="openReturModal()" class="px-4 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold shadow-md hover:bg-rose-700 flex items-center gap-1.5 flex-shrink-0">
+              <i class="fa-solid fa-plus"></i> Input Retur Baru
+            </button>
+          </div>
         </div>
 
-        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 text-center text-slate-400 text-xs">
-          <i class="fa-solid fa-boxes-packing text-3xl mb-2 text-slate-300"></i>
-          <p class="font-semibold text-slate-600">Belum ada catatan retur barang aktif.</p>
-        </div>
+        <div id="returTableContainer" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden text-xs"></div>
       </section>
 
       <!-- USERS MANAGEMENT VIEW -->
@@ -1005,28 +1012,28 @@
         <input type="hidden" id="formSupplierId">
 
         <div>
-          <label class="block font-bold text-slate-700 uppercase mb-1">Nama Perusahaan / Supplier *</label>
-          <input type="text" id="formNamaSupplier" required placeholder="Contoh: PT Fiber Optic Nusantara" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
+          <label class="block font-bold text-slate-700 uppercase mb-1">Nama Supplier / Vendor *</label>
+          <input type="text" id="formNamaSupplier" required placeholder="Contoh: PT Optima Teknologi" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
         </div>
 
         <div>
           <label class="block font-bold text-slate-700 uppercase mb-1">Nama Person In Charge (PIC)</label>
-          <input type="text" id="formKontakSupplier" placeholder="Contoh: Budi Santoso (Sales)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
+          <input type="text" id="formKontakSupplier" placeholder="Contoh: Bpk. Budi" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
         </div>
 
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="block font-bold text-slate-700 uppercase mb-1">Email</label>
-            <input type="email" id="formEmailSupplier" placeholder="sales@fon.co.id" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
+            <input type="email" id="formEmailSupplier" placeholder="sales@supplier.com" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
           </div>
           <div>
             <label class="block font-bold text-slate-700 uppercase mb-1">No. Telepon / WA</label>
-            <input type="text" id="formTeleponSupplier" placeholder="021-5550192" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
+            <input type="text" id="formTeleponSupplier" placeholder="0812-3456-7890" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
           </div>
         </div>
 
         <div>
-          <label class="block font-bold text-slate-700 uppercase mb-1">Status Kemitraan</label>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Status Supplier</label>
           <select id="formStatusSupplier" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-semibold">
             <option value="Aktif">Aktif</option>
             <option value="Non-Aktif">Non-Aktif</option>
@@ -1041,12 +1048,78 @@
     </div>
   </div>
 
+  <!-- RETUR MODAL -->
+  <div id="returModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-5 sm:p-6 relative">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+        <h3 id="modalReturTitle" class="font-bold text-slate-800 uppercase text-xs tracking-wider flex items-center gap-2">
+          <i class="fa-solid fa-rotate-left text-rose-600"></i> Input Retur Barang
+        </h3>
+        <button onclick="closeReturModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="returForm" onsubmit="handleReturSubmit(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="formReturId">
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Tanggal Retur *</label>
+            <input type="date" id="formReturTanggal" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 font-medium">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Status Retur</label>
+            <select id="formReturStatus" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 font-semibold">
+              <option value="Diproses">Diproses</option>
+              <option value="Selesai">Selesai</option>
+              <option value="Restock Gudang">Restock Gudang</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Nama Barang *</label>
+          <input type="text" id="formReturNamaBarang" required list="returBarangList" placeholder="Contoh: Switch Hub 24 Port" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 font-medium">
+          <datalist id="returBarangList"></datalist>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Quantity *</label>
+            <input type="number" id="formReturQuantity" required min="1" value="1" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono font-bold">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Satuan</label>
+            <input type="text" id="formReturSatuan" placeholder="Pcs, Unit" value="Pcs" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 font-medium">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Asal Retur / End User / Proyek *</label>
+          <input type="text" id="formReturAsal" required placeholder="Contoh: PT. ABC / Proyek Kemendagri" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 font-medium">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Alasan / Catatan Retur</label>
+          <textarea id="formReturCatatan" rows="2" placeholder="Detail alasan pengembalian barang (misal: Unit Rusak, Kelebihan Kirim, dll)..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 font-medium"></textarea>
+        </div>
+
+        <div class="pt-3 flex justify-end gap-2">
+          <button type="button" onclick="closeReturModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200">Batal</button>
+          <button type="submit" class="px-5 py-2 bg-rose-600 text-white rounded-xl font-bold shadow-md hover:bg-rose-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-floppy-disk"></i> Simpan Retur
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- APPLICATION LOGIC SCRIPT -->
   <script>
     let rawInventoryData = [];
     let filteredInventoryData = [];
     let rawClientData = JSON.parse(localStorage.getItem('ouffice_client_data')) || [];
     let rawSupplierData = JSON.parse(localStorage.getItem('ouffice_supplier_data')) || [];
+    let rawReturData = JSON.parse(localStorage.getItem('ouffice_retur_data')) || [];
     let html5QrScannerInstance = null;
     let activeScanTarget = 'search';
     let currentUser = null;
@@ -1102,6 +1175,7 @@
       if (currentActiveView === 'stok-masuk') renderFilteredView('Masuk', 'stokMasukTableContainer');
       if (currentActiveView === 'stok-keluar') renderFilteredView('Keluar', 'stokKeluarTableContainer');
       if (currentActiveView === 'delivery-order') renderDeliveryOrders();
+      if (currentActiveView === 'retur') loadRetur();
     }
 
     function startRealtimeSync() {
@@ -3212,6 +3286,231 @@
           const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
           if (isGASNative) google.script.run.deleteSupplier(id);
           else if (CUSTOM_GAS_URL) fetch(CUSTOM_GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteSupplier', id: id }) }).catch(()=>{});
+        }
+      });
+    }
+
+    /* ==========================================================================
+       RETUR BARANG FUNCTIONS
+       ========================================================================== */
+    function loadRetur() {
+      renderRetur(rawReturData);
+      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+      if (isGASNative) {
+        google.script.run.withSuccessHandler((res) => {
+          if (res && res.success && Array.isArray(res.retur)) {
+            rawReturData = res.retur;
+            localStorage.setItem('ouffice_retur_data', JSON.stringify(rawReturData));
+            renderRetur(rawReturData);
+          }
+        }).readRetur();
+      } else if (CUSTOM_GAS_URL) {
+        fetch(`${CUSTOM_GAS_URL}?action=readRetur`)
+          .then(r => r.json())
+          .then(res => {
+            if (res && res.success && Array.isArray(res.retur)) {
+              rawReturData = res.retur;
+              localStorage.setItem('ouffice_retur_data', JSON.stringify(rawReturData));
+              renderRetur(rawReturData);
+            }
+          })
+          .catch(() => {});
+      }
+    }
+
+    function renderRetur(data) {
+      const container = document.getElementById('returTableContainer');
+      if (!container) return;
+
+      if (!data || data.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center text-slate-400 font-medium">
+            <i class="fa-solid fa-boxes-packing text-3xl mb-2 text-slate-300 block"></i>
+            <p class="font-semibold text-slate-600">Belum ada catatan retur barang aktif.</p>
+            <p class="text-[11px] text-slate-400 mt-1">Klik tombol "+ Input Retur Baru" untuk mencatat pengembalian barang.</p>
+          </div>
+        `;
+        return;
+      }
+
+      const displayData = [...data].reverse();
+
+      container.innerHTML = `
+        <div class="max-h-[calc(100vh-240px)] min-h-[450px] overflow-y-auto custom-scrollbar overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="sticky top-0 z-10">
+              <tr class="bg-slate-900 text-white uppercase text-[10px] font-extrabold">
+                <th class="py-3.5 px-3">Tanggal</th>
+                <th class="py-3.5 px-3">Nama Barang</th>
+                <th class="py-3.5 px-3 text-center">Qty</th>
+                <th class="py-3.5 px-3">Asal Retur / Proyek</th>
+                <th class="py-3.5 px-3">Alasan / Catatan</th>
+                <th class="py-3.5 px-3 text-center">Status</th>
+                <th class="py-3.5 px-3 text-center w-24">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+              ${displayData.map(item => {
+                let statusBadge = 'bg-amber-100 text-amber-800';
+                if (item.status === 'Selesai') statusBadge = 'bg-emerald-100 text-emerald-800';
+                if (item.status === 'Restock Gudang') statusBadge = 'bg-sky-100 text-sky-800';
+
+                return `
+                  <tr class="hover:bg-slate-50 transition">
+                    <td class="py-3 px-3 font-mono text-[11px] text-slate-600 whitespace-nowrap">${formatDateOnly(item.tanggal)}</td>
+                    <td class="py-3 px-3 font-bold text-slate-800">${item.namaBarang}</td>
+                    <td class="py-3 px-3 text-center font-bold font-mono text-rose-600">${item.quantity} ${item.satuan || 'Pcs'}</td>
+                    <td class="py-3 px-3 font-semibold text-slate-700">${item.asalRetur || '-'}</td>
+                    <td class="py-3 px-3 text-slate-600 text-[11px]">${item.catatan || '-'}</td>
+                    <td class="py-3 px-3 text-center">
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${statusBadge}">${item.status || 'Diproses'}</span>
+                    </td>
+                    <td class="py-3 px-3 text-center">
+                      <div class="flex items-center justify-center gap-1.5">
+                        <button onclick="editRetur('${item.id}')" title="Edit Retur" class="w-7 h-7 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 rounded-lg text-slate-600 transition inline-flex items-center justify-center">
+                          <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button onclick="deleteRetur('${item.id}')" title="Hapus" class="w-7 h-7 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-600 transition inline-flex items-center justify-center">
+                          <i class="fa-solid fa-trash"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function filterReturData() {
+      const qInput = document.getElementById('searchRetur');
+      const q = qInput ? qInput.value.toLowerCase().trim() : '';
+
+      if (!q) {
+        renderRetur(rawReturData);
+        return;
+      }
+
+      const filtered = rawReturData.filter(item => 
+        (item.namaBarang || '').toLowerCase().includes(q) ||
+        (item.asalRetur || '').toLowerCase().includes(q) ||
+        (item.catatan || '').toLowerCase().includes(q) ||
+        (item.status || '').toLowerCase().includes(q)
+      );
+
+      renderRetur(filtered);
+    }
+
+    function openReturModal() {
+      const form = document.getElementById('returForm');
+      if (form) form.reset();
+
+      document.getElementById('formReturId').value = '';
+      document.getElementById('modalReturTitle').innerText = 'Input Retur Barang';
+      document.getElementById('formReturTanggal').value = new Date().toISOString().split('T')[0];
+
+      // Populate datalist from inventory item names for easy autocomplete
+      const datalist = document.getElementById('returBarangList');
+      if (datalist) {
+        const uniqueBarang = [...new Set(rawInventoryData.map(i => i.namaBarang).filter(Boolean))];
+        datalist.innerHTML = uniqueBarang.map(b => `<option value="${b}"></option>`).join('');
+      }
+
+      document.getElementById('returModal').classList.remove('hidden');
+    }
+
+    function closeReturModal() {
+      document.getElementById('returModal').classList.add('hidden');
+    }
+
+    function handleReturSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('formReturId').value;
+      const payload = {
+        id: id || `RTR-${Date.now()}`,
+        tanggal: document.getElementById('formReturTanggal').value,
+        namaBarang: document.getElementById('formReturNamaBarang').value.trim(),
+        quantity: Number(document.getElementById('formReturQuantity').value) || 1,
+        satuan: document.getElementById('formReturSatuan').value.trim() || 'Pcs',
+        asalRetur: document.getElementById('formReturAsal').value.trim(),
+        catatan: document.getElementById('formReturCatatan').value.trim(),
+        status: document.getElementById('formReturStatus').value
+      };
+
+      Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+      if (id) {
+        const idx = rawReturData.findIndex(x => x.id === id);
+        if (idx !== -1) rawReturData[idx] = payload;
+      } else {
+        rawReturData.push(payload);
+      }
+
+      localStorage.setItem('ouffice_retur_data', JSON.stringify(rawReturData));
+      renderRetur(rawReturData);
+      closeReturModal();
+
+      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+      if (isGASNative) {
+        if (id) {
+          google.script.run.withSuccessHandler(() => Swal.fire({ icon: 'success', title: 'Retur Diperbarui!', timer: 1000, showConfirmButton: false })).updateRetur(id, payload);
+        } else {
+          google.script.run.withSuccessHandler(() => Swal.fire({ icon: 'success', title: 'Retur Tersimpan!', timer: 1000, showConfirmButton: false })).addRetur(payload);
+        }
+      } else if (CUSTOM_GAS_URL) {
+        fetch(CUSTOM_GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: id ? 'updateRetur' : 'addRetur', id: id, ...payload })
+        }).then(() => Swal.fire({ icon: 'success', title: 'Retur Tersimpan!', timer: 1000, showConfirmButton: false })).catch(() => {});
+      } else {
+        Swal.fire({ icon: 'success', title: 'Retur Tersimpan!', timer: 1000, showConfirmButton: false });
+      }
+    }
+
+    function editRetur(id) {
+      const item = rawReturData.find(x => x.id === id);
+      if (!item) return;
+
+      openReturModal();
+      document.getElementById('formReturId').value = item.id;
+      document.getElementById('modalReturTitle').innerText = 'Edit Data Retur Barang';
+      document.getElementById('formReturTanggal').value = formatDateOnly(item.tanggal);
+      document.getElementById('formReturNamaBarang').value = item.namaBarang || '';
+      document.getElementById('formReturQuantity').value = item.quantity || 1;
+      document.getElementById('formReturSatuan').value = item.satuan || 'Pcs';
+      document.getElementById('formReturAsal').value = item.asalRetur || '';
+      document.getElementById('formReturCatatan').value = item.catatan || '';
+      document.getElementById('formReturStatus').value = item.status || 'Diproses';
+    }
+
+    function deleteRetur(id) {
+      Swal.fire({
+        title: 'Hapus Data Retur?',
+        text: 'Catatan pengembalian barang ini akan dihapus.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Ya, Hapus'
+      }).then((res) => {
+        if (res.isConfirmed) {
+          rawReturData = rawReturData.filter(x => x.id !== id);
+          localStorage.setItem('ouffice_retur_data', JSON.stringify(rawReturData));
+          renderRetur(rawReturData);
+
+          const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+          if (isGASNative) {
+            google.script.run.deleteRetur(id);
+          } else if (CUSTOM_GAS_URL) {
+            fetch(CUSTOM_GAS_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: 'deleteRetur', id: id })
+            }).catch(() => {});
+          }
+          Swal.fire({ icon: 'success', title: 'Retur Terhapus!', timer: 1000, showConfirmButton: false });
         }
       });
     }
