@@ -2114,15 +2114,23 @@
       const itemsRows = doDoc.items.map((item, idx) => {
         const tipeSeri = [item.brand, item.tipe, item.seri].filter(Boolean).join(' ');
         const descText = `${item.namaBarang}${tipeSeri ? ' ' + tipeSeri : ''}`;
-        const snText = item.serialNumber || '-';
+        
+        // Memecah Serial Number berdasarkan spasi, koma, atau enter dan menambahkan bullet di SISI KIRI serial number (inline)
+        let snText = '-';
+        if (item.serialNumber && item.serialNumber.trim()) {
+          const snList = item.serialNumber.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
+          if (snList.length > 0) {
+            snText = snList.map(sn => `<div style="white-space: nowrap; line-height: 1.4; font-size: 8.5px;">&bull;&nbsp;${sn}</div>`).join('');
+          }
+        }
         
         return `
-          <tr style="border-bottom: 1px solid #cbd5e1;">
-            <td style="padding: 6px 4px; text-align: center; border-right: 1px solid #cbd5e1;">${idx + 1}</td>
-            <td style="padding: 6px 8px; font-weight: bold; border-right: 1px solid #cbd5e1;">${item.namaBarang}</td>
-            <td style="padding: 6px 8px; border-right: 1px solid #cbd5e1;">${descText}</td>
-            <td style="padding: 6px 4px; text-align: center; font-family: monospace; border-right: 1px solid #cbd5e1;">${snText}</td>
-            <td style="padding: 6px 4px; text-align: center; font-family: monospace; font-weight: bold; border-right: 1px solid #cbd5e1;">${item.quantity}</td>
+          <tr style="border-bottom: 0.5px solid #cbd5e1;">
+            <td style="padding: 6px 4px; text-align: center; border-right: 0.5px solid #cbd5e1;">${idx + 1}</td>
+            <td style="padding: 6px 8px; font-weight: bold; border-right: 0.5px solid #cbd5e1;">${item.namaBarang}</td>
+            <td style="padding: 6px 8px; border-right: 0.5px solid #cbd5e1;">${descText}</td>
+            <td style="padding: 6px 6px; text-align: left; font-family: monospace; border-right: 0.5px solid #cbd5e1;">${snText}</td>
+            <td style="padding: 6px 4px; text-align: center; font-family: monospace; font-weight: bold; border-right: 0.5px solid #cbd5e1;">${item.quantity}</td>
             <td style="padding: 6px 4px; text-align: center;">${item.satuan || 'Unit'}</td>
           </tr>
         `;
@@ -2137,7 +2145,7 @@
                   <td style="width: 150px; vertical-align: middle; padding-right: 10px;">
                     <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="150" crossorigin="anonymous" style="width: 140px; height: auto; max-height: 65px; object-fit: contain; display: block;">
                   </td>
-                  <td style="vertical-align: middle; border: 1px dashed #64748b; padding: 6px 8px; min-height: 55px;">
+                  <td style="vertical-align: middle; border: 0.5px dashed #64748b; padding: 6px 8px; min-height: 55px;">
                     <div style="font-size: 9.5px; line-height: 1.35; color: #1e293b; font-family: 'Trebuchet MS', sans-serif;">
                       <strong style="font-size: 12px; font-weight: 900; letter-spacing: 0.3px; display: inline-block; margin-bottom: 2px; color: #0f172a;">PT. CITRA SARI KENCANA</strong><br>
                       Jl. Rambutan No. 4, Manggarai Selatan<br>
@@ -2158,8 +2166,8 @@
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5px;">
           <tr>
             <td style="width: 58%; vertical-align: top;">
-              <div style="border: 1px solid #0f172a; margin-bottom: 6px;">
-                <div style="padding: 4px 8px; border-bottom: 1px solid #0f172a; font-weight: bold; background-color: #f8fafc;">
+              <div style="border: 0.5px solid #0f172a; margin-bottom: 6px;">
+                <div style="padding: 4px 8px; border-bottom: 0.5px solid #0f172a; font-weight: bold; background-color: #f8fafc;">
                   Ship To &nbsp;&nbsp;&nbsp;: <span style="text-transform: uppercase;">${doDoc.endUser}</span>
                 </div>
                 <div style="padding: 6px 8px; line-height: 1.4; min-height: 36px;">
@@ -2168,8 +2176,8 @@
                 </div>
               </div>
 
-              <div style="border: 1px solid #0f172a;">
-                <div style="padding: 4px 8px; border-bottom: 1px solid #0f172a; font-weight: bold; background-color: #f8fafc;">
+              <div style="border: 0.5px solid #0f172a;">
+                <div style="padding: 4px 8px; border-bottom: 0.5px solid #0f172a; font-weight: bold; background-color: #f8fafc;">
                   Bill To &nbsp;&nbsp;&nbsp;&nbsp;: <span style="text-transform: uppercase;">${doDoc.endUser}</span>
                 </div>
                 <div style="padding: 6px 8px; line-height: 1.4; min-height: 36px;">
@@ -2182,21 +2190,21 @@
             <td style="width: 2%;"></td>
 
             <td style="width: 40%; vertical-align: top;">
-              <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; border: 1px solid #0f172a; text-align: left;">
-                <tr style="border-bottom: 1px solid #0f172a; background-color: #f8fafc;">
-                  <td style="padding: 4px 6px; border-right: 1px solid #0f172a; width: 50%; font-weight: bold;">Delivery Date</td>
+              <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; border: 0.5px solid #0f172a; text-align: left;">
+                <tr style="border-bottom: 0.5px solid #0f172a; background-color: #f8fafc;">
+                  <td style="padding: 4px 6px; border-right: 0.5px solid #0f172a; width: 50%; font-weight: bold;">Delivery Date</td>
                   <td style="padding: 4px 6px; font-weight: bold;">Delivery No.</td>
                 </tr>
-                <tr style="border-bottom: 1px solid #0f172a; font-family: monospace; font-weight: bold;">
-                  <td style="padding: 5px 6px; border-right: 1px solid #0f172a; text-align: center;">${doDoc.tanggal}</td>
+                <tr style="border-bottom: 0.5px solid #0f172a; font-family: monospace; font-weight: bold;">
+                  <td style="padding: 5px 6px; border-right: 0.5px solid #0f172a; text-align: center;">${doDoc.tanggal}</td>
                   <td style="padding: 5px 6px; text-align: center;">${doDoc.id}</td>
                 </tr>
-                <tr style="border-bottom: 1px solid #0f172a; background-color: #f8fafc;">
-                  <td style="padding: 4px 6px; border-right: 1px solid #0f172a; font-weight: bold;">Ship Via</td>
+                <tr style="border-bottom: 0.5px solid #0f172a; background-color: #f8fafc;">
+                  <td style="padding: 4px 6px; border-right: 0.5px solid #0f172a; font-weight: bold;">Ship Via</td>
                   <td style="padding: 4px 6px; font-weight: bold;">PO Number</td>
                 </tr>
                 <tr>
-                  <td style="padding: 5px 6px; border-right: 1px solid #0f172a; text-align: center; font-weight: bold;">OPS</td>
+                  <td style="padding: 5px 6px; border-right: 0.5px solid #0f172a; text-align: center; font-weight: bold;">OPS</td>
                   <td style="padding: 5px 6px; text-align: center;">-</td>
                 </tr>
               </table>
@@ -2204,14 +2212,14 @@
           </tr>
         </table>
 
-        <table style="width: 100%; border-collapse: collapse; border: 1px solid #0f172a; margin-bottom: 12px; font-size: 9.5px;">
+        <table style="width: 100%; border-collapse: collapse; border: 0.5px solid #0f172a; margin-bottom: 12px; font-size: 9.5px;">
           <thead>
-            <tr style="background-color: #ea580c; color: white; border-bottom: 1px solid #0f172a; font-weight: bold;">
-              <th style="padding: 5px; width: 30px; text-align: center; border-right: 1px solid #cbd5e1;">NO</th>
-              <th style="padding: 5px; width: 110px; text-align: center; border-right: 1px solid #cbd5e1;">ITEM</th>
-              <th style="padding: 5px; text-align: center; border-right: 1px solid #cbd5e1;">ITEM DESCRIPTION</th>
-              <th style="padding: 5px; width: 110px; text-align: center; border-right: 1px solid #cbd5e1;">SERIAL NUMBER</th>
-              <th style="padding: 5px; width: 45px; text-align: center; border-right: 1px solid #cbd5e1;">QTY</th>
+            <tr style="background-color: #ea580c; color: white; border-bottom: 0.5px solid #0f172a; font-weight: bold;">
+              <th style="padding: 5px; width: 30px; text-align: center; border-right: 0.5px solid #cbd5e1;">NO</th>
+              <th style="padding: 5px; width: 110px; text-align: center; border-right: 0.5px solid #cbd5e1;">ITEM</th>
+              <th style="padding: 5px; text-align: center; border-right: 0.5px solid #cbd5e1;">ITEM DESCRIPTION</th>
+              <th style="padding: 5px; width: 125px; text-align: center; border-right: 0.5px solid #cbd5e1;">SERIAL NUMBER</th>
+              <th style="padding: 5px; width: 45px; text-align: center; border-right: 0.5px solid #cbd5e1;">QTY</th>
               <th style="padding: 5px; width: 55px; text-align: center;">UNIT</th>
             </tr>
           </thead>
@@ -2220,33 +2228,33 @@
           </tbody>
         </table>
 
-        <table style="width: 100%; border-collapse: collapse; border: 1px solid #0f172a; font-size: 9.5px;">
+        <table style="width: 100%; border-collapse: collapse; border: 0.5px solid #0f172a; font-size: 9.5px;">
           <tr>
-            <td style="border-right: 1px solid #0f172a; width: 65%; vertical-align: top; padding: 0;">
+            <td style="border-right: 0.5px solid #0f172a; width: 65%; vertical-align: top; padding: 0;">
               <table style="width: 100%; border-collapse: collapse; text-align: center;">
-                <tr style="border-bottom: 1px solid #0f172a; background-color: #f8fafc; font-weight: bold; font-family: 'Trebuchet MS', sans-serif;">
-                  <td style="padding: 5px; border-right: 1px solid #0f172a; width: 25%;">Prepared By</td>
-                  <td style="padding: 5px; border-right: 1px solid #0f172a; width: 25%;">Approved By</td>
-                  <td style="padding: 5px; border-right: 1px solid #0f172a; width: 25%;">Shipped By</td>
+                <tr style="border-bottom: 0.5px solid #0f172a; background-color: #f8fafc; font-weight: bold; font-family: 'Trebuchet MS', sans-serif;">
+                  <td style="padding: 5px; border-right: 0.5px solid #0f172a; width: 25%;">Prepared By</td>
+                  <td style="padding: 5px; border-right: 0.5px solid #0f172a; width: 25%;">Approved By</td>
+                  <td style="padding: 5px; border-right: 0.5px solid #0f172a; width: 25%;">Shipped By</td>
                   <td style="padding: 5px; width: 25%;">Received By</td>
                 </tr>
                 <tr>
-                  <td style="height: 50px; border-right: 1px solid #0f172a;"></td>
-                  <td style="height: 50px; border-right: 1px solid #0f172a;"></td>
-                  <td style="height: 50px; border-right: 1px solid #0f172a;"></td>
+                  <td style="height: 50px; border-right: 0.5px solid #0f172a;"></td>
+                  <td style="height: 50px; border-right: 0.5px solid #0f172a;"></td>
+                  <td style="height: 50px; border-right: 0.5px solid #0f172a;"></td>
                   <td style="height: 50px;"></td>
                 </tr>
-                <tr style="border-top: 1px solid #0f172a; background-color: #f8fafc; font-family: 'Trebuchet MS', sans-serif;">
-                  <td style="padding: 4px 5px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
-                  <td style="padding: 4px 5px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
-                  <td style="padding: 4px 5px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
+                <tr style="border-top: 0.5px solid #0f172a; background-color: #f8fafc; font-family: 'Trebuchet MS', sans-serif;">
+                  <td style="padding: 4px 5px; border-right: 0.5px solid #0f172a; text-align: left;">Date:</td>
+                  <td style="padding: 4px 5px; border-right: 0.5px solid #0f172a; text-align: left;">Date:</td>
+                  <td style="padding: 4px 5px; border-right: 0.5px solid #0f172a; text-align: left;">Date:</td>
                   <td style="padding: 4px 5px; text-align: left;">Date:</td>
                 </tr>
               </table>
             </td>
             <td style="vertical-align: top; padding: 6px 8px;">
               <strong>Description :</strong><br>
-              <span style="color: #475569; font-size: 9px; line-height: 1.3;">Proyek: ${doDoc.peruntukan || '-'}</span>
+              <span style="color: #475569; font-size: 9px; line-height: 1.3;">${doDoc.peruntukan || '-'}</span>
             </td>
           </tr>
         </table>
@@ -2388,14 +2396,12 @@
     function handleSnKeyDown(e) {
       const input = e.target;
       if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
         const val = input.value.trim();
-        if (val.length > 0 && !val.endsWith(',')) {
-          e.preventDefault();
+        if (val.length > 0) {
           const tokens = val.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
-          input.value = tokens.join(', ') + ', ';
+          input.value = tokens.join(' ') + ' ';
           updateSnBadge();
-        } else if (e.key === 'Enter') {
-          e.preventDefault();
         }
       }
     }
