@@ -77,6 +77,7 @@
       pointer-events: none;
     }
 
+    /* Custom SweetAlert Aesthetic Styling */
     .swal2-aesthetic-popup {
       border-radius: 1.25rem !important;
       padding: 1.75rem !important;
@@ -129,12 +130,14 @@
 
   <!-- LOGIN SCREEN -->
   <div id="loginScreen" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all duration-500">
+    <!-- Ambient Background Lighting -->
     <div class="absolute -top-24 -left-24 w-96 h-96 bg-orange-600/20 rounded-full blur-3xl pointer-events-none animate-float-glow"></div>
     <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-sky-600/15 rounded-full blur-3xl pointer-events-none animate-float-glow" style="animation-delay: -5s;"></div>
 
     <div id="loginCard" class="bg-white/95 backdrop-blur-xl border border-white/40 rounded-3xl shadow-2xl max-w-md w-full p-7 sm:p-9 relative overflow-hidden animate-fade-in-up transition-all duration-300">
       <div class="absolute -right-10 -top-10 w-36 h-36 bg-orange-500/15 rounded-full blur-2xl pointer-events-none"></div>
       
+      <!-- Company Logo Branding -->
       <div class="flex flex-col items-center mb-7">
         <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" onerror="this.onerror=null; this.src='https://placehold.co/180x60/ea580c/white?text=Ouffice.co.id';" alt="Logo Perusahaan" width="160" crossorigin="anonymous" class="h-auto max-w-[160px] object-contain mb-3">
         <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest">Sistem Inventaris Gudang</h2>
@@ -274,7 +277,7 @@
           </div>
 
           <div class="flex items-center gap-2 sm:gap-3">
-            <button onclick="loadDataFromBackend(true)" title="Sinkronkan Data Manual" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition text-xs font-bold">
+            <button onclick="loadDataFromBackend(false)" title="Sinkronkan Data Manual" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition text-xs font-bold">
               <i id="syncIcon" class="fa-solid fa-rotate text-xs"></i>
               <span class="hidden sm:inline">Sync</span>
             </button>
@@ -453,6 +456,7 @@
       <!-- DATA PRODUK VIEW -->
       <section id="view-produk" class="hidden space-y-4">
         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 space-y-3">
+          <!-- Baris 1: Search Input & Export PDF -->
           <div class="flex flex-col sm:flex-row items-center gap-3">
             <div class="relative flex-1 w-full">
               <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
@@ -469,12 +473,15 @@
             </button>
           </div>
 
+          <!-- Baris 2: Filter Rentang Waktu & Dropdown Filter Grid -->
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-2 border-t border-slate-100">
+            <!-- Filter Tanggal Dari -->
             <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs">
               <span class="text-slate-500 font-bold text-[11px] whitespace-nowrap flex items-center gap-1.5"><i class="fa-regular fa-calendar-days text-orange-600"></i> Dari:</span>
               <input type="date" id="filterStartDate" onchange="filterData()" class="w-full bg-transparent text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer">
             </div>
 
+            <!-- Filter Tanggal Sampai -->
             <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs">
               <span class="text-slate-500 font-bold text-[11px] whitespace-nowrap flex items-center gap-1.5"><i class="fa-regular fa-calendar-days text-orange-600"></i> s/d:</span>
               <input type="date" id="filterEndDate" onchange="filterData()" class="w-full bg-transparent text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer">
@@ -483,6 +490,7 @@
               </button>
             </div>
 
+            <!-- Filter Jenis Transaksi -->
             <div>
               <select id="filterJenis" onchange="filterData()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
                 <option value="">Semua Jenis Transaksi</option>
@@ -491,6 +499,7 @@
               </select>
             </div>
 
+            <!-- Filter Status Kondisi -->
             <div>
               <select id="filterKondisi" onchange="filterData()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
                 <option value="">Semua Status Kondisi</option>
@@ -755,7 +764,7 @@
           </div>
           <div>
             <label class="block font-bold text-slate-700 uppercase mb-1">Jenis Transaksi *</label>
-            <select id="formJenis" required onchange="updateFormLabels()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-semibold">
+            <select id="formJenis" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-semibold">
               <option value="Masuk">↓ Masuk (Penerimaan)</option>
               <option value="Keluar">↑ Keluar (Pengeluaran)</option>
             </select>
@@ -931,12 +940,7 @@
           <h3 class="text-base font-bold text-slate-800 uppercase tracking-wide">Riwayat Activity Login</h3>
           <p class="text-xs text-slate-500 font-medium">Catatan waktu akses pengguna ke sistem</p>
         </div>
-        <div class="flex items-center gap-2">
-          <button id="btnClearLogHistory" onclick="clearHistoryLogs()" title="Hapus Riwayat Log" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-bold transition flex items-center gap-1">
-            <i class="fa-solid fa-trash-can text-xs"></i> <span>Clear Log</span>
-          </button>
-          <button onclick="closeHistoryModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
-        </div>
+        <button onclick="closeHistoryModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <div class="overflow-y-auto custom-scrollbar flex-1">
@@ -945,7 +949,7 @@
             <tr class="bg-slate-900 text-white text-[11px] uppercase tracking-wider font-extrabold">
               <th class="py-3 px-3 text-center w-10">No</th>
               <th class="py-3 px-3">Waktu / Tanggal</th>
-              <th class="py-3 px-3">Nama Lengkap</th>
+              <th class="py-3 px-3">Username</th>
               <th class="py-3 px-3">Role Hak Akses</th>
               <th class="py-3 px-3 text-center">Status</th>
             </tr>
@@ -1178,10 +1182,6 @@
     let rawClientData = JSON.parse(localStorage.getItem('ouffice_client_data')) || [];
     let rawSupplierData = JSON.parse(localStorage.getItem('ouffice_supplier_data')) || [];
     let rawReturData = JSON.parse(localStorage.getItem('ouffice_retur_data')) || [];
-    let rawLoginLogs = JSON.parse(localStorage.getItem('ouffice_login_history')) || [
-      { id: 'LOG-1', timestamp: new Date(Date.now() - 3600000).toLocaleString('id-ID'), nama: 'Administrator Utama', username: 'admin', role: 'Master Admin', status: 'Berhasil' },
-      { id: 'LOG-2', timestamp: new Date(Date.now() - 7200000).toLocaleString('id-ID'), nama: 'Staff Gudang', username: 'staff', role: 'Staff Gudang', status: 'Berhasil' }
-    ];
     let html5QrScannerInstance = null;
     let activeScanTarget = 'search';
     let currentUser = null;
@@ -1192,79 +1192,159 @@
     const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbziiQkjGRqo_SBRGsJbXlVlQM5q8_iPU3kMD9cBQPbPreYyXHtP7JIVYOJPOe4pWsYGqw/exec';
     let CUSTOM_GAS_URL = localStorage.getItem('ouffice_gas_url') || DEFAULT_GAS_URL;
 
-    function applyRolePermissions() {
-      if (!currentUser) return;
-      const role = currentUser.role || 'Staff Gudang';
-      
-      const roleBadge = document.getElementById('currentUserRoleBadge');
-      if (roleBadge) roleBadge.innerText = role;
+    window.onload = function () {
+      loadCachedData();
 
-      const sidebarUser = document.getElementById('sidebarUsername');
-      if (sidebarUser) sidebarUser.innerText = currentUser.nama || currentUser.username || 'User';
-
-      const sidebarRole = document.getElementById('sidebarRole');
-      if (sidebarRole) sidebarRole.innerText = role;
-
-      const isManager = role === 'Manager';
-      const isMasterAdmin = role === 'Master Admin';
-
-      const btnNavUsers = document.getElementById('btnNavUsers');
-      if (btnNavUsers) {
-        if (isMasterAdmin) btnNavUsers.classList.remove('hidden');
-        else btnNavUsers.classList.add('hidden');
+      const savedUser = sessionStorage.getItem('ouffice_user') || localStorage.getItem('ouffice_user');
+      if (savedUser) {
+        try {
+          currentUser = JSON.parse(savedUser);
+          document.getElementById('loginScreen').classList.add('hidden');
+          applyRolePermissions();
+        } catch (e) {
+          document.getElementById('loginScreen').classList.remove('hidden');
+        }
+      } else {
+        document.getElementById('loginScreen').classList.remove('hidden');
       }
 
-      const btnTambahDataMobile = document.getElementById('btnTambahDataMobile');
-      if (btnTambahDataMobile) {
-        if (isManager) btnTambahDataMobile.classList.add('hidden');
-        else btnTambahDataMobile.classList.remove('hidden');
+      const formJenisElem = document.getElementById('formJenis');
+      if (formJenisElem) {
+        formJenisElem.addEventListener('change', updateFormLabels);
       }
+
+      loadDataFromBackend(true, true);
+      startRealtimeSync();
+    };
+
+    function loadCachedData() {
+      try {
+        const cached = localStorage.getItem('ouffice_cached_inventory');
+        if (cached) {
+          rawInventoryData = JSON.parse(cached);
+          filterData();
+          updateStatsAndDashboard();
+          refreshCurrentView();
+        }
+      } catch (e) {}
+    }
+
+    function refreshCurrentView() {
+      if (currentActiveView === 'laporan') calculateStockSummary();
+      if (currentActiveView === 'users') loadUsers();
+      if (currentActiveView === 'client') loadClient();
+      if (currentActiveView === 'supplier') loadSupplier();
+      if (currentActiveView === 'stok-masuk') renderFilteredView('Masuk', 'stokMasukTableContainer');
+      if (currentActiveView === 'stok-keluar') renderFilteredView('Keluar', 'stokKeluarTableContainer');
+      if (currentActiveView === 'delivery-order') renderDeliveryOrders();
+      if (currentActiveView === 'retur') loadRetur();
+    }
+
+    function startRealtimeSync() {
+      if (realtimeSyncTimer) clearInterval(realtimeSyncTimer);
+      realtimeSyncTimer = setInterval(() => {
+        if (currentUser && !isFetchingBackend && document.visibilityState === 'visible') {
+          loadDataFromBackend(true);
+        }
+      }, 3500);
     }
 
     function toggleSidebar() {
       const sidebar = document.getElementById('mainSidebar');
       const overlay = document.getElementById('sidebarOverlay');
-      if (sidebar && overlay) {
-        sidebar.classList.toggle('-translate-x-full');
-        overlay.classList.toggle('hidden');
-      }
+      if (sidebar) sidebar.classList.toggle('-translate-x-full');
+      if (overlay) overlay.classList.toggle('hidden');
     }
 
-    function switchView(viewName) {
-      currentActiveView = viewName;
-      const views = ['dashboard', 'produk', 'client', 'supplier', 'stok-masuk', 'stok-keluar', 'delivery-order', 'retur', 'users', 'laporan'];
-      
-      views.forEach(v => {
-        const viewEl = document.getElementById(`view-${v}`);
-        const navEl = document.getElementById(`nav-${v}`);
-        if (viewEl) {
-          if (v === viewName) viewEl.classList.remove('hidden');
-          else viewEl.classList.add('hidden');
+    function applyRolePermissions() {
+      if (!currentUser) return;
+      const sbUsername = document.getElementById('sidebarUsername');
+      const sbRole = document.getElementById('sidebarRole');
+      const badgeRole = document.getElementById('currentUserRoleBadge');
+
+      if (sbUsername) sbUsername.innerText = currentUser.username || 'Admin';
+      if (sbRole) sbRole.innerText = currentUser.role || 'Staff Gudang';
+      if (badgeRole) badgeRole.innerText = currentUser.role || 'STAFF GUDANG';
+
+      const isManager = currentUser.role === 'Manager';
+
+      const btnNavUsers = document.getElementById('btnNavUsers');
+      if (btnNavUsers) {
+        if (currentUser.role === 'Master Admin') {
+          btnNavUsers.classList.remove('hidden');
+        } else {
+          btnNavUsers.classList.add('hidden');
         }
-        if (navEl) {
-          if (v === viewName) {
-            navEl.className = 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition font-semibold text-white bg-orange-600';
+      }
+
+      // Sembunyikan tombol Log Login untuk Staff Gudang dan Manager
+      const btnHistoryLogin = document.getElementById('btnHistoryLogin');
+      if (btnHistoryLogin) {
+        if (currentUser.role === 'Master Admin') {
+          btnHistoryLogin.style.display = '';
+        } else {
+          btnHistoryLogin.style.display = 'none';
+        }
+      }
+
+      // Hide or show add buttons for Manager role
+      const addButtons = [
+        'btnTambahDataMobile',
+        'btnTambahClient',
+        'btnTambahSupplier',
+        'btnTambahStokMasuk',
+        'btnTambahStokKeluar',
+        'btnTambahDoKeluar',
+        'btnTambahRetur'
+      ];
+
+      addButtons.forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+          if (isManager) {
+            btn.classList.add('hidden');
           } else {
-            navEl.className = 'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 font-bold hover:text-black hover:bg-slate-300/60';
+            btn.classList.remove('hidden');
           }
         }
       });
+    }
 
-      const titleMap = {
+    function switchView(viewId) {
+      currentActiveView = viewId;
+      const viewTitleMap = {
         'dashboard': 'Dashboard Utama',
-        'produk': 'Data Produk & Inventaris',
+        'produk': 'Data Produk Inventaris',
         'client': 'Data Client / Pelanggan',
-        'supplier': 'Data Supplier / Vendor',
+        'supplier': 'Daftar Supplier',
         'stok-masuk': 'Transaksi Stok Masuk',
         'stok-keluar': 'Transaksi Stok Keluar',
         'delivery-order': 'Delivery Order (Surat Jalan)',
-        'retur': 'Retur Barang Gudang',
-        'users': 'Manajemen Pengguna Sistem',
-        'laporan': 'Laporan & Rekapitulasi Stok'
+        'retur': 'Retur Barang',
+        'users': 'Manajemen Pengguna',
+        'laporan': 'Laporan Rekap Stok'
       };
 
-      const titleEl = document.getElementById('currentViewTitle');
-      if (titleEl) titleEl.innerText = titleMap[viewName] || 'Gudang Ouffice.co.id';
+      const titleElem = document.getElementById('currentViewTitle');
+      if (titleElem) titleElem.innerText = viewTitleMap[viewId] || 'Sistem Inventaris';
+
+      const views = ['dashboard', 'produk', 'client', 'supplier', 'stok-masuk', 'stok-keluar', 'delivery-order', 'retur', 'users', 'laporan'];
+      views.forEach(v => {
+        const el = document.getElementById(`view-${v}`);
+        if (el) el.classList.add('hidden');
+        const navBtn = document.getElementById(`nav-${v}`);
+        if (navBtn) {
+          navBtn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 hover:text-black hover:bg-slate-300/60 font-bold";
+        }
+      });
+
+      const activeEl = document.getElementById(`view-${viewId}`);
+      if (activeEl) activeEl.classList.remove('hidden');
+
+      const activeNavBtn = document.getElementById(`nav-${viewId}`);
+      if (activeNavBtn) {
+        activeNavBtn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition font-semibold text-white bg-orange-600";
+      }
 
       const sidebar = document.getElementById('mainSidebar');
       if (sidebar && !sidebar.classList.contains('-translate-x-full') && window.innerWidth < 768) {
@@ -1272,186 +1352,6 @@
       }
 
       refreshCurrentView();
-    }
-
-    function refreshCurrentView() {
-      if (currentActiveView === 'dashboard') {
-        updateStatsAndDashboard();
-      } else if (currentActiveView === 'produk') {
-        filterData();
-      } else if (currentActiveView === 'client') {
-        loadClient();
-      } else if (currentActiveView === 'supplier') {
-        loadSupplier();
-      } else if (currentActiveView === 'stok-masuk') {
-        renderFilteredView('Masuk', 'stokMasukTableContainer');
-      } else if (currentActiveView === 'stok-keluar') {
-        renderFilteredView('Keluar', 'stokKeluarTableContainer');
-      } else if (currentActiveView === 'delivery-order') {
-        renderDeliveryOrders();
-      } else if (currentActiveView === 'retur') {
-        loadRetur();
-      } else if (currentActiveView === 'users') {
-        loadUsers();
-      } else if (currentActiveView === 'laporan') {
-        calculateStockSummary();
-      }
-    }
-
-    function loadDataFromBackend(showToast = false, isInitial = false) {
-      if (isFetchingBackend) return;
-      isFetchingBackend = true;
-
-      const syncIcon = document.getElementById('syncIcon');
-      if (syncIcon) syncIcon.classList.add('fa-spin');
-
-      if (showToast) {
-        Swal.fire({
-          title: 'Menyinkronkan Data...',
-          allowOutsideClick: false,
-          customClass: { popup: 'swal2-aesthetic-popup' },
-          didOpen: () => Swal.showLoading()
-        });
-      }
-
-      const handleSuccessData = (data) => {
-        isFetchingBackend = false;
-        if (syncIcon) syncIcon.classList.remove('fa-spin');
-
-        if (Array.isArray(data)) {
-          rawInventoryData = data;
-          try {
-            localStorage.setItem('ouffice_inventory_data', JSON.stringify(data));
-          } catch(e) {}
-        }
-
-        filteredInventoryData = [...rawInventoryData];
-        updateStatsAndDashboard();
-        refreshCurrentView();
-
-        if (showToast) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Data Sinkron!',
-            timer: 1000,
-            showConfirmButton: false,
-            customClass: { popup: 'swal2-aesthetic-popup' }
-          });
-        }
-      };
-
-      const handleFailure = () => {
-        isFetchingBackend = false;
-        if (syncIcon) syncIcon.classList.remove('fa-spin');
-        
-        const localInv = localStorage.getItem('ouffice_inventory_data');
-        if (localInv) {
-          try {
-            rawInventoryData = JSON.parse(localInv);
-            filteredInventoryData = [...rawInventoryData];
-            updateStatsAndDashboard();
-            refreshCurrentView();
-          } catch(e) {}
-        }
-
-        if (showToast) {
-          Swal.fire({
-            icon: 'info',
-            title: 'Menggunakan Offline Data',
-            text: 'Tidak dapat terhubung ke server backend.',
-            timer: 1500,
-            showConfirmButton: false,
-            customClass: { popup: 'swal2-aesthetic-popup' }
-          });
-        }
-      };
-
-      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
-      if (isGASNative && google.script.run.readAllData) {
-        google.script.run
-          .withSuccessHandler(handleSuccessData)
-          .withFailureHandler(handleFailure)
-          .readAllData();
-      } else if (CUSTOM_GAS_URL) {
-        fetch(`${CUSTOM_GAS_URL}?action=readAll`)
-          .then(r => r.json())
-          .then(res => {
-            if (res && res.success && Array.isArray(res.data)) {
-              handleSuccessData(res.data);
-            } else if (Array.isArray(res)) {
-              handleSuccessData(res);
-            } else {
-              handleFailure();
-            }
-          })
-          .catch(handleFailure);
-      } else {
-        handleFailure();
-      }
-    }
-
-    function startRealtimeSync() {
-      if (realtimeSyncTimer) clearInterval(realtimeSyncTimer);
-      realtimeSyncTimer = setInterval(() => {
-        if (currentUser) {
-          loadDataFromBackend(false);
-        }
-      }, 30000);
-    }
-
-    function handleLogout() {
-      Swal.fire({
-        title: 'Konfirmasi Keluar',
-        text: 'Apakah Anda yakin ingin keluar dari sistem?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Ya, Keluar',
-        cancelButtonText: 'Batal',
-        buttonsStyling: false,
-        customClass: {
-          popup: 'swal2-aesthetic-popup',
-          confirmButton: 'swal2-aesthetic-confirm',
-          cancelButton: 'swal2-aesthetic-cancel'
-        }
-      }).then((res) => {
-        if (res.isConfirmed) {
-          currentUser = null;
-          sessionStorage.removeItem('ouffice_user');
-          localStorage.removeItem('ouffice_user');
-          if (realtimeSyncTimer) clearInterval(realtimeSyncTimer);
-          document.getElementById('loginScreen').classList.remove('hidden');
-        }
-      });
-    }
-    function recordLoginLog(nama, role, status) {
-      const now = new Date();
-      const dateStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + 
-                      now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      const newLog = {
-        id: `LOG-${Date.now()}`,
-        timestamp: dateStr,
-        nama: nama || 'Unknown',
-        username: nama || 'Unknown',
-        role: role || 'Staff Gudang',
-        status: status || 'Berhasil'
-      };
-      
-      rawLoginLogs.unshift(newLog);
-      if (rawLoginLogs.length > 100) rawLoginLogs.pop();
-      try {
-        localStorage.setItem('ouffice_login_history', JSON.stringify(rawLoginLogs));
-      } catch (e) {}
-
-      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
-      if (isGASNative && google.script.run.addLoginLog) {
-        google.script.run.addLoginLog(newLog);
-      } else if (CUSTOM_GAS_URL) {
-        fetch(CUSTOM_GAS_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'addLoginLog', ...newLog })
-        }).catch(() => {});
-      }
     }
 
     function handleLoginSubmit(e) {
@@ -1471,19 +1371,17 @@
       });
 
       const localAccounts = {
-        'admin': { id: 'USR-1', username: 'admin', nama: 'Administrator Utama', role: 'Master Admin', pass: 'admin123' },
-        'staff': { id: 'USR-2', username: 'staff', nama: 'Staff Gudang', role: 'Staff Gudang', pass: 'staff123' },
-        'manager': { id: 'USR-3', username: 'manager', nama: 'Manager Operasional', role: 'Manager', pass: 'manager123' }
+        'admin': { id: 'USR-1', username: 'admin', role: 'Master Admin', pass: 'admin123' },
+        'staff': { id: 'USR-2', username: 'staff', role: 'Staff Gudang', pass: 'staff123' },
+        'manager': { id: 'USR-3', username: 'manager', role: 'Manager', pass: 'manager123' }
       };
 
       const matchLocal = localAccounts[u.toLowerCase()];
       if (matchLocal && matchLocal.pass === p) {
-        currentUser = { id: matchLocal.id, username: matchLocal.username, nama: matchLocal.nama, role: matchLocal.role };
+        currentUser = { id: matchLocal.id, username: matchLocal.username, role: matchLocal.role };
         sessionStorage.setItem('ouffice_user', JSON.stringify(currentUser));
         localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
         
-        recordLoginLog(currentUser.nama || currentUser.username, currentUser.role, 'Berhasil');
-
         document.getElementById('loginScreen').classList.add('hidden');
         const loginCard = document.getElementById('loginCard');
         if (loginCard) loginCard.classList.remove('scale-95', 'opacity-0');
@@ -1495,7 +1393,7 @@
 
         Toast.fire({
           icon: 'success',
-          title: `Selamat datang, ${currentUser.nama || currentUser.username}!`
+          title: `Selamat datang, ${currentUser.username}!`
         });
         return;
       }
@@ -1518,8 +1416,6 @@
               sessionStorage.setItem('ouffice_user', JSON.stringify(currentUser));
               localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
               
-              recordLoginLog(currentUser.nama || currentUser.username, currentUser.role, 'Berhasil');
-
               document.getElementById('loginScreen').classList.add('hidden');
               const loginCard = document.getElementById('loginCard');
               if (loginCard) loginCard.classList.remove('scale-95', 'opacity-0');
@@ -1531,10 +1427,9 @@
 
               Toast.fire({
                 icon: 'success',
-                title: `Selamat datang, ${currentUser.nama || currentUser.username}!`
+                title: `Selamat datang, ${currentUser.username}!`
               });
             } else {
-              recordLoginLog(u, 'Guest', 'Gagal');
               Swal.fire({
                 icon: 'error',
                 title: '<div class="text-rose-600 font-extrabold text-sm uppercase">Gagal Login</div>',
@@ -1546,7 +1441,6 @@
           })
           .withFailureHandler((err) => {
             Swal.close();
-            recordLoginLog(u, 'Guest', 'Gagal');
             Swal.fire({
               icon: 'error',
               title: '<div class="text-rose-600 font-extrabold text-sm uppercase">Error Login</div>',
@@ -1575,8 +1469,6 @@
               sessionStorage.setItem('ouffice_user', JSON.stringify(currentUser));
               localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
 
-              recordLoginLog(currentUser.username, currentUser.role, 'Berhasil');
-
               document.getElementById('loginScreen').classList.add('hidden');
               const loginCard = document.getElementById('loginCard');
               if (loginCard) loginCard.classList.remove('scale-95', 'opacity-0');
@@ -1591,7 +1483,6 @@
                 title: `Selamat datang, ${currentUser.username}!`
               });
             } else {
-              recordLoginLog(u, 'Guest', 'Gagal');
               Swal.fire({
                 icon: 'error',
                 title: '<div class="text-rose-600 font-extrabold text-sm uppercase">Gagal Login</div>',
@@ -1604,7 +1495,6 @@
           .catch((err) => {
             clearTimeout(timeoutId);
             Swal.close();
-            recordLoginLog(u, 'Guest', 'Gagal');
             const errorMsg = (err && err.name === 'AbortError')
               ? 'Koneksi ke server memakan waktu terlalu lama (timeout). Silakan coba beberapa saat lagi.'
               : 'Username/password tidak cocok atau gagal terhubung ke server database.';
@@ -1616,8 +1506,96 @@
               customClass: { popup: 'swal2-aesthetic-popup', confirmButton: 'swal2-aesthetic-confirm' }
             });
           });
+      }
+    }
+
+    function handleLogout() {
+      Swal.fire({
+        title: '<div class="text-slate-900 font-extrabold text-base uppercase tracking-wide">Logout / Keluar</div>',
+        html: '<p class="text-xs text-slate-500 font-medium mt-1">Anda akan keluar dari sesi aplikasi <strong>Ouffice Inventory</strong>.</p>',
+        icon: 'question',
+        iconColor: '#ea580c',
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa-solid fa-power-off me-1.5"></i> Ya, Logout',
+        cancelButtonText: 'Batal',
+        buttonsStyling: false,
+        customClass: {
+          popup: 'swal2-aesthetic-popup',
+          confirmButton: 'swal2-aesthetic-confirm',
+          cancelButton: 'swal2-aesthetic-cancel'
+        }
+      }).then((res) => {
+        if (res.isConfirmed) {
+          sessionStorage.removeItem('ouffice_user');
+          currentUser = null;
+          document.getElementById('loginForm').reset();
+
+          const loginScreen = document.getElementById('loginScreen');
+          const loginCard = document.getElementById('loginCard');
+          
+          if (loginCard) {
+            loginCard.classList.add('opacity-0', 'scale-95');
+          }
+          loginScreen.classList.remove('hidden');
+
+          setTimeout(() => {
+            if (loginCard) {
+              loginCard.classList.remove('opacity-0', 'scale-95');
+            }
+          }, 50);
+        }
+      });
+    }
+
+    function loadDataFromBackend(isSilent = false, force = false) {
+      if (force) isFetchingBackend = false;
+      if (isFetchingBackend) return;
+      isFetchingBackend = true;
+
+      const syncIcon = document.getElementById('syncIcon');
+      if (syncIcon && !isSilent) syncIcon.classList.add('fa-spin');
+
+      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+
+      if (isGASNative) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            isFetchingBackend = false;
+            if (syncIcon) syncIcon.classList.remove('fa-spin');
+            if (res && res.success && Array.isArray(res.data)) {
+              rawInventoryData = res.data;
+              try { localStorage.setItem('ouffice_cached_inventory', JSON.stringify(res.data)); } catch (e) {}
+              filterData();
+              updateStatsAndDashboard();
+              refreshCurrentView();
+            }
+          })
+          .withFailureHandler(() => {
+            isFetchingBackend = false;
+            if (syncIcon) syncIcon.classList.remove('fa-spin');
+          })
+          .readData();
+      } else if (CUSTOM_GAS_URL) {
+        fetch(`${CUSTOM_GAS_URL}?action=read`)
+          .then((r) => r.json())
+          .then((res) => {
+            isFetchingBackend = false;
+            if (syncIcon) syncIcon.classList.remove('fa-spin');
+            if (res && res.success && Array.isArray(res.data)) {
+              rawInventoryData = res.data;
+              try { localStorage.setItem('ouffice_cached_inventory', JSON.stringify(res.data)); } catch (e) {}
+              filterData();
+              updateStatsAndDashboard();
+              refreshCurrentView();
+            }
+          })
+          .catch(() => {
+            isFetchingBackend = false;
+            if (syncIcon) syncIcon.classList.remove('fa-spin');
+          });
       } else {
-        recordLoginLog(u, 'Guest', 'Gagal');
+        isFetchingBackend = false;
+        if (syncIcon) syncIcon.classList.remove('fa-spin');
       }
     }
 
@@ -2952,112 +2930,10 @@
 
     function openHistoryModal() {
       document.getElementById('historyModal').classList.remove('hidden');
-      loadHistoryLogs();
     }
 
     function closeHistoryModal() {
       document.getElementById('historyModal').classList.add('hidden');
-    }
-
-    function loadHistoryLogs() {
-      renderHistoryTable(rawLoginLogs);
-
-      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
-      if (isGASNative && google.script.run.readLoginLogs) {
-        google.script.run
-          .withSuccessHandler((res) => {
-            if (res && res.success && Array.isArray(res.logs) && res.logs.length > 0) {
-              rawLoginLogs = res.logs;
-              try { localStorage.setItem('ouffice_login_history', JSON.stringify(rawLoginLogs)); } catch (e) {}
-              renderHistoryTable(rawLoginLogs);
-            }
-          })
-          .readLoginLogs();
-      } else if (CUSTOM_GAS_URL) {
-        fetch(`${CUSTOM_GAS_URL}?action=readLoginLogs`)
-          .then(r => r.json())
-          .then(res => {
-            if (res && res.success && Array.isArray(res.logs) && res.logs.length > 0) {
-              rawLoginLogs = res.logs;
-              try { localStorage.setItem('ouffice_login_history', JSON.stringify(rawLoginLogs)); } catch (e) {}
-              renderHistoryTable(rawLoginLogs);
-            }
-          })
-          .catch(() => {});
-      }
-    }
-
-    function renderHistoryTable(logs) {
-      const tbody = document.getElementById('historyTableBody');
-      if (!tbody) return;
-
-      if (!logs || logs.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium">Belum ada riwayat activity login.</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = logs.map((log, idx) => {
-        const isSuccess = log.status === 'Berhasil' || log.status === 'Success';
-        const statusBadge = isSuccess
-          ? '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-700 inline-flex items-center gap-1"><i class="fa-solid fa-circle-check text-[9px]"></i> Berhasil</span>'
-          : '<span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-100 text-rose-700 inline-flex items-center gap-1"><i class="fa-solid fa-circle-xmark text-[9px]"></i> Gagal</span>';
-
-        const roleBadge = log.role === 'Master Admin' ? 'bg-purple-100 text-purple-700' : log.role === 'Manager' ? 'bg-sky-100 text-sky-700' : 'bg-slate-100 text-slate-700';
-
-        return `
-          <tr class="hover:bg-slate-50 transition">
-            <td class="py-3 px-3 text-center text-slate-400 font-mono text-[11px]">${idx + 1}</td>
-            <td class="py-3 px-3 font-mono text-[11px] text-slate-600 whitespace-nowrap">${log.timestamp || log.waktu || '-'}</td>
-            <td class="py-3 px-3 font-bold text-slate-800">
-              <div class="flex items-center gap-2">
-                <i class="fa-solid fa-user-clock text-orange-600 text-sm"></i>
-                <span>${log.nama || log.username || '-'}</span>
-              </div>
-            </td>
-            <td class="py-3 px-3">
-              <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${roleBadge}">${log.role || '-'}</span>
-            </td>
-            <td class="py-3 px-3 text-center">${statusBadge}</td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    function clearHistoryLogs() {
-      Swal.fire({
-        title: 'Hapus Riwayat Login?',
-        text: 'Seluruh riwayat activity login akan dibersihkan.',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        confirmButtonText: 'Ya, Bersihkan',
-        cancelButtonText: 'Batal',
-        buttonsStyling: false,
-        customClass: {
-          popup: 'swal2-aesthetic-popup',
-          confirmButton: 'swal2-aesthetic-confirm',
-          cancelButton: 'swal2-aesthetic-cancel'
-        }
-      }).then((res) => {
-        if (res.isConfirmed) {
-          rawLoginLogs = [];
-          localStorage.removeItem('ouffice_login_history');
-          renderHistoryTable(rawLoginLogs);
-
-          const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
-          if (isGASNative && google.script.run.clearLoginLogs) {
-            google.script.run.clearLoginLogs();
-          } else if (CUSTOM_GAS_URL) {
-            fetch(CUSTOM_GAS_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-              body: JSON.stringify({ action: 'clearLoginLogs' })
-            }).catch(() => {});
-          }
-
-          Swal.fire({ icon: 'success', title: 'Riwayat Login Dibersihkan!', timer: 1000, showConfirmButton: false });
-        }
-      });
     }
 
     function openUserManagementModal() {
@@ -3951,33 +3827,6 @@
         }
       });
     }
-
-    window.onload = function() {
-      const storedUser = sessionStorage.getItem('ouffice_user') || localStorage.getItem('ouffice_user');
-      if (storedUser) {
-        try {
-          currentUser = JSON.parse(storedUser);
-          document.getElementById('loginScreen').classList.add('hidden');
-          applyRolePermissions();
-          loadDataFromBackend(false, true);
-          startRealtimeSync();
-        } catch(e) {
-          document.getElementById('loginScreen').classList.remove('hidden');
-        }
-      } else {
-        document.getElementById('loginScreen').classList.remove('hidden');
-      }
-
-      const localCache = localStorage.getItem('ouffice_inventory_data');
-      if (localCache) {
-        try {
-          rawInventoryData = JSON.parse(localCache);
-          filteredInventoryData = [...rawInventoryData];
-          updateStatsAndDashboard();
-          refreshCurrentView();
-        } catch(e) {}
-      }
-    };
   </script>
 </body>
 </html>
