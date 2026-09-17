@@ -139,7 +139,7 @@
       
       <!-- Company Logo Branding -->
       <div class="flex flex-col items-center mb-7">
-        <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" onerror="this.onerror=null; this.src='https://placehold.co/180x60/ea580c/white?text=Ouffice.co.id';" alt="Logo Perusahaan" width="160" crossorigin="anonymous" class="h-auto max-w-[160px] object-contain mb-3">
+        <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="160" crossorigin="anonymous" class="h-auto max-w-[160px] object-contain mb-3">
         <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest">Sistem Inventaris Gudang</h2>
       </div>
 
@@ -180,7 +180,7 @@
       <div class="p-4 border-b border-slate-300 flex items-center justify-between">
         <div class="flex items-center cursor-pointer select-none flex-1 pr-2" onclick="switchView('dashboard')">
           <div class="flex items-center w-full">
-            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" onerror="this.onerror=null; this.src='https://placehold.co/180x60/ea580c/white?text=Ouffice.co.id';" alt="Logo Perusahaan" width="180" crossorigin="anonymous" class="w-full max-w-[180px] h-auto object-contain py-1">
+            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="180" crossorigin="anonymous" class="w-full max-w-[180px] h-auto object-contain py-1">
           </div>
         </div>
         <button onclick="toggleSidebar()" class="text-slate-900 hover:text-black p-1 md:hidden flex-shrink-0">
@@ -1277,7 +1277,7 @@
         }
       }
 
-      // Sembunyikan tombol Log Login untuk Staff Gudang dan Manager
+      // Sembunyikan tombol Log Login untuk Staff Gudang dan Manager (hanya tampil untuk Master Admin)
       const btnHistoryLogin = document.getElementById('btnHistoryLogin');
       if (btnHistoryLogin) {
         if (currentUser.role === 'Master Admin') {
@@ -1287,7 +1287,7 @@
         }
       }
 
-      // Hide or show add buttons for Manager role
+      // Sembunyikan atau tampilkan tombol-tombol input data untuk role Manager
       const addButtons = [
         'btnTambahDataMobile',
         'btnTambahClient',
@@ -1334,7 +1334,7 @@
         if (el) el.classList.add('hidden');
         const navBtn = document.getElementById(`nav-${v}`);
         if (navBtn) {
-          navBtn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 hover:text-black hover:bg-slate-300/60 font-bold";
+          navBtn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 hover:text-black hover:bg-slate-700/60 font-bold";
         }
       });
 
@@ -1382,6 +1382,7 @@
         sessionStorage.setItem('ouffice_user', JSON.stringify(currentUser));
         localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
         
+        // Langsung sembunyikan overlay login tanpa penundaan
         document.getElementById('loginScreen').classList.add('hidden');
         const loginCard = document.getElementById('loginCard');
         if (loginCard) loginCard.classList.remove('scale-95', 'opacity-0');
@@ -1523,6 +1524,12 @@
           popup: 'swal2-aesthetic-popup',
           confirmButton: 'swal2-aesthetic-confirm',
           cancelButton: 'swal2-aesthetic-cancel'
+        },
+        showClass: {
+          popup: 'swal2-show'
+        },
+        hideClass: {
+          popup: 'swal2-hide'
         }
       }).then((res) => {
         if (res.isConfirmed) {
@@ -1864,6 +1871,7 @@
         }
       }
 
+      // Sinkronisasi Peringatan Stok Rendah menggunakan kalkulasi rekapitulasi yang sama persis dengan laporan stok
       const lowStockEl = document.getElementById('lowStockList');
       const reportSummaryMap = {};
       rawInventoryData.forEach(item => {
@@ -2422,7 +2430,7 @@
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td style="width: 150px; vertical-align: middle; padding-right: 10px;">
-                    <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" onerror="this.onerror=null; this.src='https://placehold.co/180x60/ea580c/white?text=Ouffice.co.id';" alt="Logo Perusahaan" width="150" crossorigin="anonymous" style="width: 140px; height: auto; max-height: 65px; object-fit: contain; display: block;">
+                    <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="150" crossorigin="anonymous" style="width: 140px; height: auto; max-height: 65px; object-fit: contain; display: block;">
                   </td>
                   <td style="vertical-align: middle; border: 0.5px dashed #64748b; padding: 6px 8px; min-height: 55px;">
                     <div style="font-size: 9.5px; line-height: 1.35; color: #1e293b; font-family: 'Trebuchet MS', sans-serif;">
@@ -2574,7 +2582,7 @@
       element.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 10px; margin-bottom: 12px;">
           <div>
-            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" onerror="this.onerror=null; this.src='https://placehold.co/180x60/ea580c/white?text=Ouffice.co.id';" alt="Logo Perusahaan" width="150" crossorigin="anonymous" style="display: block; max-width: 150px; height: auto;">
+            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="150" crossorigin="anonymous" style="display: block; max-width: 150px; height: auto;">
             <p style="font-size: 9px; color: #64748b; margin: 3px 0 0 0; text-transform: uppercase; font-weight: bold;">Inventory Management System</p>
           </div>
           <div style="text-align: right;">
@@ -2930,10 +2938,72 @@
 
     function openHistoryModal() {
       document.getElementById('historyModal').classList.remove('hidden');
+      loadLoginHistory();
     }
 
     function closeHistoryModal() {
       document.getElementById('historyModal').classList.add('hidden');
+    }
+
+    function loadLoginHistory() {
+      const tbody = document.getElementById('historyTableBody');
+      if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Memuat riwayat login...</td></tr>`;
+      }
+
+      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+      if (isGASNative) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            if (res && res.success) {
+              renderLoginHistory(res.history || []);
+            } else {
+              renderLoginHistory([]);
+            }
+          })
+          .withFailureHandler(() => renderLoginHistory([]))
+          .readLoginHistory();
+      } else if (CUSTOM_GAS_URL) {
+        fetch(`${CUSTOM_GAS_URL}?action=readLoginHistory`)
+          .then(r => r.json())
+          .then(res => {
+            if (res && res.success) {
+              renderLoginHistory(res.history || []);
+            } else {
+              renderLoginHistory([]);
+            }
+          })
+          .catch(() => renderLoginHistory([]));
+      } else {
+        renderLoginHistory([]);
+      }
+    }
+
+    function renderLoginHistory(history) {
+      const tbody = document.getElementById('historyTableBody');
+      if (!tbody) return;
+
+      if (!history || history.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium">Belum ada catatan riwayat login.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = history.map((item, idx) => {
+        const isSukses = (item.status || '').toLowerCase().includes('sukses');
+        const statusBadge = isSukses
+          ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Sukses</span>'
+          : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">Gagal</span>';
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="py-2.5 px-3 text-center text-slate-400 font-mono">${idx + 1}</td>
+            <td class="py-2.5 px-3 font-mono text-[11px] text-slate-600 whitespace-nowrap">${item.waktu || '-'}</td>
+            <td class="py-2.5 px-3 font-bold text-slate-800">${item.username || '-'}</td>
+            <td class="py-2.5 px-3 text-slate-600 font-semibold">${item.role || '-'}</td>
+            <td class="py-2.5 px-3 text-center">${statusBadge}</td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function openUserManagementModal() {
@@ -3249,7 +3319,7 @@
       element.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 10px; margin-bottom: 12px;">
           <div>
-            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" onerror="this.onerror=null; this.src='https://placehold.co/180x60/ea580c/white?text=Ouffice.co.id';" alt="Logo Perusahaan" width="150" crossorigin="anonymous" style="display: block; max-width: 150px; height: auto;">
+            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="150" crossorigin="anonymous" style="display: block; max-width: 150px; height: auto;">
             <p style="font-size: 9px; color: #64748b; margin: 3px 0 0 0; text-transform: uppercase; font-weight: bold;">Inventory Management System</p>
           </div>
           <div style="text-align: right;">
@@ -3599,6 +3669,9 @@
       });
     }
 
+    /* ==========================================================================
+       RETUR BARANG FUNCTIONS
+       ========================================================================== */
     function loadRetur() {
       renderRetur(rawReturData);
       const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
