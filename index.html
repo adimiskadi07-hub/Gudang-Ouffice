@@ -1419,7 +1419,8 @@
           .loginUser({ username: u, password: p });
       } else if (CUSTOM_GAS_URL) {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3500);
+        // Batas waktu diperpanjang ke 15 detik untuk mengakomodasi proses cold start Google Apps Script
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
 
         fetch(CUSTOM_GAS_URL, {
           method: 'POST',
@@ -1459,13 +1460,16 @@
               });
             }
           })
-          .catch(() => {
+          .catch((err) => {
             clearTimeout(timeoutId);
             Swal.close();
+            const errorMsg = (err && err.name === 'AbortError')
+              ? 'Koneksi ke server memakan waktu terlalu lama (timeout). Silakan coba beberapa saat lagi.'
+              : 'Username/password tidak cocok atau gagal terhubung ke server database.';
             Swal.fire({
               icon: 'error',
               title: '<div class="text-rose-600 font-extrabold text-sm uppercase">Gagal Login</div>',
-              text: 'Kredensial tidak cocok atau koneksi timeout.',
+              text: errorMsg,
               buttonsStyling: false,
               customClass: { popup: 'swal2-aesthetic-popup', confirmButton: 'swal2-aesthetic-confirm' }
             });
@@ -2352,7 +2356,6 @@
         const tipeSeri = [item.brand, item.tipe, item.seri].filter(Boolean).join(' ');
         const descText = `${item.namaBarang}${tipeSeri ? ' ' + tipeSeri : ''}`;
         
-        // Memecah Serial Number berdasarkan spasi, koma, atau enter dan menambahkan bullet di SISI KIRI serial number (inline)
         let snText = '-';
         if (item.serialNumber && item.serialNumber.trim()) {
           const snList = item.serialNumber.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
@@ -2900,8 +2903,6 @@
 
     let rawUsersData = [
       { id: 'USR-1001', nama: 'Administrator Utama', username: 'admin', role: 'Master Admin' },
-      { id: 'USR-1002', nama: 'Staff Gudang', username: 'staff', role: 'Staff Gudang' },
-      { id: 'USR-1003', nama: 'Manager Gudang', username: 'manager', role: 'Manager' }
     ];
 
     function loadUsers() {
@@ -2942,7 +2943,6 @@
       }
 
       const rowsHtml = users.map(u => {
-        // Sanitize role value in case backend passed a password or raw value
         let displayRole = u.role || 'Staff Gudang';
         if (displayRole.toLowerCase().includes('123') || displayRole.toLowerCase() === 'admin123') {
           displayRole = (u.username || '').toLowerCase() === 'admin' ? 'Master Admin' : 'Staff Gudang';
@@ -3662,7 +3662,6 @@
       document.getElementById('modalReturTitle').innerText = 'Input Retur Barang';
       document.getElementById('formReturTanggal').value = new Date().toISOString().split('T')[0];
 
-      // Populate datalist from inventory item names for easy autocomplete
       const datalist = document.getElementById('returBarangList');
       if (datalist) {
         const uniqueBarang = [...new Set(rawInventoryData.map(i => i.namaBarang).filter(Boolean))];
