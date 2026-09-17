@@ -43,6 +43,20 @@
       50% { opacity: 1; }
       100% { top: 95%; opacity: 0.2; }
     }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(18px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes floatGlow {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(25px, -20px) scale(1.15); }
+    }
+    .animate-fade-in-up {
+      animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .animate-float-glow {
+      animation: floatGlow 10s ease-in-out infinite;
+    }
     .motion-card-glow {
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -63,6 +77,43 @@
       pointer-events: none;
     }
 
+    /* Custom SweetAlert Aesthetic Styling */
+    .swal2-aesthetic-popup {
+      border-radius: 1.25rem !important;
+      padding: 1.75rem !important;
+      font-family: 'Inter', sans-serif !important;
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25) !important;
+      border: 1px solid rgba(226, 232, 240, 0.9) !important;
+    }
+    .swal2-aesthetic-confirm {
+      background: linear-gradient(135deg, #ea580c 0%, #f97316 100%) !important;
+      border-radius: 0.75rem !important;
+      font-weight: 700 !important;
+      font-size: 0.8125rem !important;
+      padding: 0.65rem 1.5rem !important;
+      box-shadow: 0 4px 14px 0 rgba(234, 88, 12, 0.35) !important;
+      color: #ffffff !important;
+      transition: all 0.2s ease !important;
+    }
+    .swal2-aesthetic-confirm:hover {
+      transform: translateY(-1px) !important;
+      box-shadow: 0 6px 18px 0 rgba(234, 88, 12, 0.45) !important;
+    }
+    .swal2-aesthetic-cancel {
+      background: #f1f5f9 !important;
+      color: #475569 !important;
+      border-radius: 0.75rem !important;
+      font-weight: 700 !important;
+      font-size: 0.8125rem !important;
+      padding: 0.65rem 1.25rem !important;
+      margin-right: 0.5rem !important;
+      transition: all 0.2s ease !important;
+    }
+    .swal2-aesthetic-cancel:hover {
+      background: #e2e8f0 !important;
+      color: #1e293b !important;
+    }
+
     #qrReader video {
       width: 100% !important;
       height: 100% !important;
@@ -78,39 +129,43 @@
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col md:flex-row">
 
   <!-- LOGIN SCREEN -->
-  <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 sm:p-8 relative overflow-hidden">
-      <div class="absolute -right-12 -top-12 w-40 h-40 bg-orange-600/10 rounded-full blur-2xl pointer-events-none"></div>
+  <div id="loginScreen" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all duration-500">
+    <!-- Ambient Background Lighting -->
+    <div class="absolute -top-24 -left-24 w-96 h-96 bg-orange-600/20 rounded-full blur-3xl pointer-events-none animate-float-glow"></div>
+    <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-sky-600/15 rounded-full blur-3xl pointer-events-none animate-float-glow" style="animation-delay: -5s;"></div>
+
+    <div id="loginCard" class="bg-white/95 backdrop-blur-xl border border-white/40 rounded-3xl shadow-2xl max-w-md w-full p-7 sm:p-9 relative overflow-hidden animate-fade-in-up transition-all duration-300">
+      <div class="absolute -right-10 -top-10 w-36 h-36 bg-orange-500/15 rounded-full blur-2xl pointer-events-none"></div>
       
       <!-- Company Logo Branding -->
-      <div class="flex flex-col items-center mb-6">
-        <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="150" crossorigin="anonymous" class="h-auto max-w-[150px] object-contain mb-2">
-        <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mt-1">Sistem Inventaris Gudang</p>
+      <div class="flex flex-col items-center mb-7">
+        <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="160" crossorigin="anonymous" class="h-auto max-w-[160px] object-contain mb-3">
+        <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest">Sistem Inventaris Gudang</h2>
       </div>
 
       <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username</label>
+          <label class="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">Username</label>
           <div class="relative">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-              <i class="fa-solid fa-user"></i>
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+              <i class="fa-solid fa-user text-xs"></i>
             </span>
-            <input type="text" id="loginUsername" required placeholder="Masukkan username" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
+            <input type="text" id="loginUsername" required placeholder="Masukkan username" class="w-full pl-10 pr-4 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white font-semibold transition">
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password</label>
+          <label class="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">Password</label>
           <div class="relative">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-              <i class="fa-solid fa-lock"></i>
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+              <i class="fa-solid fa-lock text-xs"></i>
             </span>
-            <input type="password" id="loginPassword" required placeholder="Masukkan password" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
+            <input type="password" id="loginPassword" required placeholder="Masukkan password" class="w-full pl-10 pr-4 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white font-semibold transition">
           </div>
         </div>
 
-        <button type="submit" class="w-full py-3 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-600/30 transition duration-200 flex items-center justify-center gap-2 text-sm uppercase tracking-wide">
-          <i class="fa-solid fa-right-to-bracket"></i> Masuk Sistem
+        <button type="submit" class="w-full py-3 bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 hover:from-orange-700 hover:to-orange-600 text-white font-extrabold rounded-xl shadow-lg shadow-orange-600/30 active:scale-[0.98] transition duration-200 flex items-center justify-center gap-2 text-xs uppercase tracking-wider mt-2">
+          <i class="fa-solid fa-right-to-bracket text-sm"></i> Masuk Sistem
         </button>
       </form>
     </div>
@@ -135,7 +190,7 @@
 
       <nav class="p-3 space-y-6 overflow-y-auto max-h-[calc(100vh-140px)] custom-scrollbar text-xs font-medium">
         <div>
-          <div class="px-3 mb-2 text-[10px] font-extrabold text-slate-900 uppercase tracking-wider">Utama</div>
+          <div class="px-3 mb-2 text-xs font-black text-orange-600 uppercase tracking-wider">Utama</div>
           <div class="space-y-1">
             <button onclick="switchView('dashboard')" id="nav-dashboard" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition font-semibold text-white bg-orange-600">
               <i class="fa-solid fa-chart-pie w-4 text-center"></i>
@@ -157,7 +212,7 @@
         </div>
 
         <div>
-          <div class="px-3 mb-2 text-[10px] font-extrabold text-slate-900 uppercase tracking-wider">Transaksi Stok</div>
+          <div class="px-3 mb-2 text-xs font-black text-orange-600 uppercase tracking-wider">Transaksi Stok</div>
           <div class="space-y-1">
             <button onclick="switchView('stok-masuk')" id="nav-stok-masuk" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 font-bold hover:text-black hover:bg-slate-300/60">
               <i class="fa-solid fa-arrow-down-long w-4 text-center text-emerald-600"></i>
@@ -179,7 +234,7 @@
         </div>
 
         <div>
-          <div class="px-3 mb-2 text-[10px] font-extrabold text-slate-900 uppercase tracking-wider">Admin & Data</div>
+          <div class="px-3 mb-2 text-xs font-black text-orange-600 uppercase tracking-wider">Admin & Data</div>
           <div class="space-y-1">
             <button id="btnNavUsers" onclick="switchView('users')" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 font-bold hover:text-black hover:bg-slate-300/60">
               <i class="fa-solid fa-users-gear w-4 text-center text-slate-900"></i>
@@ -344,15 +399,19 @@
 
           <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
             <div>
-              <h3 class="font-extrabold text-slate-900 text-sm uppercase tracking-wider mb-1 flex items-center gap-2">
-                <i class="fa-solid fa-chart-pie text-sky-600"></i> Proporsi Stok Keluar
-              </h3>
-              <p class="text-xs text-slate-500 mb-4">Distribusi Pengeluaran vs Total Barang Masuk</p>
+              <div class="flex items-center justify-between mb-1">
+                <h3 class="font-extrabold text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
+                  <i class="fa-solid fa-chart-pie text-sky-600"></i> Proporsi Stok Keluar
+                </h3>
+                <select id="proporsiMonthSelect" onchange="renderProporsiStokKeluar()" class="text-[11px] font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer">
+                </select>
+              </div>
+              <p class="text-xs text-slate-500 mb-4">Distribusi Pengeluaran Per End User Per Bulan</p>
 
               <div id="proporsiStokContainer" class="space-y-3"></div>
             </div>
-            <div class="pt-4 border-t border-slate-100 text-[11px] text-slate-400 font-medium text-center">
-              Persentase pengeluaran dibanding total barang masuk
+            <div id="proporsiFooterText" class="pt-4 border-t border-slate-100 text-[11px] text-slate-400 font-medium text-center">
+              Persentase pengeluaran dibanding total barang keluar bulanan
             </div>
           </div>
         </div>
@@ -616,6 +675,7 @@
           <table class="w-full text-left border-collapse text-xs">
             <thead>
               <tr class="bg-slate-900 text-white uppercase text-[10px] font-extrabold">
+                <th class="py-2.5 px-3">Nama Lengkap</th>
                 <th class="py-2.5 px-3">Username</th>
                 <th class="py-2.5 px-3">Role Hak Akses</th>
                 <th class="py-2.5 px-3 text-center">Aksi</th>
@@ -914,9 +974,10 @@
 
       <form id="addUserForm" onsubmit="handleAddUser(event)" class="space-y-3 mb-6 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
         <h4 class="font-bold text-slate-800 uppercase text-[11px]">Tambah Pengguna Baru</h4>
-        <div class="grid grid-cols-2 gap-2">
-          <input type="text" id="newUsername" required placeholder="Username" class="px-3 py-2 bg-white border border-slate-200 rounded-lg">
-          <input type="password" id="newPassword" required placeholder="Password" class="px-3 py-2 bg-white border border-slate-200 rounded-lg">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <input type="text" id="newNama" required placeholder="Nama Lengkap *" class="px-3 py-2 bg-white border border-slate-200 rounded-lg">
+          <input type="text" id="newUsername" required placeholder="Username *" class="px-3 py-2 bg-white border border-slate-200 rounded-lg">
+          <input type="password" id="newPassword" required placeholder="Password *" class="px-3 py-2 bg-white border border-slate-200 rounded-lg">
         </div>
         <div class="flex gap-2">
           <select id="newRole" class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold">
@@ -932,6 +993,7 @@
         <table class="w-full text-left border-collapse text-xs">
           <thead>
             <tr class="bg-slate-900 text-white uppercase text-[10px] font-extrabold">
+              <th class="py-2.5 px-3">Nama Lengkap</th>
               <th class="py-2.5 px-3">Username</th>
               <th class="py-2.5 px-3">Role</th>
               <th class="py-2.5 px-3 text-center">Aksi</th>
@@ -1265,6 +1327,15 @@
 
       if (!u || !p) return;
 
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+        timerProgressBar: true,
+        customClass: { popup: 'swal2-aesthetic-popup' }
+      });
+
       const localAccounts = {
         'admin': { id: 'USR-1', username: 'admin', role: 'Master Admin', pass: 'admin123' },
         'staff': { id: 'USR-2', username: 'staff', role: 'Staff Gudang', pass: 'staff123' },
@@ -1276,16 +1347,30 @@
         currentUser = { id: matchLocal.id, username: matchLocal.username, role: matchLocal.role };
         sessionStorage.setItem('ouffice_user', JSON.stringify(currentUser));
         localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
+        
+        // Langsung sembunyikan overlay login tanpa penundaan
         document.getElementById('loginScreen').classList.add('hidden');
+        const loginCard = document.getElementById('loginCard');
+        if (loginCard) loginCard.classList.remove('scale-95', 'opacity-0');
+
         applyRolePermissions();
         isFetchingBackend = false;
         loadDataFromBackend(false, true);
         startRealtimeSync();
-        Swal.fire({ icon: 'success', title: 'Login Berhasil!', text: `Selamat datang, ${currentUser.username}`, timer: 1000, showConfirmButton: false });
+
+        Toast.fire({
+          icon: 'success',
+          title: `Selamat datang, ${currentUser.username}!`
+        });
         return;
       }
 
-      Swal.fire({ title: 'Memverifikasi...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      Swal.fire({
+        title: '<div class="text-slate-800 font-bold text-sm uppercase">Memverifikasi...</div>',
+        allowOutsideClick: false,
+        customClass: { popup: 'swal2-aesthetic-popup' },
+        didOpen: () => Swal.showLoading()
+      });
 
       const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
 
@@ -1297,19 +1382,39 @@
               currentUser = res.user;
               sessionStorage.setItem('ouffice_user', JSON.stringify(currentUser));
               localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
+              
               document.getElementById('loginScreen').classList.add('hidden');
+              const loginCard = document.getElementById('loginCard');
+              if (loginCard) loginCard.classList.remove('scale-95', 'opacity-0');
+
               applyRolePermissions();
               isFetchingBackend = false;
               loadDataFromBackend(false, true);
               startRealtimeSync();
-              Swal.fire({ icon: 'success', title: 'Login Berhasil!', text: `Masuk sebagai ${currentUser.role}`, timer: 1000, showConfirmButton: false });
+
+              Toast.fire({
+                icon: 'success',
+                title: `Selamat datang, ${currentUser.username}!`
+              });
             } else {
-              Swal.fire('Gagal Login', res ? res.message : 'Username atau Password salah', 'error');
+              Swal.fire({
+                icon: 'error',
+                title: '<div class="text-rose-600 font-extrabold text-sm uppercase">Gagal Login</div>',
+                text: res ? res.message : 'Username atau Password salah',
+                buttonsStyling: false,
+                customClass: { popup: 'swal2-aesthetic-popup', confirmButton: 'swal2-aesthetic-confirm' }
+              });
             }
           })
           .withFailureHandler((err) => {
             Swal.close();
-            Swal.fire('Error Login', err.toString(), 'error');
+            Swal.fire({
+              icon: 'error',
+              title: '<div class="text-rose-600 font-extrabold text-sm uppercase">Error Login</div>',
+              text: err.toString(),
+              buttonsStyling: false,
+              customClass: { popup: 'swal2-aesthetic-popup', confirmButton: 'swal2-aesthetic-confirm' }
+            });
           })
           .loginUser({ username: u, password: p });
       } else if (CUSTOM_GAS_URL) {
@@ -1330,37 +1435,84 @@
               currentUser = res.user;
               sessionStorage.setItem('ouffice_user', JSON.stringify(currentUser));
               localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
+
               document.getElementById('loginScreen').classList.add('hidden');
+              const loginCard = document.getElementById('loginCard');
+              if (loginCard) loginCard.classList.remove('scale-95', 'opacity-0');
+
               applyRolePermissions();
               isFetchingBackend = false;
               loadDataFromBackend(false, true);
               startRealtimeSync();
-              Swal.fire({ icon: 'success', title: 'Login Berhasil!', text: `Masuk sebagai ${currentUser.role}`, timer: 1000, showConfirmButton: false });
+
+              Toast.fire({
+                icon: 'success',
+                title: `Selamat datang, ${currentUser.username}!`
+              });
             } else {
-              Swal.fire('Gagal Login', res ? res.message : 'Username atau Password salah', 'error');
+              Swal.fire({
+                icon: 'error',
+                title: '<div class="text-rose-600 font-extrabold text-sm uppercase">Gagal Login</div>',
+                text: res ? res.message : 'Username atau Password salah',
+                buttonsStyling: false,
+                customClass: { popup: 'swal2-aesthetic-popup', confirmButton: 'swal2-aesthetic-confirm' }
+              });
             }
           })
           .catch(() => {
             clearTimeout(timeoutId);
             Swal.close();
-            Swal.fire('Gagal Login', 'Kredensial tidak cocok atau koneksi timeout.', 'error');
+            Swal.fire({
+              icon: 'error',
+              title: '<div class="text-rose-600 font-extrabold text-sm uppercase">Gagal Login</div>',
+              text: 'Kredensial tidak cocok atau koneksi timeout.',
+              buttonsStyling: false,
+              customClass: { popup: 'swal2-aesthetic-popup', confirmButton: 'swal2-aesthetic-confirm' }
+            });
           });
       }
     }
 
     function handleLogout() {
       Swal.fire({
-        title: 'Logout / Keluar?',
-        text: 'Anda akan keluar dari sesi aplikasi.',
+        title: '<div class="text-slate-900 font-extrabold text-base uppercase tracking-wide">Logout / Keluar</div>',
+        html: '<p class="text-xs text-slate-500 font-medium mt-1">Anda akan keluar dari sesi aplikasi <strong>Ouffice Inventory</strong>.</p>',
         icon: 'question',
+        iconColor: '#ea580c',
         showCancelButton: true,
-        confirmButtonText: 'Ya, Logout'
+        confirmButtonText: '<i class="fa-solid fa-power-off me-1.5"></i> Ya, Logout',
+        cancelButtonText: 'Batal',
+        buttonsStyling: false,
+        customClass: {
+          popup: 'swal2-aesthetic-popup',
+          confirmButton: 'swal2-aesthetic-confirm',
+          cancelButton: 'swal2-aesthetic-cancel'
+        },
+        showClass: {
+          popup: 'swal2-show'
+        },
+        hideClass: {
+          popup: 'swal2-hide'
+        }
       }).then((res) => {
         if (res.isConfirmed) {
           sessionStorage.removeItem('ouffice_user');
           currentUser = null;
           document.getElementById('loginForm').reset();
-          document.getElementById('loginScreen').classList.remove('hidden');
+
+          const loginScreen = document.getElementById('loginScreen');
+          const loginCard = document.getElementById('loginCard');
+          
+          if (loginCard) {
+            loginCard.classList.add('opacity-0', 'scale-95');
+          }
+          loginScreen.classList.remove('hidden');
+
+          setTimeout(() => {
+            if (loginCard) {
+              loginCard.classList.remove('opacity-0', 'scale-95');
+            }
+          }, 50);
         }
       });
     }
@@ -1738,30 +1890,7 @@
         }
       }
 
-      const propEl = document.getElementById('proporsiStokContainer');
-      const baseTotalForProporsi = totalMasuk > 0 ? totalMasuk : 1;
-      const topKeluar = Object.entries(keluarDistribution).slice(0, 4);
-
-      if (propEl) {
-        if (topKeluar.length === 0) {
-          propEl.innerHTML = `<div class="p-3 text-center text-slate-400 text-xs">Belum ada transaksi keluar</div>`;
-        } else {
-          propEl.innerHTML = topKeluar.map(([user, val]) => {
-            const pct = Math.round((val / baseTotalForProporsi) * 100);
-            return `
-              <div>
-                <div class="flex justify-between text-xs font-semibold mb-1">
-                  <span class="text-slate-700 truncate max-w-[150px]">${user}</span>
-                  <span class="text-slate-500 font-mono">${pct}% (${val})</span>
-                </div>
-                <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div class="h-full bg-sky-500 rounded-full" style="width: ${Math.min(100, pct)}%"></div>
-                </div>
-              </div>
-            `;
-          }).join('');
-        }
-      }
+      renderProporsiStokKeluar();
 
       const monthlyContainer = document.getElementById('monthlyChartContainer');
       if (monthlyContainer) {
@@ -1881,6 +2010,114 @@
           el.innerText = Math.ceil(start);
         }
       }, stepTime);
+    }
+
+    function renderProporsiStokKeluar() {
+      const selectEl = document.getElementById('proporsiMonthSelect');
+      const propEl = document.getElementById('proporsiStokContainer');
+      const footerEl = document.getElementById('proporsiFooterText');
+      if (!propEl) return;
+
+      const monthNamesIndo = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+      const monthMap = {};
+      rawInventoryData.forEach(item => {
+        if (!item.tanggal) return;
+        const s = String(item.tanggal).trim();
+        const clean = s.split('T')[0].split(' ')[0];
+        let key = '';
+        if (clean.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          key = clean.substring(0, 7);
+        } else {
+          const d = new Date(s);
+          if (!isNaN(d.getTime())) {
+            key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          }
+        }
+        if (key) monthMap[key] = true;
+      });
+
+      let availableMonths = Object.keys(monthMap).sort().reverse();
+
+      if (availableMonths.length === 0) {
+        const now = new Date();
+        for (let i = 0; i < 6; i++) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          availableMonths.push(key);
+        }
+      }
+
+      if (selectEl) {
+        const currentSelected = selectEl.value;
+        selectEl.innerHTML = availableMonths.map(mKey => {
+          const [yyyy, mm] = mKey.split('-');
+          const mName = monthNamesIndo[parseInt(mm, 10) - 1] || mm;
+          return `<option value="${mKey}">${mName} ${yyyy}</option>`;
+        }).join('');
+
+        if (currentSelected && availableMonths.includes(currentSelected)) {
+          selectEl.value = currentSelected;
+        } else if (availableMonths.length > 0) {
+          selectEl.value = availableMonths[0];
+        }
+      }
+
+      const selectedMonth = selectEl ? selectEl.value : availableMonths[0];
+      const [selYyyy, selMm] = selectedMonth ? selectedMonth.split('-') : ['', ''];
+      const selMonthName = selMm ? (monthNamesIndo[parseInt(selMm, 10) - 1] + ' ' + selYyyy) : '-';
+
+      let monthTotalKeluar = 0;
+      const endUserMap = {};
+
+      rawInventoryData.forEach(item => {
+        if (item.jenisTransaksi !== 'Keluar' || !item.tanggal) return;
+        const s = String(item.tanggal).trim();
+        const clean = s.split('T')[0].split(' ')[0];
+        let key = '';
+        if (clean.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          key = clean.substring(0, 7);
+        } else {
+          const d = new Date(s);
+          if (!isNaN(d.getTime())) {
+            key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          }
+        }
+
+        if (key === selectedMonth) {
+          const qty = Number(item.quantity) || 0;
+          monthTotalKeluar += qty;
+          const user = (item.endUser || 'Umum / Lainnya').trim();
+          endUserMap[user] = (endUserMap[user] || 0) + qty;
+        }
+      });
+
+      const topUsers = Object.entries(endUserMap).sort((a, b) => b[1] - a[1]);
+
+      if (topUsers.length === 0 || monthTotalKeluar === 0) {
+        propEl.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs font-medium bg-slate-50 rounded-xl">Tidak ada transaksi barang keluar pada ${selMonthName}</div>`;
+        if (footerEl) footerEl.innerText = `Belum ada barang keluar pada bulan ${selMonthName}`;
+        return;
+      }
+
+      propEl.innerHTML = topUsers.map(([user, val]) => {
+        const pct = Math.round((val / monthTotalKeluar) * 100);
+        return `
+          <div>
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span class="text-slate-700 truncate max-w-[170px]" title="${user}">${user}</span>
+              <span class="text-sky-700 font-mono font-bold">${pct}% <span class="text-slate-400 font-normal">(${val} unit)</span></span>
+            </div>
+            <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div class="h-full bg-sky-500 rounded-full transition-all duration-500" style="width: ${Math.min(100, pct)}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (footerEl) {
+        footerEl.innerText = `Persentase dari total ${monthTotalKeluar} unit barang keluar pada ${selMonthName}`;
+      }
     }
 
     function filterData() {
@@ -2662,9 +2899,9 @@
     }
 
     let rawUsersData = [
-      { id: 'USR-1001', username: 'admin', role: 'Master Admin' },
-      { id: 'USR-1002', username: 'staff', role: 'Staff Gudang' },
-      { id: 'USR-1003', username: 'manager', role: 'Manager' }
+      { id: 'USR-1001', nama: 'Administrator Utama', username: 'admin', role: 'Master Admin' },
+      { id: 'USR-1002', nama: 'Staff Gudang', username: 'staff', role: 'Staff Gudang' },
+      { id: 'USR-1003', nama: 'Manager Gudang', username: 'manager', role: 'Manager' }
     ];
 
     function loadUsers() {
@@ -2698,28 +2935,35 @@
       const tbodyModal = document.getElementById('userTableBody');
 
       if (!users || users.length === 0) {
-        const emptyHtml = `<tr><td colspan="3" class="py-4 text-center text-slate-400">Belum ada pengguna terdaftar.</td></tr>`;
+        const emptyHtml = `<tr><td colspan="4" class="py-4 text-center text-slate-400">Belum ada pengguna terdaftar.</td></tr>`;
         if (tbodyView) tbodyView.innerHTML = emptyHtml;
         if (tbodyModal) tbodyModal.innerHTML = emptyHtml;
         return;
       }
 
       const rowsHtml = users.map(u => {
-        const isMasterAdmin = (u.username || '').toLowerCase() === 'admin' || u.role === 'Master Admin';
+        // Sanitize role value in case backend passed a password or raw value
+        let displayRole = u.role || 'Staff Gudang';
+        if (displayRole.toLowerCase().includes('123') || displayRole.toLowerCase() === 'admin123') {
+          displayRole = (u.username || '').toLowerCase() === 'admin' ? 'Master Admin' : 'Staff Gudang';
+        }
+
+        const isMasterAdmin = (u.username || '').toLowerCase() === 'admin' || displayRole === 'Master Admin';
         const deleteBtn = isMasterAdmin ? 
           `<span class="text-slate-400 font-semibold text-[11px]">Utama</span>` : 
           `<button onclick="deleteUserAccount('${u.id}')" title="Hapus User" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-bold transition flex items-center gap-1 mx-auto"><i class="fa-solid fa-trash"></i> Hapus</button>`;
 
-        const roleBadge = u.role === 'Master Admin' ? 'bg-purple-100 text-purple-700' : u.role === 'Manager' ? 'bg-sky-100 text-sky-700' : 'bg-emerald-100 text-emerald-700';
+        const roleBadge = displayRole === 'Master Admin' ? 'bg-purple-100 text-purple-700' : displayRole === 'Manager' ? 'bg-sky-100 text-sky-700' : 'bg-emerald-100 text-emerald-700';
 
         return `
           <tr class="hover:bg-slate-50 transition">
             <td class="py-3 px-3 font-bold text-slate-800 flex items-center gap-2">
               <i class="fa-solid fa-circle-user text-orange-600 text-base"></i>
-              <span>${u.username}</span>
+              <span>${u.nama || u.username}</span>
             </td>
+            <td class="py-3 px-3 font-mono text-slate-600">${u.username}</td>
             <td class="py-3 px-3">
-              <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${roleBadge}">${u.role}</span>
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${roleBadge}">${displayRole}</span>
             </td>
             <td class="py-3 px-3 text-center">${deleteBtn}</td>
           </tr>
@@ -2732,13 +2976,14 @@
 
     function handleAddUser(e) {
       e.preventDefault();
+      const nama = document.getElementById('newNama').value.trim();
       const u = document.getElementById('newUsername').value.trim();
       const p = document.getElementById('newPassword').value;
       const r = document.getElementById('newRole').value;
 
-      if (!u || !p) return;
+      if (!nama || !u || !p) return;
 
-      const newUser = { id: `USR-${Date.now()}`, username: u, password: p, role: r };
+      const newUser = { id: `USR-${Date.now()}`, nama: nama, username: u, password: p, role: r };
 
       Swal.fire({ title: 'Menyimpan User...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
@@ -2749,7 +2994,7 @@
           .withSuccessHandler((res) => {
             Swal.close();
             if (res && res.success) {
-              rawUsersData.push({ id: newUser.id, username: u, role: r });
+              rawUsersData.push({ id: newUser.id, nama: nama, username: u, role: r });
               document.getElementById('addUserForm').reset();
               renderUsersTables(rawUsersData);
               Swal.fire({ icon: 'success', title: 'User Berhasil Ditambahkan!', timer: 1200, showConfirmButton: false });
@@ -2762,25 +3007,25 @@
         fetch(CUSTOM_GAS_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'addUser', username: u, password: p, role: r })
+          body: JSON.stringify({ action: 'addUser', nama: nama, username: u, password: p, role: r })
         })
           .then(res => res.json())
           .then(res => {
             Swal.close();
-            rawUsersData.push({ id: newUser.id, username: u, role: r });
+            rawUsersData.push({ id: newUser.id, nama: nama, username: u, role: r });
             document.getElementById('addUserForm').reset();
             renderUsersTables(rawUsersData);
             Swal.fire({ icon: 'success', title: 'User Berhasil Ditambahkan!', timer: 1200, showConfirmButton: false });
           })
           .catch(() => {
             Swal.close();
-            rawUsersData.push({ id: newUser.id, username: u, role: r });
+            rawUsersData.push({ id: newUser.id, nama: nama, username: u, role: r });
             document.getElementById('addUserForm').reset();
             renderUsersTables(rawUsersData);
             Swal.fire({ icon: 'success', title: 'User Ditambahkan!', timer: 1200, showConfirmButton: false });
           });
       } else {
-        rawUsersData.push({ id: newUser.id, username: u, role: r });
+        rawUsersData.push({ id: newUser.id, nama: nama, username: u, role: r });
         document.getElementById('addUserForm').reset();
         renderUsersTables(rawUsersData);
         Swal.close();
