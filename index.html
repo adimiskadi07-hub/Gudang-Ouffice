@@ -22,10 +22,12 @@
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    
     body {
       font-family: 'Inter', sans-serif;
       -webkit-tap-highlight-color: transparent;
     }
+
     .custom-scrollbar::-webkit-scrollbar {
       height: 6px;
       width: 6px;
@@ -51,6 +53,7 @@
       0%, 100% { transform: translate(0, 0) scale(1); }
       50% { transform: translate(25px, -20px) scale(1.15); }
     }
+
     .animate-fade-in-up {
       animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
@@ -1277,7 +1280,6 @@
         }
       }
 
-      // Sembunyikan tombol Log Login untuk Staff Gudang dan Manager (hanya tampil untuk Master Admin)
       const btnHistoryLogin = document.getElementById('btnHistoryLogin');
       if (btnHistoryLogin) {
         if (currentUser.role === 'Master Admin') {
@@ -1287,7 +1289,6 @@
         }
       }
 
-      // Sembunyikan atau tampilkan tombol-tombol input data untuk role Manager
       const addButtons = [
         'btnTambahDataMobile',
         'btnTambahClient',
@@ -1334,7 +1335,7 @@
         if (el) el.classList.add('hidden');
         const navBtn = document.getElementById(`nav-${v}`);
         if (navBtn) {
-          navBtn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 hover:text-black hover:bg-slate-700/60 font-bold";
+          navBtn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 hover:text-black hover:bg-slate-300/60 font-bold";
         }
       });
 
@@ -1371,18 +1372,17 @@
       });
 
       const localAccounts = {
-        'admin': { id: 'USR-1', username: 'admin', role: 'Master Admin', pass: 'admin123' },
-        'staff': { id: 'USR-2', username: 'staff', role: 'Staff Gudang', pass: 'staff123' },
-        'manager': { id: 'USR-3', username: 'manager', role: 'Manager', pass: 'manager123' }
+        'admin': { id: 'USR-1', username: 'admin', nama: 'Administrator Utama', role: 'Master Admin', pass: 'admin123' },
+        'staff': { id: 'USR-2', username: 'staff', nama: 'Staff Gudang Operational', role: 'Staff Gudang', pass: 'staff123' },
+        'manager': { id: 'USR-3', username: 'manager', nama: 'Manager Gudang', role: 'Manager', pass: 'manager123' }
       };
 
       const matchLocal = localAccounts[u.toLowerCase()];
       if (matchLocal && matchLocal.pass === p) {
-        currentUser = { id: matchLocal.id, username: matchLocal.username, role: matchLocal.role };
+        currentUser = { id: matchLocal.id, username: matchLocal.username, nama: matchLocal.nama, role: matchLocal.role };
         sessionStorage.setItem('ouffice_user', JSON.stringify(currentUser));
         localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
         
-        // Langsung sembunyikan overlay login tanpa penundaan
         document.getElementById('loginScreen').classList.add('hidden');
         const loginCard = document.getElementById('loginCard');
         if (loginCard) loginCard.classList.remove('scale-95', 'opacity-0');
@@ -1524,12 +1524,6 @@
           popup: 'swal2-aesthetic-popup',
           confirmButton: 'swal2-aesthetic-confirm',
           cancelButton: 'swal2-aesthetic-cancel'
-        },
-        showClass: {
-          popup: 'swal2-show'
-        },
-        hideClass: {
-          popup: 'swal2-hide'
         }
       }).then((res) => {
         if (res.isConfirmed) {
@@ -1624,6 +1618,28 @@
         return `${dd}-${mm}-${yyyy}`;
       }
       return clean || '-';
+    }
+
+    function toISODateString(str) {
+      if (!str) return '';
+      const s = String(str).trim();
+      const clean = s.split('T')[0].split(' ')[0];
+      
+      if (clean.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        return clean;
+      }
+      if (clean.match(/^\d{2}-\d{2}-\d{4}$/)) {
+        const parts = clean.split('-');
+        return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+      const d = new Date(s);
+      if (!isNaN(d.getTime())) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+      }
+      return '';
     }
 
     function renderTable(data) {
@@ -1871,7 +1887,6 @@
         }
       }
 
-      // Sinkronisasi Peringatan Stok Rendah menggunakan kalkulasi rekapitulasi yang sama persis dengan laporan stok
       const lowStockEl = document.getElementById('lowStockList');
       const reportSummaryMap = {};
       rawInventoryData.forEach(item => {
@@ -2180,10 +2195,10 @@
         const matchJenis = !jenis || item.jenisTransaksi === jenis;
         const matchKondisi = !kondisi || item.statusKondisi === kondisi;
 
-        const itemDate = formatDateOnly(item.tanggal);
+        const itemIsoDate = toISODateString(item.tanggal);
         let matchDate = true;
-        if (startDate && itemDate < startDate) matchDate = false;
-        if (endDate && itemDate > endDate) matchDate = false;
+        if (startDate && (!itemIsoDate || itemIsoDate < startDate)) matchDate = false;
+        if (endDate && (!itemIsoDate || itemIsoDate > endDate)) matchDate = false;
 
         return matchQ && matchJenis && matchKondisi && matchDate;
       });
@@ -2564,6 +2579,9 @@
       const jenis = document.getElementById('filterJenis') ? document.getElementById('filterJenis').value : '';
       const kondisi = document.getElementById('filterKondisi') ? document.getElementById('filterKondisi').value : '';
       
+      const cetakOlehNama = (currentUser && (currentUser.nama || currentUser.username)) ? (currentUser.nama || currentUser.username) : 'Admin Gudang';
+      const cetakOlehRole = (currentUser && currentUser.role) ? currentUser.role : 'Staff Gudang';
+
       let periodeText = 'Semua Periode';
       if (startDate && endDate) {
         periodeText = `${startDate} s/d ${endDate}`;
@@ -2588,7 +2606,8 @@
           <div style="text-align: right;">
             <h1 style="font-size: 14px; font-weight: 900; color: #0f172a; margin: 0; text-transform: uppercase;">LAPORAN TRANSAKSI DATA PRODUK</h1>
             <p style="font-size: 9.5px; color: #475569; margin: 2px 0 0 0;">Periode: <strong>${periodeText}</strong> | Transaksi: <strong>${jenis || 'Semua'}</strong> | Kondisi: <strong>${kondisi || 'Semua'}</strong></p>
-            <p style="font-size: 8.5px; color: #94a3b8; margin: 1px 0 0 0;">Total Item: ${dataToExport.length} Transaksi | Cetak: ${new Date().toISOString().split('T')[0]}</p>
+            <p style="font-size: 8.5px; color: #64748b; margin: 1px 0 0 0;">Total Item: ${dataToExport.length} Transaksi | Tanggal Cetak: ${new Date().toISOString().split('T')[0]}</p>
+            <p style="font-size: 8.5px; color: #0f172a; margin: 2px 0 0 0; font-weight: bold;">Dicetak Oleh: <span style="color: #ea580c;">${cetakOlehNama}</span> (${cetakOlehRole})</p>
           </div>
         </div>
         <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
@@ -2625,6 +2644,19 @@
               `;
             }).join('')}
           </tbody>
+        </table>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 8.5px;">
+          <tr>
+            <td style="width: 70%;"></td>
+            <td style="width: 30%; text-align: center; vertical-align: top;">
+              <p style="margin: 0; color: #475569;">Tanggal: ${new Date().toISOString().split('T')[0]}</p>
+              <p style="margin: 2px 0 0 0; font-weight: bold; color: #0f172a;">Dicetak Oleh,</p>
+              <div style="height: 40px;"></div>
+              <p style="margin: 0; font-weight: 800; text-decoration: underline; color: #0f172a;">${cetakOlehNama}</p>
+              <p style="margin: 1px 0 0 0; color: #64748b; text-transform: uppercase; font-size: 8px;">${cetakOlehRole}</p>
+            </td>
+          </tr>
         </table>
       `;
 
@@ -3275,6 +3307,9 @@
     }
 
     function exportStokToPDF() {
+      const cetakOlehNama = (currentUser && (currentUser.nama || currentUser.username)) ? (currentUser.nama || currentUser.username) : 'Admin Gudang';
+      const cetakOlehRole = (currentUser && currentUser.role) ? currentUser.role : 'Staff Gudang';
+
       const summaryMap = {};
       rawInventoryData.forEach(item => {
         const nama = (item.namaBarang || '').trim();
@@ -3324,7 +3359,8 @@
           </div>
           <div style="text-align: right;">
             <h1 style="font-size: 14px; font-weight: 900; color: #0f172a; margin: 0; text-transform: uppercase;">LAPORAN REKAPITULASI STOK GUDANG</h1>
-            <p style="font-size: 8.5px; color: #94a3b8; margin: 2px 0 0 0;">Tanggal Cetak: ${new Date().toISOString().split('T')[0]}</p>
+            <p style="font-size: 8.5px; color: #64748b; margin: 2px 0 0 0;">Tanggal Cetak: ${new Date().toISOString().split('T')[0]}</p>
+            <p style="font-size: 8.5px; color: #0f172a; margin: 2px 0 0 0; font-weight: bold;">Dicetak Oleh: <span style="color: #ea580c;">${cetakOlehNama}</span> (${cetakOlehRole})</p>
           </div>
         </div>
         <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
@@ -3356,6 +3392,19 @@
               `;
             }).join('')}
           </tbody>
+        </table>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 8.5px;">
+          <tr>
+            <td style="width: 70%;"></td>
+            <td style="width: 30%; text-align: center; vertical-align: top;">
+              <p style="margin: 0; color: #475569;">Tanggal: ${new Date().toISOString().split('T')[0]}</p>
+              <p style="margin: 2px 0 0 0; font-weight: bold; color: #0f172a;">Dicetak Oleh,</p>
+              <div style="height: 40px;"></div>
+              <p style="margin: 0; font-weight: 800; text-decoration: underline; color: #0f172a;">${cetakOlehNama}</p>
+              <p style="margin: 1px 0 0 0; color: #64748b; text-transform: uppercase; font-size: 8px;">${cetakOlehRole}</p>
+            </td>
+          </tr>
         </table>
       `;
 
@@ -3669,9 +3718,6 @@
       });
     }
 
-    /* ==========================================================================
-       RETUR BARANG FUNCTIONS
-       ========================================================================== */
     function loadRetur() {
       renderRetur(rawReturData);
       const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
