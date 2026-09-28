@@ -22,10 +22,12 @@
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    
     body {
       font-family: 'Inter', sans-serif;
       -webkit-tap-highlight-color: transparent;
     }
+
     .custom-scrollbar::-webkit-scrollbar {
       height: 6px;
       width: 6px;
@@ -51,6 +53,7 @@
       0%, 100% { transform: translate(0, 0) scale(1); }
       50% { transform: translate(25px, -20px) scale(1.15); }
     }
+
     .animate-fade-in-up {
       animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
@@ -1177,21 +1180,77 @@
 
   <!-- APPLICATION LOGIC SCRIPT -->
   <script>
-    // Google Apps Script Web App URL (leave empty if running directly inside Apps Script HTML Service)
-    const CUSTOM_GAS_URL = "";
-
-    // Global Application State Variables
-    let currentUser = null;
     let rawInventoryData = [];
     let filteredInventoryData = [];
-    let rawClientData = [];
-    let rawSupplierData = [];
-    let rawReturData = [];
-    let isFetchingBackend = false;
+    let rawClientData = JSON.parse(localStorage.getItem('ouffice_client_data')) || [];
+    let rawSupplierData = JSON.parse(localStorage.getItem('ouffice_supplier_data')) || [];
+    let rawReturData = JSON.parse(localStorage.getItem('ouffice_retur_data')) || [];
     let html5QrScannerInstance = null;
     let activeScanTarget = 'search';
-    let currentView = 'dashboard';
-    let syncInterval = null;
+    let currentUser = null;
+    let currentActiveView = 'dashboard';
+    let realtimeSyncTimer = null;
+    let isFetchingBackend = false;
+
+    const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbziiQkjGRqo_SBRGsJbXlVlQM5q8_iPU3kMD9cBQPbPreYyXHtP7JIVYOJPOe4pWsYGqw/exec';
+    let CUSTOM_GAS_URL = localStorage.getItem('ouffice_gas_url') || DEFAULT_GAS_URL;
+
+    window.onload = function () {
+      loadCachedData();
+
+      const savedUser = sessionStorage.getItem('ouffice_user') || localStorage.getItem('ouffice_user');
+      if (savedUser) {
+        try {
+          currentUser = JSON.parse(savedUser);
+          document.getElementById('loginScreen').classList.add('hidden');
+          applyRolePermissions();
+        } catch (e) {
+          document.getElementById('loginScreen').classList.remove('hidden');
+        }
+      } else {
+        document.getElementById('loginScreen').classList.remove('hidden');
+      }
+
+      const formJenisElem = document.getElementById('formJenis');
+      if (formJenisElem) {
+        formJenisElem.addEventListener('change', updateFormLabels);
+      }
+
+      loadDataFromBackend(true, true);
+      startRealtimeSync();
+    };
+
+    function loadCachedData() {
+      try {
+        const cached = localStorage.getItem('ouffice_cached_inventory');
+        if (cached) {
+          rawInventoryData = JSON.parse(cached);
+          filterData();
+          updateStatsAndDashboard();
+          refreshCurrentView();
+        }
+      } catch (e) {}
+    }
+
+    function refreshCurrentView() {
+      if (currentActiveView === 'laporan') calculateStockSummary();
+      if (currentActiveView === 'users') loadUsers();
+      if (currentActiveView === 'client') loadClient();
+      if (currentActiveView === 'supplier') loadSupplier();
+      if (currentActiveView === 'stok-masuk') renderFilteredView('Masuk', 'stokMasukTableContainer');
+      if (currentActiveView === 'stok-keluar') renderFilteredView('Keluar', 'stokKeluarTableContainer');
+      if (currentActiveView === 'delivery-order') renderDeliveryOrders();
+      if (currentActiveView === 'retur') loadRetur();
+    }
+
+    function startRealtimeSync() {
+      if (realtimeSyncTimer) clearInterval(realtimeSyncTimer);
+      realtimeSyncTimer = setInterval(() => {
+        if (currentUser && !isFetchingBackend && document.visibilityState === 'visible') {
+          loadDataFromBackend(true);
+        }
+      }, 3500);
+    }
 
     function toggleSidebar() {
       const sidebar = document.getElementById('mainSidebar');
@@ -1202,36 +1261,46 @@
 
     function applyRolePermissions() {
       if (!currentUser) return;
+      const sbUsername = document.getElementById('sidebarUsername');
+      const sbRole = document.getElementById('sidebarRole');
+      const badgeRole = document.getElementById('currentUserRoleBadge');
 
-      const sidebarUsername = document.getElementById('sidebarUsername');
-      const sidebarRole = document.getElementById('sidebarRole');
-      const currentUserRoleBadge = document.getElementById('currentUserRoleBadge');
-      const btnNavUsers = document.getElementById('btnNavUsers');
-      const btnTambahDataMobile = document.getElementById('btnTambahDataMobile');
-      const btnTambahClient = document.getElementById('btnTambahClient');
-      const btnTambahSupplier = document.getElementById('btnTambahSupplier');
-      const btnTambahStokMasuk = document.getElementById('btnTambahStokMasuk');
-      const btnTambahStokKeluar = document.getElementById('btnTambahStokKeluar');
-      const btnTambahDoKeluar = document.getElementById('btnTambahDoKeluar');
-      const btnTambahRetur = document.getElementById('btnTambahRetur');
+      if (sbUsername) sbUsername.innerText = currentUser.username || 'Admin';
+      if (sbRole) sbRole.innerText = currentUser.role || 'Staff Gudang';
+      if (badgeRole) badgeRole.innerText = currentUser.role || 'STAFF GUDANG';
 
-      if (sidebarUsername) sidebarUsername.innerText = currentUser.username || 'User';
-      if (sidebarRole) sidebarRole.innerText = currentUser.role || 'Staff Gudang';
-      if (currentUserRoleBadge) currentUserRoleBadge.innerText = currentUser.role || 'STAFF GUDANG';
-
-      const isMasterAdmin = currentUser.role === 'Master Admin';
       const isManager = currentUser.role === 'Manager';
 
+      const btnNavUsers = document.getElementById('btnNavUsers');
       if (btnNavUsers) {
-        if (isMasterAdmin) {
+        if (currentUser.role === 'Master Admin') {
           btnNavUsers.classList.remove('hidden');
         } else {
           btnNavUsers.classList.add('hidden');
         }
       }
 
-      const actionButtons = [btnTambahDataMobile, btnTambahClient, btnTambahSupplier, btnTambahStokMasuk, btnTambahStokKeluar, btnTambahDoKeluar, btnTambahRetur];
-      actionButtons.forEach(btn => {
+      const btnHistoryLogin = document.getElementById('btnHistoryLogin');
+      if (btnHistoryLogin) {
+        if (currentUser.role === 'Master Admin') {
+          btnHistoryLogin.style.display = '';
+        } else {
+          btnHistoryLogin.style.display = 'none';
+        }
+      }
+
+      const addButtons = [
+        'btnTambahDataMobile',
+        'btnTambahClient',
+        'btnTambahSupplier',
+        'btnTambahStokMasuk',
+        'btnTambahStokKeluar',
+        'btnTambahDoKeluar',
+        'btnTambahRetur'
+      ];
+
+      addButtons.forEach(id => {
+        const btn = document.getElementById(id);
         if (btn) {
           if (isManager) {
             btn.classList.add('hidden');
@@ -1242,114 +1311,49 @@
       });
     }
 
-    function switchView(viewName) {
-      currentView = viewName;
-      
+    function switchView(viewId) {
+      currentActiveView = viewId;
+      const viewTitleMap = {
+        'dashboard': 'Dashboard Utama',
+        'produk': 'Data Produk Inventaris',
+        'client': 'Data Client / Pelanggan',
+        'supplier': 'Daftar Supplier',
+        'stok-masuk': 'Transaksi Stok Masuk',
+        'stok-keluar': 'Transaksi Stok Keluar',
+        'delivery-order': 'Delivery Order (Surat Jalan)',
+        'retur': 'Retur Barang',
+        'users': 'Manajemen Pengguna',
+        'laporan': 'Laporan Rekap Stok'
+      };
+
+      const titleElem = document.getElementById('currentViewTitle');
+      if (titleElem) titleElem.innerText = viewTitleMap[viewId] || 'Sistem Inventaris';
+
       const views = ['dashboard', 'produk', 'client', 'supplier', 'stok-masuk', 'stok-keluar', 'delivery-order', 'retur', 'users', 'laporan'];
       views.forEach(v => {
         const el = document.getElementById(`view-${v}`);
         if (el) el.classList.add('hidden');
         const navBtn = document.getElementById(`nav-${v}`);
         if (navBtn) {
-          navBtn.classList.remove('bg-orange-600', 'text-white');
-          navBtn.classList.add('text-slate-900', 'hover:bg-slate-300/60');
+          navBtn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 hover:text-black hover:bg-slate-300/60 font-bold";
         }
       });
 
-      const activeEl = document.getElementById(`view-${viewName}`);
+      const activeEl = document.getElementById(`view-${viewId}`);
       if (activeEl) activeEl.classList.remove('hidden');
 
-      const activeNavBtn = document.getElementById(`nav-${viewName}`);
+      const activeNavBtn = document.getElementById(`nav-${viewId}`);
       if (activeNavBtn) {
-        activeNavBtn.classList.add('bg-orange-600', 'text-white');
-        activeNavBtn.classList.remove('text-slate-900', 'hover:bg-slate-300/60');
+        activeNavBtn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition font-semibold text-white bg-orange-600";
       }
 
-      const titleMap = {
-        'dashboard': 'Dashboard Utama',
-        'produk': 'Data Produk Gudang',
-        'client': 'Data Client / Pelanggan',
-        'supplier': 'Data Supplier / Vendor',
-        'stok-masuk': 'Transaksi Stok Masuk',
-        'stok-keluar': 'Transaksi Stok Keluar',
-        'delivery-order': 'Delivery Order (Surat Jalan)',
-        'retur': 'Retur Barang Gudang',
-        'users': 'Manajemen Pengguna',
-        'laporan': 'Laporan & Rekap Stok'
-      };
-      const titleEl = document.getElementById('currentViewTitle');
-      if (titleEl) titleEl.innerText = titleMap[viewName] || 'Gudang Ouffice';
-
       const sidebar = document.getElementById('mainSidebar');
-      const overlay = document.getElementById('sidebarOverlay');
-      if (sidebar) sidebar.classList.add('-translate-x-full');
-      if (overlay) overlay.classList.add('hidden');
+      if (sidebar && !sidebar.classList.contains('-translate-x-full') && window.innerWidth < 768) {
+        toggleSidebar();
+      }
 
       refreshCurrentView();
     }
-
-    function refreshCurrentView() {
-      if (currentView === 'dashboard') {
-        updateStatsAndDashboard();
-      } else if (currentView === 'produk') {
-        filterData();
-      } else if (currentView === 'client') {
-        loadClient();
-      } else if (currentView === 'supplier') {
-        loadSupplier();
-      } else if (currentView === 'stok-masuk') {
-        renderFilteredView('Masuk', 'stokMasukTableContainer');
-      } else if (currentView === 'stok-keluar') {
-        renderFilteredView('Keluar', 'stokKeluarTableContainer');
-      } else if (currentView === 'delivery-order') {
-        renderDeliveryOrders();
-      } else if (currentView === 'retur') {
-        loadRetur();
-      } else if (currentView === 'users') {
-        loadUsers();
-      } else if (currentView === 'laporan') {
-        calculateStockSummary();
-      }
-    }
-
-    function startRealtimeSync() {
-      if (syncInterval) clearInterval(syncInterval);
-      syncInterval = setInterval(() => {
-        loadDataFromBackend(true);
-      }, 30000);
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      // Restore user session if available
-      const savedUser = sessionStorage.getItem('ouffice_user') || localStorage.getItem('ouffice_user');
-      if (savedUser) {
-        try {
-          currentUser = JSON.parse(savedUser);
-          const loginScreen = document.getElementById('loginScreen');
-          if (loginScreen) loginScreen.classList.add('hidden');
-          applyRolePermissions();
-          
-          // Load cached data first for immediate rendering
-          const cachedInventory = localStorage.getItem('ouffice_cached_inventory');
-          if (cachedInventory) {
-            rawInventoryData = JSON.parse(cachedInventory);
-            filterData();
-            updateStatsAndDashboard();
-          }
-          const cachedClient = localStorage.getItem('ouffice_client_data');
-          if (cachedClient) rawClientData = JSON.parse(cachedClient);
-          const cachedSupplier = localStorage.getItem('ouffice_supplier_data');
-          if (cachedSupplier) rawSupplierData = JSON.parse(cachedSupplier);
-          const cachedRetur = localStorage.getItem('ouffice_retur_data');
-          if (cachedRetur) rawReturData = JSON.parse(cachedRetur);
-
-          loadDataFromBackend(false, true);
-          startRealtimeSync();
-        } catch(e) {
-          console.error("Failed to restore session:", e);
-        }
-      }
-    });
 
     function handleLoginSubmit(e) {
       e.preventDefault();
@@ -1367,14 +1371,15 @@
         customClass: { popup: 'swal2-aesthetic-popup' }
       });
 
-      // Akun lokal default (Hanya tersisa Master Admin, akun Staff/Manager harus via backend/db)
       const localAccounts = {
-        'admin': { id: 'USR-1', username: 'admin', role: 'Master Admin', pass: 'admin123' }
+        'admin': { id: 'USR-1', username: 'admin', nama: 'Administrator Utama', role: 'Master Admin', pass: 'admin123' },
+        'staff': { id: 'USR-2', username: 'staff', nama: 'Staff Gudang Operational', role: 'Staff Gudang', pass: 'staff123' },
+        'manager': { id: 'USR-3', username: 'manager', nama: 'Manager Gudang', role: 'Manager', pass: 'manager123' }
       };
 
       const matchLocal = localAccounts[u.toLowerCase()];
       if (matchLocal && matchLocal.pass === p) {
-        currentUser = { id: matchLocal.id, username: matchLocal.username, role: matchLocal.role };
+        currentUser = { id: matchLocal.id, username: matchLocal.username, nama: matchLocal.nama, role: matchLocal.role };
         sessionStorage.setItem('ouffice_user', JSON.stringify(currentUser));
         localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
         
@@ -1519,9 +1524,7 @@
           popup: 'swal2-aesthetic-popup',
           confirmButton: 'swal2-aesthetic-confirm',
           cancelButton: 'swal2-aesthetic-cancel'
-        },
-        showClass: { popup: 'swal2-show' },
-        hideClass: { popup: 'swal2-hide' }
+        }
       }).then((res) => {
         if (res.isConfirmed) {
           sessionStorage.removeItem('ouffice_user');
@@ -1615,6 +1618,28 @@
         return `${dd}-${mm}-${yyyy}`;
       }
       return clean || '-';
+    }
+
+    function toISODateString(str) {
+      if (!str) return '';
+      const s = String(str).trim();
+      const clean = s.split('T')[0].split(' ')[0];
+      
+      if (clean.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        return clean;
+      }
+      if (clean.match(/^\d{2}-\d{2}-\d{4}$/)) {
+        const parts = clean.split('-');
+        return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      }
+      const d = new Date(s);
+      if (!isNaN(d.getTime())) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+      }
+      return '';
     }
 
     function renderTable(data) {
@@ -2170,10 +2195,10 @@
         const matchJenis = !jenis || item.jenisTransaksi === jenis;
         const matchKondisi = !kondisi || item.statusKondisi === kondisi;
 
-        const itemDate = formatDateOnly(item.tanggal);
+        const itemIsoDate = toISODateString(item.tanggal);
         let matchDate = true;
-        if (startDate && itemDate < startDate) matchDate = false;
-        if (endDate && itemDate > endDate) matchDate = false;
+        if (startDate && (!itemIsoDate || itemIsoDate < startDate)) matchDate = false;
+        if (endDate && (!itemIsoDate || itemIsoDate > endDate)) matchDate = false;
 
         return matchQ && matchJenis && matchKondisi && matchDate;
       });
@@ -2497,7 +2522,7 @@
               <th style="padding: 5px; text-align: center; border-right: 0.5px solid #cbd5e1;">ITEM DESCRIPTION</th>
               <th style="padding: 5px; width: 125px; text-align: center; border-right: 0.5px solid #cbd5e1;">SERIAL NUMBER</th>
               <th style="padding: 5px; width: 45px; text-align: center; border-right: 0.5px solid #cbd5e1;">QTY</th>
-              <th style="padding: 5px; width: 55px; text-align: center;">UNIT</th>
+              <th style="padding: 5px; width: 55px; text-align: center;">SATUAN</th>
             </tr>
           </thead>
           <tbody>
@@ -2554,6 +2579,9 @@
       const jenis = document.getElementById('filterJenis') ? document.getElementById('filterJenis').value : '';
       const kondisi = document.getElementById('filterKondisi') ? document.getElementById('filterKondisi').value : '';
       
+      const cetakOlehNama = (currentUser && (currentUser.nama || currentUser.username)) ? (currentUser.nama || currentUser.username) : 'Admin Gudang';
+      const cetakOlehRole = (currentUser && currentUser.role) ? currentUser.role : 'Staff Gudang';
+
       let periodeText = 'Semua Periode';
       if (startDate && endDate) {
         periodeText = `${startDate} s/d ${endDate}`;
@@ -2578,7 +2606,8 @@
           <div style="text-align: right;">
             <h1 style="font-size: 14px; font-weight: 900; color: #0f172a; margin: 0; text-transform: uppercase;">LAPORAN TRANSAKSI DATA PRODUK</h1>
             <p style="font-size: 9.5px; color: #475569; margin: 2px 0 0 0;">Periode: <strong>${periodeText}</strong> | Transaksi: <strong>${jenis || 'Semua'}</strong> | Kondisi: <strong>${kondisi || 'Semua'}</strong></p>
-            <p style="font-size: 8.5px; color: #94a3b8; margin: 1px 0 0 0;">Total Item: ${dataToExport.length} Transaksi | Cetak: ${new Date().toISOString().split('T')[0]}</p>
+            <p style="font-size: 8.5px; color: #64748b; margin: 1px 0 0 0;">Total Item: ${dataToExport.length} Transaksi | Tanggal Cetak: ${new Date().toISOString().split('T')[0]}</p>
+            <p style="font-size: 8.5px; color: #0f172a; margin: 2px 0 0 0; font-weight: bold;">Dicetak Oleh: <span style="color: #ea580c;">${cetakOlehNama}</span> (${cetakOlehRole})</p>
           </div>
         </div>
         <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
@@ -2615,6 +2644,19 @@
               `;
             }).join('')}
           </tbody>
+        </table>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 8.5px;">
+          <tr>
+            <td style="width: 70%;"></td>
+            <td style="width: 30%; text-align: center; vertical-align: top;">
+              <p style="margin: 0; color: #475569;">Tanggal: ${new Date().toISOString().split('T')[0]}</p>
+              <p style="margin: 2px 0 0 0; font-weight: bold; color: #0f172a;">Dicetak Oleh,</p>
+              <div style="height: 40px;"></div>
+              <p style="margin: 0; font-weight: 800; text-decoration: underline; color: #0f172a;">${cetakOlehNama}</p>
+              <p style="margin: 1px 0 0 0; color: #64748b; text-transform: uppercase; font-size: 8px;">${cetakOlehRole}</p>
+            </td>
+          </tr>
         </table>
       `;
 
@@ -3265,6 +3307,9 @@
     }
 
     function exportStokToPDF() {
+      const cetakOlehNama = (currentUser && (currentUser.nama || currentUser.username)) ? (currentUser.nama || currentUser.username) : 'Admin Gudang';
+      const cetakOlehRole = (currentUser && currentUser.role) ? currentUser.role : 'Staff Gudang';
+
       const summaryMap = {};
       rawInventoryData.forEach(item => {
         const nama = (item.namaBarang || '').trim();
@@ -3314,7 +3359,8 @@
           </div>
           <div style="text-align: right;">
             <h1 style="font-size: 14px; font-weight: 900; color: #0f172a; margin: 0; text-transform: uppercase;">LAPORAN REKAPITULASI STOK GUDANG</h1>
-            <p style="font-size: 8.5px; color: #94a3b8; margin: 2px 0 0 0;">Tanggal Cetak: ${new Date().toISOString().split('T')[0]}</p>
+            <p style="font-size: 8.5px; color: #64748b; margin: 2px 0 0 0;">Tanggal Cetak: ${new Date().toISOString().split('T')[0]}</p>
+            <p style="font-size: 8.5px; color: #0f172a; margin: 2px 0 0 0; font-weight: bold;">Dicetak Oleh: <span style="color: #ea580c;">${cetakOlehNama}</span> (${cetakOlehRole})</p>
           </div>
         </div>
         <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
@@ -3346,6 +3392,19 @@
               `;
             }).join('')}
           </tbody>
+        </table>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 8.5px;">
+          <tr>
+            <td style="width: 70%;"></td>
+            <td style="width: 30%; text-align: center; vertical-align: top;">
+              <p style="margin: 0; color: #475569;">Tanggal: ${new Date().toISOString().split('T')[0]}</p>
+              <p style="margin: 2px 0 0 0; font-weight: bold; color: #0f172a;">Dicetak Oleh,</p>
+              <div style="height: 40px;"></div>
+              <p style="margin: 0; font-weight: 800; text-decoration: underline; color: #0f172a;">${cetakOlehNama}</p>
+              <p style="margin: 1px 0 0 0; color: #64748b; text-transform: uppercase; font-size: 8px;">${cetakOlehRole}</p>
+            </td>
+          </tr>
         </table>
       `;
 
