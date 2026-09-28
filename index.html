@@ -2314,7 +2314,7 @@
       if (!container) return;
 
       const isManager = currentUser && currentUser.role === 'Manager';
-      const keluarData = rawInventoryData.filter(x => x.jenisTransaksi === 'Keluar');
+      const keluarData = sortByDateNewestFirst(rawInventoryData.filter(x => x.jenisTransaksi === 'Keluar'));
 
       if (keluarData.length === 0) {
         container.innerHTML = `
@@ -2345,6 +2345,7 @@
           doGroups[groupKey] = {
             id: customDo || `DO-${item.id ? item.id.replace('INV-', '') : Date.now()}`,
             tanggal: dateOnly,
+            rawTanggal: item.tanggal,
             endUser: endUser,
             alamatEndUser: alamat,
             peruntukan: peruntukan,
@@ -2360,7 +2361,14 @@
         }
       });
 
-      const doList = Object.values(doGroups).reverse();
+      const doList = Object.values(doGroups).sort((a, b) => {
+        const timeA = getTimestamp(a.rawTanggal);
+        const timeB = getTimestamp(b.rawTanggal);
+        if (timeB !== timeA) return timeB - timeA;
+        const idA = String(a.id || '');
+        const idB = String(b.id || '');
+        return idB.localeCompare(idA, undefined, { numeric: true });
+      });
 
       container.innerHTML = `
         <div class="max-h-[calc(100vh-240px)] min-h-[450px] overflow-y-auto custom-scrollbar overflow-x-auto">
