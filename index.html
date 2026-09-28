@@ -464,7 +464,7 @@
               <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                 <i class="fa-solid fa-magnifying-glass"></i>
               </span>
-              <input type="text" id="searchInput" onkeyup="filterData()" placeholder="Cari nama barang, brand, tipe, seri, SN, lokasi, end user..." class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium transition">
+              <input type="text" id="searchInput" onkeyup="filterData()" placeholder="Cari nama barang, brand, tipe, seri, SN, lokasi, supplier, end user, alamat..." class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium transition">
               <button onclick="openScannerModal('search')" title="Scan QR untuk Cari" class="absolute inset-y-0 right-0 px-3 text-orange-600 hover:text-orange-700 transition">
                 <i class="fa-solid fa-qrcode text-base"></i>
               </button>
@@ -526,9 +526,11 @@
                   <th class="py-3.5 px-4">Serial Number</th>
                   <th class="py-3.5 px-4 text-center">Lokasi</th>
                   <th class="py-3.5 px-4 text-center">Qty</th>
+                  <th class="py-3.5 px-4">Supplier</th>
                   <th class="py-3.5 px-4">End User</th>
                   <th class="py-3.5 px-4">Pekerjaan / Pengadaan</th>
                   <th class="py-3.5 px-4 text-center">Status</th>
+                  <th class="py-3.5 px-4">Alamat Pengiriman</th>
                   <th class="py-3.5 px-4 text-center w-24">Aksi</th>
                 </tr>
               </thead>
@@ -830,13 +832,18 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label id="labelEndUser" class="block font-bold text-slate-700 uppercase mb-1">Supplier / Asal Barang</label>
-            <input type="text" id="formEndUser" placeholder="Nama supplier / vendor" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
+            <label class="block font-bold text-slate-700 uppercase mb-1">Supplier / Vendor</label>
+            <input type="text" id="formSupplier" placeholder="Nama supplier / vendor" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
           </div>
           <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Peruntukan Pekerjaan/Pengadaan</label>
-            <input type="text" id="formPeruntukan" placeholder="Detail pekerjaan" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
+            <label id="labelEndUser" class="block font-bold text-slate-700 uppercase mb-1">End User / Penerima</label>
+            <input type="text" id="formEndUser" placeholder="Nama instansi / pemakai" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
           </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Peruntukan Pekerjaan/Pengadaan</label>
+          <input type="text" id="formPeruntukan" placeholder="Detail pekerjaan" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
         </div>
 
         <div id="doFieldsGroup" class="hidden grid grid-cols-2 gap-3">
@@ -1678,7 +1685,7 @@
       if (countInfo) countInfo.innerText = `Menampilkan ${data.length} dari ${rawInventoryData.length} data`;
 
       if (!data || data.length === 0) {
-        if (tbody) tbody.innerHTML = `<tr><td colspan="13" class="py-8 text-center text-slate-400 font-medium">Belum ada data inventaris.</td></tr>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="15" class="py-8 text-center text-slate-400 font-medium">Belum ada data inventaris.</td></tr>`;
         if (mobileContainer) mobileContainer.innerHTML = `<div class="p-6 text-center text-slate-400 text-xs">Belum ada data inventaris.</div>`;
         return;
       }
@@ -1711,6 +1718,7 @@
           `;
 
           const tipeSeri = [item.tipe, item.seri].filter(Boolean).join(' / ') || '-';
+          const displaySupplier = item.supplier || (item.jenisTransaksi === 'Masuk' ? item.endUser : '') || '-';
 
           return `
             <tr class="hover:bg-slate-50 transition">
@@ -1723,9 +1731,11 @@
               <td class="py-3 px-4 font-mono text-[11px] text-slate-500">${item.serialNumber ? 'SN: ' + item.serialNumber : '-'}</td>
               <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold text-slate-600">${item.lokasi || '-'}</span></td>
               <td class="py-3 px-4 text-center font-bold font-mono text-slate-800">${item.quantity || 0} ${item.satuan || ''}</td>
+              <td class="py-3 px-4 text-slate-700 font-semibold">${displaySupplier}</td>
               <td class="py-3 px-4 text-slate-700">${item.endUser || '-'}</td>
               <td class="py-3 px-4 text-slate-700">${item.peruntukan || '-'}</td>
               <td class="py-3 px-4 text-center">${textStatus}</td>
+              <td class="py-3 px-4 text-slate-600 text-[11px]">${item.alamatEndUser || '-'}</td>
               <td class="py-3 px-4 text-center">${actionButtons}</td>
             </tr>
           `;
@@ -1746,6 +1756,7 @@
             : '<span class="font-bold text-rose-600">Tidak Berfungsi</span>';
 
           const tipeSeri = [item.tipe, item.seri].filter(Boolean).join(' / ');
+          const displaySupplier = item.supplier || (item.jenisTransaksi === 'Masuk' ? item.endUser : '') || '-';
 
           return `
             <div class="p-4 space-y-2">
@@ -1763,8 +1774,9 @@
               <div class="grid grid-cols-2 gap-2 pt-1 text-[11px] text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
                 <div><span class="text-slate-400 block text-[10px]">Quantity:</span> <strong class="text-slate-800 font-mono">${item.quantity} ${item.satuan}</strong></div>
                 <div><span class="text-slate-400 block text-[10px]">Lokasi:</span> <strong class="text-slate-800">${item.lokasi || '-'}</strong></div>
-                <div><span class="text-slate-400 block text-[10px]">${isMasuk ? 'Supplier:' : 'End User:'}</span> <span class="text-slate-700">${item.endUser || '-'}</span></div>
-                <div><span class="text-slate-400 block text-[10px]">Pekerjaan:</span> <span class="text-slate-700">${item.peruntukan || '-'}</span></div>
+                <div><span class="text-slate-400 block text-[10px]">Supplier:</span> <span class="text-slate-700">${displaySupplier}</span></div>
+                <div><span class="text-slate-400 block text-[10px]">End User:</span> <span class="text-slate-700">${item.endUser || '-'}</span></div>
+                <div class="col-span-2"><span class="text-slate-400 block text-[10px]">Alamat Pengiriman:</span> <span class="text-slate-700">${item.alamatEndUser || '-'}</span></div>
               </div>
               ${item.serialNumber ? `<div class="font-mono text-[10px] text-slate-500">SN: ${item.serialNumber}</div>` : ''}
             </div>
@@ -2646,18 +2658,20 @@
             <p style="font-size: 8.5px; color: #0f172a; margin: 2px 0 0 0; font-weight: bold;">Dicetak Oleh: <span style="color: #ea580c;">${cetakOlehNama}</span> (${cetakOlehRole})</p>
           </div>
         </div>
-        <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 8.5px;">
           <thead>
             <tr style="background-color: #0f172a; color: white;">
-              <th style="padding: 5px 4px; text-align: center; width: 25px;">No</th>
-              <th style="padding: 5px 4px; text-align: left; width: 65px;">Tanggal</th>
-              <th style="padding: 5px 4px; text-align: center; width: 45px;">Jenis</th>
-              <th style="padding: 5px 6px; text-align: left;">Nama Barang</th>
-              <th style="padding: 5px 6px; text-align: left;">Brand / Tipe / Seri</th>
-              <th style="padding: 5px 4px; text-align: center; width: 85px;">Serial Number</th>
-              <th style="padding: 5px 4px; text-align: center; width: 45px;">Qty</th>
-              <th style="padding: 5px 6px; text-align: left;">Supplier / End User</th>
-              <th style="padding: 5px 4px; text-align: center; width: 60px;">Status</th>
+              <th style="padding: 5px 4px; text-align: center; width: 22px;">No</th>
+              <th style="padding: 5px 4px; text-align: left; width: 60px;">Tanggal</th>
+              <th style="padding: 5px 4px; text-align: center; width: 40px;">Jenis</th>
+              <th style="padding: 5px 5px; text-align: left;">Nama Barang</th>
+              <th style="padding: 5px 5px; text-align: left;">Brand / Tipe / Seri</th>
+              <th style="padding: 5px 4px; text-align: center; width: 75px;">Serial Number</th>
+              <th style="padding: 5px 4px; text-align: center; width: 40px;">Qty</th>
+              <th style="padding: 5px 5px; text-align: left;">Supplier</th>
+              <th style="padding: 5px 5px; text-align: left;">End User</th>
+              <th style="padding: 5px 4px; text-align: center; width: 55px;">Status</th>
+              <th style="padding: 5px 5px; text-align: left;">Alamat Pengiriman</th>
             </tr>
           </thead>
           <tbody>
@@ -2665,17 +2679,20 @@
               const tipeSeri = [item.brand, item.tipe, item.seri].filter(Boolean).join(' / ');
               const isMasuk = item.jenisTransaksi === 'Masuk';
               const dateOnly = formatDateOnly(item.tanggal);
+              const displaySupplier = item.supplier || (isMasuk ? item.endUser : '') || '-';
               return `
                 <tr style="border-bottom: 1px solid #e2e8f0; ${idx % 2 === 1 ? 'background-color: #f8fafc;' : ''}">
                   <td style="padding: 4px; text-align: center; font-family: monospace;">${idx + 1}</td>
                   <td style="padding: 4px; font-family: monospace;">${dateOnly}</td>
                   <td style="padding: 4px; text-align: center; font-weight: bold; color: ${isMasuk ? '#047857' : '#0284c7'};">${isMasuk ? '↓ Masuk' : '↑ Keluar'}</td>
-                  <td style="padding: 4px 6px; font-weight: bold; color: #1e293b;">${item.namaBarang || '-'}</td>
-                  <td style="padding: 4px 6px; color: #475569;">${tipeSeri || '-'}</td>
+                  <td style="padding: 4px 5px; font-weight: bold; color: #1e293b;">${item.namaBarang || '-'}</td>
+                  <td style="padding: 4px 5px; color: #475569;">${tipeSeri || '-'}</td>
                   <td style="padding: 4px; text-align: center; font-family: monospace; font-size: 8px;">${item.serialNumber || '-'}</td>
                   <td style="padding: 4px; text-align: center; font-weight: bold; font-family: monospace;">${item.quantity || 0} ${item.satuan || ''}</td>
-                  <td style="padding: 4px 6px; color: #334155;">${item.endUser || '-'}</td>
+                  <td style="padding: 4px 5px; color: #334155; font-weight: 600;">${displaySupplier}</td>
+                  <td style="padding: 4px 5px; color: #334155;">${item.endUser || '-'}</td>
                   <td style="padding: 4px; text-align: center; font-weight: bold; color: ${item.statusKondisi === 'Berfungsi' ? '#059669' : '#e11d48'};">${item.statusKondisi || '-'}</td>
+                  <td style="padding: 4px 5px; color: #475569; font-size: 8px;">${item.alamatEndUser || '-'}</td>
                 </tr>
               `;
             }).join('')}
@@ -2705,6 +2722,42 @@
       };
 
       html2pdf().set(opt).from(element).save();
+    }
+
+    function filterData() {
+      const qInput = document.getElementById('searchInput');
+      const q = qInput ? qInput.value.toLowerCase() : '';
+      const jenis = document.getElementById('filterJenis').value;
+      const kondisi = document.getElementById('filterKondisi').value;
+      const startDate = document.getElementById('filterStartDate') ? document.getElementById('filterStartDate').value : '';
+      const endDate = document.getElementById('filterEndDate') ? document.getElementById('filterEndDate').value : '';
+
+      filteredInventoryData = rawInventoryData.filter((item) => {
+        const matchQ = !q || (
+          (item.namaBarang || '').toLowerCase().includes(q) ||
+          (item.brand || '').toLowerCase().includes(q) ||
+          (item.tipe || '').toLowerCase().includes(q) ||
+          (item.seri || '').toLowerCase().includes(q) ||
+          (item.serialNumber || '').toLowerCase().includes(q) ||
+          (item.lokasi || '').toLowerCase().includes(q) ||
+          (item.supplier || '').toLowerCase().includes(q) ||
+          (item.endUser || '').toLowerCase().includes(q) ||
+          (item.alamatEndUser || '').toLowerCase().includes(q) ||
+          (item.peruntukan || '').toLowerCase().includes(q)
+        );
+
+        const matchJenis = !jenis || item.jenisTransaksi === jenis;
+        const matchKondisi = !kondisi || item.statusKondisi === kondisi;
+
+        const itemIsoDate = toISODateString(item.tanggal);
+        let matchDate = true;
+        if (startDate && (!itemIsoDate || itemIsoDate < startDate)) matchDate = false;
+        if (endDate && (!itemIsoDate || itemIsoDate > endDate)) matchDate = false;
+
+        return matchQ && matchJenis && matchKondisi && matchDate;
+      });
+
+      renderTable(filteredInventoryData);
     }
 
     function updateFormLabels() {
@@ -2813,11 +2866,12 @@
         lokasi: document.getElementById('formLokasi').value,
         quantity: Number(document.getElementById('formQuantity').value) || 1,
         satuan: document.getElementById('formSatuan').value.trim() || 'Pcs',
+        supplier: document.getElementById('formSupplier') ? document.getElementById('formSupplier').value.trim() : '',
         endUser: document.getElementById('formEndUser').value.trim(),
         peruntukan: document.getElementById('formPeruntukan').value.trim(),
         customDoNumber: document.getElementById('formCustomDoNumber') ? document.getElementById('formCustomDoNumber').value.trim() : '',
-        alamatEndUser: document.getElementById('formAlamatEndUser') ? document.getElementById('formAlamatEndUser').value.trim() : '',
         statusKondisi: document.getElementById('formStatusKondisi').value,
+        alamatEndUser: document.getElementById('formAlamatEndUser') ? document.getElementById('formAlamatEndUser').value.trim() : '',
         deskripsi: document.getElementById('formDeskripsi').value.trim()
       };
 
@@ -2871,6 +2925,7 @@
       document.getElementById('formLokasi').value = item.lokasi || 'Indoor';
       document.getElementById('formQuantity').value = item.quantity || 1;
       document.getElementById('formSatuan').value = item.satuan || 'Pcs';
+      if (document.getElementById('formSupplier')) document.getElementById('formSupplier').value = item.supplier || (item.jenisTransaksi === 'Masuk' ? item.endUser : '');
       document.getElementById('formEndUser').value = item.endUser || '';
       document.getElementById('formPeruntukan').value = item.peruntukan || '';
       if (document.getElementById('formCustomDoNumber')) document.getElementById('formCustomDoNumber').value = item.customDoNumber || '';
