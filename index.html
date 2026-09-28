@@ -133,7 +133,6 @@
 
   <!-- LOGIN SCREEN -->
   <div id="loginScreen" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all duration-500">
-    <!-- Ambient Background Lighting -->
     <div class="absolute -top-24 -left-24 w-96 h-96 bg-orange-600/20 rounded-full blur-3xl pointer-events-none animate-float-glow"></div>
     <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-sky-600/15 rounded-full blur-3xl pointer-events-none animate-float-glow" style="animation-delay: -5s;"></div>
 
@@ -1642,6 +1641,34 @@
       return '';
     }
 
+    function getItemTimestamp(item) {
+      if (!item || !item.tanggal) return 0;
+      const s = String(item.tanggal).trim();
+      const clean = s.split('T')[0].split(' ')[0];
+      if (clean.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const parts = clean.split('-');
+        return new Date(`${parts[0]}-${parts[1]}-${parts[2]}`).getTime() || 0;
+      }
+      if (clean.match(/^\d{2}-\d{2}-\d{4}$/)) {
+        const parts = clean.split('-');
+        return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`).getTime() || 0;
+      }
+      const d = new Date(s);
+      return !isNaN(d.getTime()) ? d.getTime() : 0;
+    }
+
+    function sortByDateDescending(items) {
+      if (!Array.isArray(items)) return [];
+      return [...items].sort((a, b) => {
+        const timeA = getItemTimestamp(a);
+        const timeB = getItemTimestamp(b);
+        if (timeB !== timeA) {
+          return timeB - timeA;
+        }
+        return String(b.id || '').localeCompare(String(a.id || ''));
+      });
+    }
+
     function renderTable(data) {
       const tbody = document.getElementById('inventoryTableBody');
       const mobileContainer = document.getElementById('mobileCardsContainer');
@@ -1655,7 +1682,7 @@
         return;
       }
 
-      const displayData = [...data].reverse();
+      const displayData = sortByDateDescending(data);
 
       if (tbody) {
         tbody.innerHTML = displayData.map((item, idx) => {
@@ -2026,7 +2053,7 @@
       }
 
       const recentTbody = document.getElementById('recentTransactionsTable');
-      const recentData = [...rawInventoryData].reverse().slice(0, 5);
+      const recentData = sortByDateDescending(rawInventoryData).slice(0, 5);
 
       if (recentTbody) {
         if (recentData.length === 0) {
@@ -2245,7 +2272,7 @@
         return;
       }
 
-      const displayData = [...data].reverse();
+      const displayData = sortByDateDescending(data);
 
       container.innerHTML = `
         <div class="max-h-[calc(100vh-240px)] min-h-[450px] overflow-y-auto custom-scrollbar overflow-x-auto">
@@ -2317,6 +2344,7 @@
           doGroups[groupKey] = {
             id: customDo || `DO-${item.id ? item.id.replace('INV-', '') : Date.now()}`,
             tanggal: dateOnly,
+            timestamp: getItemTimestamp(item),
             endUser: endUser,
             alamatEndUser: alamat,
             peruntukan: peruntukan,
@@ -2332,7 +2360,7 @@
         }
       });
 
-      const doList = Object.values(doGroups).reverse();
+      const doList = Object.values(doGroups).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
       container.innerHTML = `
         <div class="max-h-[calc(100vh-240px)] min-h-[450px] overflow-y-auto custom-scrollbar overflow-x-auto">
