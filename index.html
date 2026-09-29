@@ -1603,13 +1603,18 @@
     function formatDateOnly(str) {
       if (!str) return '-';
       const s = String(str).trim();
-      const clean = s.split('T')[0].split(' ')[0];
-      
-      if (clean.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        const parts = clean.split('-');
+      if (!s) return '-';
+
+      // Jika sudah format DD-MM-YYYY
+      if (/^\d{2}-\d{2}-\d{4}$/.test(s)) return s;
+
+      // Jika format ISO YYYY-MM-DD
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+        const parts = s.split('-');
         return `${parts[2]}-${parts[1]}-${parts[0]}`;
       }
 
+      // Parse dari Date object / string timestamp GMT Google Sheets
       const d = new Date(s);
       if (!isNaN(d.getTime())) {
         const yyyy = d.getFullYear();
@@ -1617,21 +1622,22 @@
         const dd = String(d.getDate()).padStart(2, '0');
         return `${dd}-${mm}-${yyyy}`;
       }
-      return clean || '-';
+
+      return s || '-';
     }
 
     function toISODateString(str) {
       if (!str) return '';
       const s = String(str).trim();
-      const clean = s.split('T')[0].split(' ')[0];
-      
-      if (clean.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        return clean;
-      }
-      if (clean.match(/^\d{2}-\d{2}-\d{4}$/)) {
-        const parts = clean.split('-');
+      if (!s) return '';
+
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
+      if (/^\d{2}-\d{2}-\d{4}$/.test(s)) {
+        const parts = s.split('-');
         return `${parts[2]}-${parts[1]}-${parts[0]}`;
       }
+
       const d = new Date(s);
       if (!isNaN(d.getTime())) {
         const yyyy = d.getFullYear();
@@ -1639,21 +1645,24 @@
         const dd = String(d.getDate()).padStart(2, '0');
         return `${yyyy}-${mm}-${dd}`;
       }
+
       return '';
     }
 
     function getItemTimestamp(item) {
       if (!item || !item.tanggal) return 0;
       const s = String(item.tanggal).trim();
-      const clean = s.split('T')[0].split(' ')[0];
-      if (clean.match(/^\d{4}-\d{2}-\d{2}$/)) {
-        const parts = clean.split('-');
-        return new Date(`${parts[0]}-${parts[1]}-${parts[2]}`).getTime() || 0;
+      if (!s) return 0;
+
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+        const parts = s.split('-');
+        return new Date(parts[0], parts[1] - 1, parts[2]).getTime() || 0;
       }
-      if (clean.match(/^\d{2}-\d{2}-\d{4}$/)) {
-        const parts = clean.split('-');
-        return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`).getTime() || 0;
+      if (/^\d{2}-\d{2}-\d{4}$/.test(s)) {
+        const parts = s.split('-');
+        return new Date(parts[2], parts[1] - 1, parts[0]).getTime() || 0;
       }
+
       const d = new Date(s);
       return !isNaN(d.getTime()) ? d.getTime() : 0;
     }
@@ -1980,12 +1989,9 @@
         const validTimestamps = rawInventoryData
           .map(d => {
             if (!d.tanggal) return NaN;
-            const s = String(d.tanggal).trim();
-            const clean = s.split('T')[0].split(' ')[0];
-            if (clean.match(/^\d{4}-\d{2}-\d{2}$/)) {
-              return new Date(clean).getTime();
-            }
-            const dObj = new Date(s);
+            const iso = toISODateString(d.tanggal);
+            if (iso) return new Date(iso).getTime();
+            const dObj = new Date(d.tanggal);
             return !isNaN(dObj.getTime()) ? dObj.getTime() : NaN;
           })
           .filter(ts => !isNaN(ts));
@@ -2004,17 +2010,8 @@
 
         rawInventoryData.forEach(item => {
           if (!item.tanggal) return;
-          const s = String(item.tanggal).trim();
-          let itemKey = '';
-          const clean = s.split('T')[0].split(' ')[0];
-          if (clean.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            itemKey = clean.substring(0, 7);
-          } else {
-            const d = new Date(s);
-            if (!isNaN(d.getTime())) {
-              itemKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-            }
-          }
+          const iso = toISODateString(item.tanggal);
+          let itemKey = iso ? iso.substring(0, 7) : '';
 
           if (itemKey) {
             const slot = monthSlots.find(s => s.key === itemKey);
@@ -2103,18 +2100,11 @@
       const monthMap = {};
       rawInventoryData.forEach(item => {
         if (!item.tanggal) return;
-        const s = String(item.tanggal).trim();
-        const clean = s.split('T')[0].split(' ')[0];
-        let key = '';
-        if (clean.match(/^\d{4}-\d{2}-\d{2}$/)) {
-          key = clean.substring(0, 7);
-        } else {
-          const d = new Date(s);
-          if (!isNaN(d.getTime())) {
-            key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-          }
+        const iso = toISODateString(item.tanggal);
+        if (iso) {
+          const key = iso.substring(0, 7);
+          monthMap[key] = true;
         }
-        if (key) monthMap[key] = true;
       });
 
       let availableMonths = Object.keys(monthMap).sort().reverse();
@@ -2152,19 +2142,8 @@
 
       rawInventoryData.forEach(item => {
         if (item.jenisTransaksi !== 'Keluar' || !item.tanggal) return;
-        const s = String(item.tanggal).trim();
-        const clean = s.split('T')[0].split(' ')[0];
-        let key = '';
-        if (clean.match(/^\d{4}-\d{2}-\d{2}$/)) {
-          key = clean.substring(0, 7);
-        } else {
-          const d = new Date(s);
-          if (!isNaN(d.getTime())) {
-            key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-          }
-        }
-
-        if (key === selectedMonth) {
+        const iso = toISODateString(item.tanggal);
+        if (iso && iso.substring(0, 7) === selectedMonth) {
           const qty = Number(item.quantity) || 0;
           monthTotalKeluar += qty;
           const user = (item.endUser || 'Umum / Lainnya').trim();
@@ -2854,7 +2833,7 @@
       openModal();
       document.getElementById('formId').value = item.id;
       document.getElementById('modalTitle').innerText = 'Edit Data Inventaris';
-      document.getElementById('formTanggal').value = formatDateOnly(item.tanggal);
+      document.getElementById('formTanggal').value = toISODateString(item.tanggal);
       document.getElementById('formJenis').value = item.jenisTransaksi || 'Masuk';
       document.getElementById('formNamaBarang').value = item.namaBarang || '';
       document.getElementById('formBrand').value = item.brand || '';
@@ -3960,7 +3939,7 @@
       openReturModal();
       document.getElementById('formReturId').value = item.id;
       document.getElementById('modalReturTitle').innerText = 'Edit Data Retur Barang';
-      document.getElementById('formReturTanggal').value = formatDateOnly(item.tanggal);
+      document.getElementById('formReturTanggal').value = toISODateString(item.tanggal);
       document.getElementById('formReturNamaBarang').value = item.namaBarang || '';
       document.getElementById('formReturQuantity').value = item.quantity || 1;
       document.getElementById('formReturSatuan').value = item.satuan || 'Pcs';
