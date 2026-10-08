@@ -304,10 +304,6 @@
               <span class="hidden sm:inline">Sync</span>
             </button>
 
-            <button onclick="openConfigModal()" title="Pengaturan Koneksi Backend" class="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition text-xs">
-              <i class="fa-solid fa-sliders"></i>
-            </button>
-
             <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-200 text-xs font-bold text-slate-700 bg-slate-50">
               <i class="fa-solid fa-user-circle text-orange-600 text-base"></i>
               <span id="currentUserRoleBadge" class="uppercase font-extrabold tracking-wide text-orange-600">STAFF GUDANG</span>
@@ -1450,60 +1446,6 @@
       startRealtimeSync();
     };
 
-    function loadCachedData() {
-      try {
-        const cached = localStorage.getItem('ouffice_cached_inventory');
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed)) {
-            rawInventoryData = parsed.map(item => ({
-              ...item,
-              gudang: item.gudang || (rawWarehouseData[0] ? rawWarehouseData[0].nama : 'Gudang Utama')
-            }));
-          }
-        }
-      } catch (e) {}
-      filterData();
-      updateStatsAndDashboard();
-      refreshCurrentView();
-    }
-
-    function initWarehouseDropdowns() {
-      const globalSelect = document.getElementById('globalWarehouseSelect');
-      const filterGudang = document.getElementById('filterGudang');
-      const formGudang = document.getElementById('formGudang');
-      const returGudang = document.getElementById('formReturGudang');
-      const mutasiAsal = document.getElementById('formMutasiAsal');
-      const mutasiTujuan = document.getElementById('formMutasiTujuan');
-
-      const whOptions = rawWarehouseData.map(w => `<option value="${w.nama}">${w.nama} (${w.kode})</option>`).join('');
-
-      if (globalSelect) {
-        globalSelect.innerHTML = `<option value="">Semua Gudang</option>` + whOptions;
-        globalSelect.value = selectedGlobalWarehouse;
-      }
-      if (filterGudang) filterGudang.innerHTML = `<option value="">Semua Gudang</option>` + whOptions;
-      if (formGudang) formGudang.innerHTML = whOptions;
-      if (returGudang) returGudang.innerHTML = whOptions;
-      if (mutasiAsal && mutasiTujuan) {
-        mutasiAsal.innerHTML = whOptions;
-        mutasiTujuan.innerHTML = whOptions;
-        if (rawWarehouseData.length > 1) mutasiTujuan.selectedIndex = 1;
-      }
-    }
-
-    function handleGlobalWarehouseChange() {
-      const globalSelect = document.getElementById('globalWarehouseSelect');
-      selectedGlobalWarehouse = globalSelect ? globalSelect.value : '';
-
-      const filterGudang = document.getElementById('filterGudang');
-      if (filterGudang) filterGudang.value = selectedGlobalWarehouse;
-
-      filterData();
-      updateStatsAndDashboard();
-      refreshCurrentView();
-    }
-
     function toggleSidebar() {
       const sidebar = document.getElementById('mainSidebar');
       const overlay = document.getElementById('sidebarOverlay');
@@ -1515,7 +1457,7 @@
       currentActiveView = viewId;
       const viewTitleMap = {
         'dashboard': 'Dashboard Utama',
-        'gudang': 'Master Data Gudang',
+        'gudang': 'Master Gudang & Fasilitas',
         'produk': 'Data Produk Inventaris',
         'client': 'Data Client / Pelanggan',
         'supplier': 'Daftar Supplier',
@@ -1537,7 +1479,7 @@
         if (el) el.classList.add('hidden');
         const navBtn = document.getElementById(`nav-${v}`);
         if (navBtn) {
-          navBtn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 hover:text-black hover:bg-slate-300/60 font-bold";
+          navBtn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 font-bold hover:text-black hover:bg-slate-300/60";
         }
       });
 
@@ -1549,9 +1491,9 @@
         activeNavBtn.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition font-semibold text-white bg-orange-600";
       }
 
-      if (window.innerWidth < 768) {
-        const sidebar = document.getElementById('mainSidebar');
-        if (sidebar && !sidebar.classList.contains('-translate-x-full')) toggleSidebar();
+      const sidebar = document.getElementById('mainSidebar');
+      if (sidebar && !sidebar.classList.contains('-translate-x-full') && window.innerWidth < 768) {
+        toggleSidebar();
       }
 
       refreshCurrentView();
@@ -1576,32 +1518,52 @@
       const sbRole = document.getElementById('sidebarRole');
       const badgeRole = document.getElementById('currentUserRoleBadge');
 
-      if (sbUsername) sbUsername.innerText = currentUser.username || 'Admin';
+      if (sbUsername) sbUsername.innerText = currentUser.nama || currentUser.username || 'Admin';
       if (sbRole) sbRole.innerText = currentUser.role || 'Staff Gudang';
-      if (badgeRole) badgeRole.innerText = currentUser.role || 'STAFF GUDANG';
+      if (badgeRole) badgeRole.innerText = (currentUser.role || 'STAFF GUDANG').toUpperCase();
 
       const isManager = currentUser.role === 'Manager';
       const isMasterAdmin = currentUser.role === 'Master Admin';
 
       const btnNavUsers = document.getElementById('btnNavUsers');
       if (btnNavUsers) {
-        btnNavUsers.style.display = isMasterAdmin ? '' : 'none';
+        if (isMasterAdmin) {
+          btnNavUsers.classList.remove('hidden');
+        } else {
+          btnNavUsers.classList.add('hidden');
+        }
       }
 
       const btnHistoryLogin = document.getElementById('btnHistoryLogin');
       if (btnHistoryLogin) {
-        btnHistoryLogin.style.display = isMasterAdmin ? '' : 'none';
+        if (isMasterAdmin) {
+          btnHistoryLogin.style.display = '';
+        } else {
+          btnHistoryLogin.style.display = 'none';
+        }
       }
 
-      const staffButtons = [
-        'btnTambahDataMobile', 'btnTambahGudang', 'btnTambahMutasi',
-        'btnTambahClient', 'btnTambahSupplier', 'btnTambahStokMasuk',
-        'btnTambahStokKeluar', 'btnTambahDoKeluar', 'btnTambahRetur'
+      const addButtons = [
+        'btnTambahDataMobile',
+        'btnTambahGudang',
+        'btnTambahClient',
+        'btnTambahSupplier',
+        'btnTambahStokMasuk',
+        'btnTambahStokKeluar',
+        'btnTambahMutasi',
+        'btnTambahDoKeluar',
+        'btnTambahRetur'
       ];
 
-      staffButtons.forEach(id => {
+      addButtons.forEach(id => {
         const btn = document.getElementById(id);
-        if (btn) btn.style.display = isManager ? 'none' : '';
+        if (btn) {
+          if (isManager) {
+            btn.classList.add('hidden');
+          } else {
+            btn.classList.remove('hidden');
+          }
+        }
       });
     }
 
@@ -1612,109 +1574,6 @@
           loadDataFromBackend(true);
         }
       }, 5000);
-    }
-
-    function handleLoginSubmit(e) {
-      e.preventDefault();
-      const u = document.getElementById('loginUsername').value.trim();
-      const p = document.getElementById('loginPassword').value;
-      if (!u || !p) return;
-
-      const foundUser = rawUsersData.find(acc => acc.username.toLowerCase() === u.toLowerCase() && acc.pass === p);
-      if (foundUser) {
-        currentUser = { id: foundUser.id, username: foundUser.username, nama: foundUser.nama, role: foundUser.role };
-        sessionStorage.setItem('ouffice_user', JSON.stringify(currentUser));
-        localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
-
-        document.getElementById('loginScreen').classList.add('hidden');
-        applyRolePermissions();
-        isFetchingBackend = false;
-        loadDataFromBackend(false, true);
-        startRealtimeSync();
-
-        Swal.fire({
-          toast: true,
-          position: 'top-end',
-          icon: 'success',
-          title: `Selamat datang, ${currentUser.username}!`,
-          showConfirmButton: false,
-          timer: 2000
-        });
-        return;
-      }
-
-      Swal.fire({
-        title: 'Verifikasi Akun...',
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
-      });
-
-      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
-      if (isGASNative) {
-        google.script.run
-          .withSuccessHandler((res) => {
-            Swal.close();
-            if (res && res.success) {
-              currentUser = res.user;
-              sessionStorage.setItem('ouffice_user', JSON.stringify(currentUser));
-              localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
-              document.getElementById('loginScreen').classList.add('hidden');
-              applyRolePermissions();
-              loadDataFromBackend(false, true);
-            } else {
-              Swal.fire('Gagal Login', res ? res.message : 'Username/Password salah', 'error');
-            }
-          })
-          .withFailureHandler((err) => {
-            Swal.close();
-            Swal.fire('Error Login', err.toString(), 'error');
-          })
-          .loginUser({ username: u, password: p });
-      } else if (CUSTOM_GAS_URL) {
-        fetch(CUSTOM_GAS_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'login', username: u, password: p })
-        })
-          .then(r => r.json())
-          .then(res => {
-            Swal.close();
-            if (res && res.success) {
-              currentUser = res.user;
-              sessionStorage.setItem('ouffice_user', JSON.stringify(currentUser));
-              localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
-              document.getElementById('loginScreen').classList.add('hidden');
-              applyRolePermissions();
-              loadDataFromBackend(false, true);
-            } else {
-              Swal.fire('Gagal Login', res ? res.message : 'Username/Password salah', 'error');
-            }
-          })
-          .catch(() => {
-            Swal.close();
-            Swal.fire('Koneksi Gagal', 'Gagal memverifikasi ke backend database.', 'error');
-          });
-      }
-    }
-
-    function handleLogout() {
-      Swal.fire({
-        title: 'Logout / Keluar',
-        text: 'Anda akan keluar dari sesi aplikasi.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Ya, Logout',
-        cancelButtonText: 'Batal',
-        buttonsStyling: false,
-        customClass: { popup: 'swal2-aesthetic-popup', confirmButton: 'swal2-aesthetic-confirm', cancelButton: 'swal2-aesthetic-cancel' }
-      }).then((res) => {
-        if (res.isConfirmed) {
-          sessionStorage.removeItem('ouffice_user');
-          currentUser = null;
-          document.getElementById('loginForm').reset();
-          document.getElementById('loginScreen').classList.remove('hidden');
-        }
-      });
     }
 
     function loadDataFromBackend(isSilent = false, force = false) {
@@ -1740,8 +1599,8 @@
           .readData();
       } else if (CUSTOM_GAS_URL) {
         fetch(`${CUSTOM_GAS_URL}?action=read`)
-          .then(r => r.json())
-          .then(res => {
+          .then((r) => r.json())
+          .then((res) => {
             isFetchingBackend = false;
             if (syncIcon) syncIcon.classList.remove('fa-spin');
             if (res && res.success) syncBackendResponse(res);
@@ -1756,12 +1615,237 @@
       }
     }
 
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      const u = document.getElementById('loginUsername').value.trim();
+      const p = document.getElementById('loginPassword').value;
+      if (!u || !p) return;
+
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+        customClass: { popup: 'swal2-aesthetic-popup' }
+      });
+
+      const localAccounts = {
+        'admin': { id: 'USR-ADMIN', username: 'admin', nama: 'Administrator Utama', role: 'Master Admin', pass: 'admin123' },
+        'staff': { id: 'USR-STAFF', username: 'staff', nama: 'Staff Gudang Logistik', role: 'Staff Gudang', pass: 'staff123' },
+        'manager': { id: 'USR-MGR', username: 'manager', nama: 'Manager Logistik', role: 'Manager', pass: 'manager123' }
+      };
+
+      const matchLocal = localAccounts[u.toLowerCase()];
+      if (matchLocal && matchLocal.pass === p) {
+        currentUser = { id: matchLocal.id, username: matchLocal.username, nama: matchLocal.nama, role: matchLocal.role };
+        sessionStorage.setItem('ouffice_user', JSON.stringify(currentUser));
+        localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
+        document.getElementById('loginScreen').classList.add('hidden');
+        applyRolePermissions();
+        isFetchingBackend = false;
+        loadDataFromBackend(false, true);
+        startRealtimeSync();
+        Toast.fire({ icon: 'success', title: `Selamat datang, ${currentUser.username}!` });
+        return;
+      }
+
+      Swal.fire({
+        title: '<div class="text-slate-800 font-bold text-sm uppercase">Memverifikasi Akun...</div>',
+        allowOutsideClick: false,
+        customClass: { popup: 'swal2-aesthetic-popup' },
+        didOpen: () => Swal.showLoading()
+      });
+
+      if (CUSTOM_GAS_URL) {
+        fetch(CUSTOM_GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'login', username: u, password: p })
+        })
+          .then(r => r.json())
+          .then(res => {
+            Swal.close();
+            if (res && res.success) {
+              currentUser = res.user;
+              sessionStorage.setItem('ouffice_user', JSON.stringify(currentUser));
+              localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
+              document.getElementById('loginScreen').classList.add('hidden');
+              applyRolePermissions();
+              isFetchingBackend = false;
+              loadDataFromBackend(false, true);
+              startRealtimeSync();
+              Toast.fire({ icon: 'success', title: `Selamat datang, ${currentUser.username}!` });
+            } else {
+              Swal.fire({
+                icon: 'error',
+                title: '<div class="text-rose-600 font-extrabold text-sm uppercase">Gagal Login</div>',
+                text: res ? res.message : 'Username atau password salah',
+                buttonsStyling: false,
+                customClass: { popup: 'swal2-aesthetic-popup', confirmButton: 'swal2-aesthetic-confirm' }
+              });
+            }
+          })
+          .catch(() => {
+            Swal.close();
+            Swal.fire({
+              icon: 'error',
+              title: '<div class="text-rose-600 font-extrabold text-sm uppercase">Koneksi Gagal</div>',
+              text: 'Gagal terhubung ke database server.',
+              buttonsStyling: false,
+              customClass: { popup: 'swal2-aesthetic-popup', confirmButton: 'swal2-aesthetic-confirm' }
+            });
+          });
+      }
+    }
+
+    function handleLogout() {
+      Swal.fire({
+        title: '<div class="text-slate-900 font-extrabold text-base uppercase tracking-wide">Logout Sistem</div>',
+        html: '<p class="text-xs text-slate-500 font-medium mt-1">Anda akan keluar dari sesi aplikasi <strong>Ouffice Inventory</strong>.</p>',
+        icon: 'question',
+        iconColor: '#ea580c',
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa-solid fa-power-off me-1.5"></i> Ya, Logout',
+        cancelButtonText: 'Batal',
+        buttonsStyling: false,
+        customClass: {
+          popup: 'swal2-aesthetic-popup',
+          confirmButton: 'swal2-aesthetic-confirm',
+          cancelButton: 'swal2-aesthetic-cancel'
+        }
+      }).then((res) => {
+        if (res.isConfirmed) {
+          sessionStorage.removeItem('ouffice_user');
+          localStorage.removeItem('ouffice_user');
+          currentUser = null;
+          document.getElementById('loginForm').reset();
+          document.getElementById('loginScreen').classList.remove('hidden');
+        }
+      });
+    }
+
+    function initWarehouseDropdowns() {
+      const globalSelect = document.getElementById('globalWarehouseSelect');
+      const formGudang = document.getElementById('formGudang');
+      const filterGudang = document.getElementById('filterGudang');
+      const mutasiAsal = document.getElementById('formMutasiAsal');
+      const mutasiTujuan = document.getElementById('formMutasiTujuan');
+      const returGudang = document.getElementById('formReturGudang');
+
+      const warehouseOptions = rawWarehouseData.map(w => `<option value="${w.nama}">${w.nama}</option>`).join('');
+
+      if (globalSelect) {
+        const curVal = globalSelect.value;
+        globalSelect.innerHTML = `<option value="">Semua Gudang</option>` + warehouseOptions;
+        if (curVal && rawWarehouseData.some(w => w.nama === curVal)) {
+          globalSelect.value = curVal;
+        }
+      }
+
+      if (formGudang) {
+        formGudang.innerHTML = warehouseOptions;
+      }
+
+      if (filterGudang) {
+        const curVal = filterGudang.value;
+        filterGudang.innerHTML = `<option value="">Semua Gudang</option>` + warehouseOptions;
+        if (curVal) filterGudang.value = curVal;
+      }
+
+      if (mutasiAsal) {
+        mutasiAsal.innerHTML = warehouseOptions;
+        if (rawWarehouseData.length > 0) mutasiAsal.value = rawWarehouseData[0].nama;
+      }
+
+      if (mutasiTujuan) {
+        mutasiTujuan.innerHTML = warehouseOptions;
+        if (rawWarehouseData.length > 1) {
+          mutasiTujuan.value = rawWarehouseData[1].nama;
+        } else if (rawWarehouseData.length > 0) {
+          mutasiTujuan.value = rawWarehouseData[0].nama;
+        }
+      }
+
+      if (returGudang) {
+        returGudang.innerHTML = warehouseOptions;
+      }
+    }
+
+    function handleGlobalWarehouseChange() {
+      const globalSelect = document.getElementById('globalWarehouseSelect');
+      selectedGlobalWarehouse = globalSelect ? globalSelect.value : '';
+      
+      const filterGudang = document.getElementById('filterGudang');
+      if (filterGudang) {
+        filterGudang.value = selectedGlobalWarehouse;
+      }
+
+      filterData();
+      updateStatsAndDashboard();
+      refreshCurrentView();
+    }
+
+    function loadCachedData() {
+      try {
+        const cached = localStorage.getItem('ouffice_cached_inventory');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed)) {
+            rawInventoryData = parsed.map(sanitizeInventoryItem);
+          }
+        }
+      } catch (e) {}
+      filterData();
+      updateStatsAndDashboard();
+      refreshCurrentView();
+    }
+
+    /**
+     * Memperbaiki dan menormalkan data jika sempat terjadi pergeseran kolom
+     */
+    function sanitizeInventoryItem(item) {
+      if (!item) return item;
+      let jenis = String(item.jenisTransaksi || '').trim();
+      let gudang = String(item.gudang || '').trim();
+      let nama = String(item.namaBarang || '').trim();
+      let brand = String(item.brand || '').trim();
+
+      // Jika jenis transaksi tertukar dengan nama barang (seperti 'Power Supply' masuk ke jenisTransaksi)
+      const validJenis = ['Masuk', 'Keluar', 'Mutasi Masuk', 'Mutasi Keluar'];
+      if (!validJenis.includes(jenis)) {
+        if (validJenis.includes(gudang)) {
+          // Gudang berisi 'Keluar'/'Masuk', jenis berisi nama barang
+          nama = jenis;
+          jenis = gudang;
+          gudang = rawWarehouseData[0] ? rawWarehouseData[0].nama : 'Gudang Utama (HQ Tebet)';
+        } else {
+          // Defaultkan jenis ke Masuk jika tidak valid
+          if (nama === 'Masuk' || nama === 'Keluar') {
+            jenis = nama;
+            nama = item.brand || item.tipe || 'Barang Inventaris';
+          }
+        }
+      }
+
+      // Pastikan gudang valid
+      if (!gudang || validJenis.includes(gudang)) {
+        gudang = rawWarehouseData[0] ? rawWarehouseData[0].nama : 'Gudang Utama (HQ Tebet)';
+      }
+
+      return {
+        ...item,
+        gudang: gudang,
+        jenisTransaksi: validJenis.includes(jenis) ? jenis : 'Masuk',
+        namaBarang: nama || 'Barang Inventaris',
+        statusKondisi: item.statusKondisi || 'Berfungsi',
+        quantity: Number(item.quantity) || 1
+      };
+    }
+
     function syncBackendResponse(res) {
       if (Array.isArray(res.data)) {
-        rawInventoryData = res.data.map(item => ({
-          ...item,
-          gudang: item.gudang || (rawWarehouseData[0] ? rawWarehouseData[0].nama : 'Gudang Utama')
-        }));
+        rawInventoryData = res.data.map(sanitizeInventoryItem);
         try { localStorage.setItem('ouffice_cached_inventory', JSON.stringify(rawInventoryData)); } catch (e) {}
       }
       if (Array.isArray(res.warehouses) && res.warehouses.length > 0) {
@@ -1772,6 +1856,18 @@
       if (Array.isArray(res.mutasi)) {
         rawMutasiData = res.mutasi;
         localStorage.setItem('ouffice_mutasi_data', JSON.stringify(rawMutasiData));
+      }
+      if (Array.isArray(res.client)) {
+        rawClientData = res.client;
+        localStorage.setItem('ouffice_client_data', JSON.stringify(rawClientData));
+      }
+      if (Array.isArray(res.supplier)) {
+        rawSupplierData = res.supplier;
+        localStorage.setItem('ouffice_supplier_data', JSON.stringify(rawSupplierData));
+      }
+      if (Array.isArray(res.retur)) {
+        rawReturData = res.retur;
+        localStorage.setItem('ouffice_retur_data', JSON.stringify(rawReturData));
       }
       filterData();
       updateStatsAndDashboard();
@@ -2027,6 +2123,87 @@
       if (textPercent) textPercent.innerText = `${ratio}%`;
       if (textPctSiap) textPctSiap.innerText = `${ratio}%`;
       if (textPctRusak) textPctRusak.innerText = `${ratioRusak}%`;
+
+      const sliceSiap = document.getElementById('pieSliceSiap');
+      const sliceRusak = document.getElementById('pieSliceRusak');
+      const textSiap = document.getElementById('pieTextSiap');
+      const textRusak = document.getElementById('pieTextRusak');
+
+      const cx = 50, cy = 50, r = 45;
+
+      function getSlicePath(startAngle, endAngle) {
+        if ((endAngle - startAngle) >= (2 * Math.PI - 0.001)) {
+          return `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx} ${cy + r} A ${r} ${r} 0 1 1 ${cx} ${cy - r} Z`;
+        }
+        const x1 = cx + r * Math.cos(startAngle);
+        const y1 = cy + r * Math.sin(startAngle);
+        const x2 = cx + r * Math.cos(endAngle);
+        const y2 = cy + r * Math.sin(endAngle);
+        const largeArc = (endAngle - startAngle > Math.PI) ? 1 : 0;
+        return `M ${cx} ${cy} L ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 ${largeArc} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`;
+      }
+
+      if (totalKondisi > 0 && sliceSiap && sliceRusak && textSiap && textRusak) {
+        const pSiap = safeBerfungsi / totalKondisi;
+        const pRusak = safeTidakBerfungsi / totalKondisi;
+
+        if (pSiap > 0 && pRusak === 0) {
+          sliceSiap.setAttribute('d', getSlicePath(0, 2 * Math.PI));
+          sliceSiap.style.display = 'block';
+          sliceRusak.style.display = 'none';
+
+          textSiap.setAttribute('x', '50');
+          textSiap.setAttribute('y', '50');
+          textSiap.textContent = `${ratio}%`;
+          textSiap.style.display = 'block';
+          textRusak.style.display = 'none';
+        } else if (pRusak > 0 && pSiap === 0) {
+          sliceRusak.setAttribute('d', getSlicePath(0, 2 * Math.PI));
+          sliceRusak.style.display = 'block';
+          sliceSiap.style.display = 'none';
+
+          textRusak.setAttribute('x', '50');
+          textRusak.setAttribute('y', '50');
+          textRusak.textContent = `${ratioRusak}%`;
+          textRusak.style.display = 'block';
+          textSiap.style.display = 'none';
+        } else {
+          const startSiap = -Math.PI / 2;
+          const endSiap = startSiap + (pSiap * 2 * Math.PI);
+          const midSiap = (startSiap + endSiap) / 2;
+
+          const startRusak = endSiap;
+          const endRusak = startSiap + (2 * Math.PI);
+          const midRusak = (startRusak + endRusak) / 2;
+
+          sliceSiap.setAttribute('d', getSlicePath(startSiap, endSiap));
+          sliceSiap.style.display = 'block';
+
+          sliceRusak.setAttribute('d', getSlicePath(startRusak, endRusak));
+          sliceRusak.style.display = 'block';
+
+          const rtSiap = r * (pSiap < 0.2 ? 0.7 : 0.52);
+          const txSiap = cx + rtSiap * Math.cos(midSiap);
+          const tySiap = cy + rtSiap * Math.sin(midSiap);
+          textSiap.setAttribute('x', txSiap.toFixed(1));
+          textSiap.setAttribute('y', tySiap.toFixed(1));
+          textSiap.textContent = `${ratio}%`;
+          textSiap.style.display = 'block';
+
+          const rtRusak = r * (pRusak < 0.2 ? 0.7 : 0.52);
+          const txRusak = cx + rtRusak * Math.cos(midRusak);
+          const tyRusak = cy + rtRusak * Math.sin(midRusak);
+          textRusak.setAttribute('x', txRusak.toFixed(1));
+          textRusak.setAttribute('y', tyRusak.toFixed(1));
+          textRusak.textContent = `${ratioRusak}%`;
+          textRusak.style.display = 'block';
+        }
+      } else if (sliceSiap && sliceRusak) {
+        sliceSiap.style.display = 'none';
+        sliceRusak.style.display = 'none';
+        if (textSiap) textSiap.style.display = 'none';
+        if (textRusak) textRusak.style.display = 'none';
+      }
 
       const distEl = document.getElementById('warehouseStockDistribution');
       if (distEl) {
@@ -3226,6 +3403,7 @@
               <th class="py-3 px-4">PIC</th>
               <th class="py-3 px-4">Kontak</th>
               <th class="py-3 px-4 text-center">Status</th>
+              <th class="py-3 px-4 text-center">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
@@ -3235,11 +3413,350 @@
                 <td class="py-3 px-4">${c.kontak || '-'}</td>
                 <td class="py-3 px-4 text-[11px] text-slate-500">${c.telepon || '-'}</td>
                 <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">${c.status}</span></td>
+                <td class="py-3 px-4 text-center">
+                  ${currentUser && currentUser.role === 'Manager' ? '-' : `
+                  <button onclick="deleteClient('${c.id}')" title="Hapus Client" class="w-7 h-7 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-600 transition inline-flex items-center justify-center">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>`}
+                </td>
               </tr>
             `).join('')}
           </tbody>
         </table>
       `;
+    }
+    function openClientModal() { document.getElementById('clientForm').reset(); document.getElementById('clientModal').classList.remove('hidden'); }
+    function closeClientModal() { document.getElementById('clientModal').classList.add('hidden'); }
+    function handleClientSubmit(e) {
+      e.preventDefault();
+      const p = {
+        id: `CLI-${Date.now()}`,
+        nama: document.getElementById('formNamaClient').value,
+        kontak: document.getElementById('formKontakClient').value,
+        email: document.getElementById('formEmailClient').value,
+        telepon: document.getElementById('formTeleponClient').value,
+        alamat: document.getElementById('formAlamatClient').value,
+        status: document.getElementById('formStatusClient').value
+      };
+      rawClientData.push(p);
+      localStorage.setItem('ouffice_client_data', JSON.stringify(rawClientData));
+      renderClient(rawClientData);
+      closeClientModal();
+      if (CUSTOM_GAS_URL) {
+        fetch(CUSTOM_GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'addClient', ...p })
+        }).catch(() => {});
+      }
+      Swal.fire({ icon: 'success', title: 'Client Tersimpan!', timer: 1000, showConfirmButton: false });
+    }
+
+    function deleteClient(id) {
+      if (currentUser && currentUser.role === 'Manager') return;
+      Swal.fire({
+        title: 'Hapus Client?',
+        text: 'Data client ini akan dihapus dari sistem.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Ya, Hapus'
+      }).then((res) => {
+        if (res.isConfirmed) {
+          rawClientData = rawClientData.filter(x => x.id !== id);
+          localStorage.setItem('ouffice_client_data', JSON.stringify(rawClientData));
+          renderClient(rawClientData);
+          if (CUSTOM_GAS_URL) {
+            fetch(CUSTOM_GAS_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: 'deleteClient', id: id })
+            }).catch(() => {});
+          }
+          Swal.fire({ icon: 'success', title: 'Client Terhapus!', timer: 1000, showConfirmButton: false });
+        }
+      });
+    }
+
+    function loadSupplier() { renderSupplier(rawSupplierData); }
+    function renderSupplier(data) {
+      const container = document.getElementById('supplierListContainer');
+      if (!container) return;
+      if (!data || data.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-slate-400">Belum ada supplier.</div>`;
+        return;
+      }
+      container.innerHTML = `
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 uppercase text-[10px] font-extrabold">
+              <th class="py-3 px-4">Nama Supplier</th>
+              <th class="py-3 px-4">PIC</th>
+              <th class="py-3 px-4">Kontak</th>
+              <th class="py-3 px-4 text-center">Status</th>
+              <th class="py-3 px-4 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+            ${data.map(s => `
+              <tr class="hover:bg-slate-50 transition">
+                <td class="py-3 px-4 font-bold text-slate-800">${s.nama}</td>
+                <td class="py-3 px-4">${s.kontak || '-'}</td>
+                <td class="py-3 px-4 text-[11px] text-slate-500">${s.telepon || '-'}</td>
+                <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">${s.status}</span></td>
+                <td class="py-3 px-4 text-center">
+                  ${currentUser && currentUser.role === 'Manager' ? '-' : `
+                  <button onclick="deleteSupplier('${s.id}')" title="Hapus Supplier" class="w-7 h-7 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-600 transition inline-flex items-center justify-center">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>`}
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+    function openSupplierModal() { document.getElementById('supplierForm').reset(); document.getElementById('supplierModal').classList.remove('hidden'); }
+    function closeSupplierModal() { document.getElementById('supplierModal').classList.add('hidden'); }
+    function handleSupplierSubmit(e) {
+      e.preventDefault();
+      const p = {
+        id: `SUP-${Date.now()}`,
+        nama: document.getElementById('formNamaSupplier').value,
+        kontak: document.getElementById('formKontakSupplier').value,
+        email: document.getElementById('formEmailSupplier').value,
+        telepon: document.getElementById('formTeleponSupplier').value,
+        status: document.getElementById('formStatusSupplier').value
+      };
+      rawSupplierData.push(p);
+      localStorage.setItem('ouffice_supplier_data', JSON.stringify(rawSupplierData));
+      renderSupplier(rawSupplierData);
+      closeSupplierModal();
+      if (CUSTOM_GAS_URL) {
+        fetch(CUSTOM_GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'addSupplier', ...p })
+        }).catch(() => {});
+      }
+      Swal.fire({ icon: 'success', title: 'Supplier Tersimpan!', timer: 1000, showConfirmButton: false });
+    }
+
+    function deleteSupplier(id) {
+      if (currentUser && currentUser.role === 'Manager') return;
+      Swal.fire({
+        title: 'Hapus Supplier?',
+        text: 'Data supplier ini akan dihapus dari sistem.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Ya, Hapus'
+      }).then((res) => {
+        if (res.isConfirmed) {
+          rawSupplierData = rawSupplierData.filter(x => x.id !== id);
+          localStorage.setItem('ouffice_supplier_data', JSON.stringify(rawSupplierData));
+          renderSupplier(rawSupplierData);
+          if (CUSTOM_GAS_URL) {
+            fetch(CUSTOM_GAS_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: 'deleteSupplier', id: id })
+            }).catch(() => {});
+          }
+          Swal.fire({ icon: 'success', title: 'Supplier Terhapus!', timer: 1000, showConfirmButton: false });
+        }
+      });
+    }
+
+    function loadRetur() { renderRetur(rawReturData); }
+    function renderRetur(data) {
+      const container = document.getElementById('returTableContainer');
+      if (!container) return;
+      if (!data || data.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-slate-400">Belum ada data retur barang.</div>`;
+        return;
+      }
+      container.innerHTML = `
+        <div class="max-h-[calc(100vh-240px)] min-h-[450px] overflow-y-auto custom-scrollbar overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-900 text-white uppercase text-[10px] font-extrabold">
+                <th class="py-3.5 px-3">Tanggal</th>
+                <th class="py-3.5 px-3">Gudang Penerima</th>
+                <th class="py-3.5 px-3">Nama Barang</th>
+                <th class="py-3.5 px-3 text-center">Qty</th>
+                <th class="py-3.5 px-3">Asal Retur</th>
+                <th class="py-3.5 px-3">Alasan</th>
+                <th class="py-3.5 px-3 text-center">Status</th>
+                <th class="py-3.5 px-3 text-center w-24">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+              ${[...data].reverse().map(r => `
+                <tr class="hover:bg-slate-50 transition">
+                  <td class="py-3 px-3 font-mono text-[11px] whitespace-nowrap">${formatDateOnly(r.tanggal)}</td>
+                  <td class="py-3 px-3 font-bold text-amber-700">${r.gudang || 'Gudang Utama'}</td>
+                  <td class="py-3 px-3 font-bold text-slate-800">${r.namaBarang}</td>
+                  <td class="py-3 px-3 text-center font-bold font-mono text-rose-600">${r.quantity} ${r.satuan||'Pcs'}</td>
+                  <td class="py-3 px-3 font-semibold">${r.asalRetur}</td>
+                  <td class="py-3 px-3 text-slate-600 text-[11px]">${r.catatan || '-'}</td>
+                  <td class="py-3 px-3 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">${r.status || 'Diproses'}</span></td>
+                  <td class="py-3 px-3 text-center">
+                    ${currentUser && currentUser.role === 'Manager' ? '-' : `
+                    <div class="flex items-center justify-center gap-1.5">
+                      <button onclick="editRetur('${r.id}')" title="Edit Retur" class="w-7 h-7 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 rounded-lg text-slate-600 transition inline-flex items-center justify-center">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                      </button>
+                      <button onclick="deleteRetur('${r.id}')" title="Hapus Retur" class="w-7 h-7 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-600 transition inline-flex items-center justify-center">
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+                    </div>`}
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function editRetur(id) {
+      if (currentUser && currentUser.role === 'Manager') return;
+      const item = rawReturData.find(x => x.id === id);
+      if (!item) return;
+
+      openReturModal();
+      document.getElementById('formReturId').value = item.id;
+      document.getElementById('modalReturTitle').innerText = 'Edit Data Retur Barang';
+      document.getElementById('formReturTanggal').value = toISODateString(item.tanggal);
+      document.getElementById('formReturGudang').value = item.gudang || (rawWarehouseData[0] ? rawWarehouseData[0].nama : '');
+      document.getElementById('formReturNamaBarang').value = item.namaBarang || '';
+      document.getElementById('formReturQuantity').value = item.quantity || 1;
+      document.getElementById('formReturSatuan').value = item.satuan || 'Pcs';
+      document.getElementById('formReturAsal').value = item.asalRetur || '';
+      document.getElementById('formReturCatatan').value = item.catatan || '';
+      document.getElementById('formReturStatus').value = item.status || 'Diproses';
+    }
+
+    function deleteRetur(id) {
+      if (currentUser && currentUser.role === 'Manager') return;
+      Swal.fire({
+        title: 'Hapus Data Retur?',
+        text: 'Catatan pengembalian barang ini akan dihapus.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Ya, Hapus'
+      }).then((res) => {
+        if (res.isConfirmed) {
+          rawReturData = rawReturData.filter(x => x.id !== id);
+          localStorage.setItem('ouffice_retur_data', JSON.stringify(rawReturData));
+          renderRetur(rawReturData);
+          if (CUSTOM_GAS_URL) {
+            fetch(CUSTOM_GAS_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: 'deleteRetur', id: id })
+            }).catch(() => {});
+          }
+          Swal.fire({ icon: 'success', title: 'Retur Terhapus!', timer: 1000, showConfirmButton: false });
+        }
+      });
+    }
+
+    function filterReturData() {
+      const q = (document.getElementById('searchRetur').value || '').toLowerCase();
+      renderRetur(rawReturData.filter(r => (r.namaBarang||'').toLowerCase().includes(q) || (r.asalRetur||'').toLowerCase().includes(q)));
+    }
+    function openReturModal() {
+      document.getElementById('returForm').reset();
+      document.getElementById('formReturId').value = '';
+      document.getElementById('modalReturTitle').innerText = 'Input Retur Barang';
+      document.getElementById('formReturTanggal').value = new Date().toISOString().split('T')[0];
+      const datalist = document.getElementById('returBarangList');
+      if (datalist) datalist.innerHTML = [...new Set(rawInventoryData.map(i => i.namaBarang))].map(b => `<option value="${b}"></option>`).join('');
+      document.getElementById('returModal').classList.remove('hidden');
+    }
+    function closeReturModal() { document.getElementById('returModal').classList.add('hidden'); }
+    function handleReturSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('formReturId').value;
+      const p = {
+        id: id || `RTR-${Date.now()}`,
+        tanggal: document.getElementById('formReturTanggal').value,
+        gudang: document.getElementById('formReturGudang').value,
+        namaBarang: document.getElementById('formReturNamaBarang').value.trim(),
+        quantity: Number(document.getElementById('formReturQuantity').value) || 1,
+        satuan: document.getElementById('formReturSatuan').value.trim() || 'Pcs',
+        asalRetur: document.getElementById('formReturAsal').value.trim(),
+        catatan: document.getElementById('formReturCatatan').value.trim(),
+        status: document.getElementById('formReturStatus').value
+      };
+      if (id) {
+        const idx = rawReturData.findIndex(x => x.id === id);
+        if (idx !== -1) rawReturData[idx] = p;
+      } else {
+        rawReturData.push(p);
+      }
+      localStorage.setItem('ouffice_retur_data', JSON.stringify(rawReturData));
+      renderRetur(rawReturData);
+      closeReturModal();
+      if (CUSTOM_GAS_URL) {
+        fetch(CUSTOM_GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: id ? 'updateRetur' : 'addRetur', id: id, ...p })
+        }).catch(() => {});
+      }
+      Swal.fire({ icon: 'success', title: 'Retur Tersimpan!', timer: 1000, showConfirmButton: false });
+    }
+
+    function openHistoryModal() {
+      document.getElementById('historyModal').classList.remove('hidden');
+      loadLoginHistory();
+    }
+    function closeHistoryModal() { document.getElementById('historyModal').classList.add('hidden'); }
+
+    function loadLoginHistory() {
+      const tbody = document.getElementById('historyTableBody');
+      if (tbody) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Memuat riwayat login...</td></tr>`;
+      }
+      if (CUSTOM_GAS_URL) {
+        fetch(`${CUSTOM_GAS_URL}?action=readLoginHistory`)
+          .then(r => r.json())
+          .then(res => {
+            renderLoginHistory((res && res.history) ? res.history : []);
+          })
+          .catch(() => renderLoginHistory([]));
+      } else {
+        renderLoginHistory([]);
+      }
+    }
+
+    function renderLoginHistory(history) {
+      const tbody = document.getElementById('historyTableBody');
+      if (!tbody) return;
+      if (!history || history.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium">Belum ada catatan riwayat login.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = history.map((item, idx) => {
+        const isSukses = (item.status || '').toLowerCase().includes('sukses');
+        const statusBadge = isSukses
+          ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Sukses</span>'
+          : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">Gagal</span>';
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="py-2.5 px-3 text-center text-slate-400 font-mono">${idx + 1}</td>
+            <td class="py-2.5 px-3 font-mono text-[11px] text-slate-600 whitespace-nowrap">${item.waktu || '-'}</td>
+            <td class="py-2.5 px-3 font-bold text-slate-800">${item.username || '-'}</td>
+            <td class="py-2.5 px-3 text-slate-600 font-semibold">${item.role || '-'}</td>
+            <td class="py-2.5 px-3 text-center">${statusBadge}</td>
+          </tr>
+        `;
+      }).join('');
     }
     function openClientModal() { document.getElementById('clientForm').reset(); document.getElementById('clientModal').classList.remove('hidden'); }
     function closeClientModal() { document.getElementById('clientModal').classList.add('hidden'); }
