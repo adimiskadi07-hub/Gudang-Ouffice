@@ -1158,7 +1158,7 @@
           <thead>
             <tr class="bg-slate-900 text-white text-[11px] uppercase tracking-wider font-extrabold">
               <th class="py-3 px-3 text-center w-10">No</th>
-              <th class="py-3 px-3">Waktu / Tanggal</th>
+              <th class="py-3 px-3">Tanggal</th>
               <th class="py-3 px-3">Username</th>
               <th class="py-3 px-3">Role Hak Akses</th>
               <th class="py-3 px-3 text-center">Status</th>
@@ -1420,6 +1420,39 @@
     const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbziiQkjGRqo_SBRGsJbXlVlQM5q8_iPU3kMD9cBQPbPreYyXHtP7JIVYOJPOe4pWsYGqw/exec';
     let CUSTOM_GAS_URL = localStorage.getItem('ouffice_gas_url') || DEFAULT_GAS_URL;
 
+    /**
+     * Resolusi nama canonical gudang
+     */
+    function getCanonicalWarehouseName(rawGudang) {
+      if (!rawWarehouseData || rawWarehouseData.length === 0) return rawGudang || 'Gudang Utama';
+      const val = String(rawGudang || '').trim();
+      if (!val) return rawWarehouseData[0].nama;
+      const valLower = val.toLowerCase();
+
+      let match = rawWarehouseData.find(w => w.nama.trim().toLowerCase() === valLower);
+      if (match) return match.nama;
+
+      match = rawWarehouseData.find(w => w.kode && w.kode.trim().toLowerCase() === valLower);
+      if (match) return match.nama;
+
+      match = rawWarehouseData.find(w => w.id && w.id.trim().toLowerCase() === valLower);
+      if (match) return match.nama;
+
+      const cleanVal = valLower.replace(/\s*\([^)]*\)/g, '').trim();
+      match = rawWarehouseData.find(w => {
+        const cleanName = w.nama.toLowerCase().replace(/\s*\([^)]*\)/g, '').trim();
+        return cleanName === cleanVal || (cleanName && cleanVal && (cleanName.includes(cleanVal) || cleanVal.includes(cleanName)));
+      });
+      if (match) return match.nama;
+
+      if (valLower.includes('utama') || valLower.includes('central') || valLower.includes('pusat') || valLower.includes('tebet')) {
+        const primary = rawWarehouseData.find(w => (w.kode && w.kode.toUpperCase() === 'WH-CENTRAL') || w.nama.toLowerCase().includes('utama'));
+        if (primary) return primary.nama;
+      }
+
+      return rawWarehouseData[0].nama;
+    }
+
     window.onload = function () {
       loadCachedData();
 
@@ -1527,20 +1560,14 @@
 
       const btnNavUsers = document.getElementById('btnNavUsers');
       if (btnNavUsers) {
-        if (isMasterAdmin) {
-          btnNavUsers.classList.remove('hidden');
-        } else {
-          btnNavUsers.classList.add('hidden');
-        }
+        if (isMasterAdmin) btnNavUsers.classList.remove('hidden');
+        else btnNavUsers.classList.add('hidden');
       }
 
       const btnHistoryLogin = document.getElementById('btnHistoryLogin');
       if (btnHistoryLogin) {
-        if (isMasterAdmin) {
-          btnHistoryLogin.style.display = '';
-        } else {
-          btnHistoryLogin.style.display = 'none';
-        }
+        if (isMasterAdmin) btnHistoryLogin.style.display = '';
+        else btnHistoryLogin.style.display = 'none';
       }
 
       const addButtons = [
@@ -1558,11 +1585,8 @@
       addButtons.forEach(id => {
         const btn = document.getElementById(id);
         if (btn) {
-          if (isManager) {
-            btn.classList.add('hidden');
-          } else {
-            btn.classList.remove('hidden');
-          }
+          if (isManager) btn.classList.add('hidden');
+          else btn.classList.remove('hidden');
         }
       });
     }
@@ -1743,9 +1767,7 @@
         }
       }
 
-      if (formGudang) {
-        formGudang.innerHTML = warehouseOptions;
-      }
+      if (formGudang) formGudang.innerHTML = warehouseOptions;
 
       if (filterGudang) {
         const curVal = filterGudang.value;
@@ -1767,9 +1789,7 @@
         }
       }
 
-      if (returGudang) {
-        returGudang.innerHTML = warehouseOptions;
-      }
+      if (returGudang) returGudang.innerHTML = warehouseOptions;
     }
 
     function handleGlobalWarehouseChange() {
@@ -1801,26 +1821,19 @@
       refreshCurrentView();
     }
 
-    /**
-     * Memperbaiki dan menormalkan data jika sempat terjadi pergeseran kolom
-     */
     function sanitizeInventoryItem(item) {
       if (!item) return item;
       let jenis = String(item.jenisTransaksi || '').trim();
       let gudang = String(item.gudang || '').trim();
       let nama = String(item.namaBarang || '').trim();
-      let brand = String(item.brand || '').trim();
 
-      // Jika jenis transaksi tertukar dengan nama barang (seperti 'Power Supply' masuk ke jenisTransaksi)
       const validJenis = ['Masuk', 'Keluar', 'Mutasi Masuk', 'Mutasi Keluar'];
       if (!validJenis.includes(jenis)) {
         if (validJenis.includes(gudang)) {
-          // Gudang berisi 'Keluar'/'Masuk', jenis berisi nama barang
           nama = jenis;
           jenis = gudang;
-          gudang = rawWarehouseData[0] ? rawWarehouseData[0].nama : 'Gudang Utama (HQ Tebet)';
+          gudang = rawWarehouseData[0] ? rawWarehouseData[0].nama : 'Gudang Utama';
         } else {
-          // Defaultkan jenis ke Masuk jika tidak valid
           if (nama === 'Masuk' || nama === 'Keluar') {
             jenis = nama;
             nama = item.brand || item.tipe || 'Barang Inventaris';
@@ -1828,14 +1841,11 @@
         }
       }
 
-      // Pastikan gudang valid
-      if (!gudang || validJenis.includes(gudang)) {
-        gudang = rawWarehouseData[0] ? rawWarehouseData[0].nama : 'Gudang Utama (HQ Tebet)';
-      }
+      const canonicalGudang = getCanonicalWarehouseName(gudang);
 
       return {
         ...item,
-        gudang: gudang,
+        gudang: canonicalGudang,
         jenisTransaksi: validJenis.includes(jenis) ? jenis : 'Masuk',
         namaBarang: nama || 'Barang Inventaris',
         statusKondisi: item.statusKondisi || 'Berfungsi',
@@ -1844,14 +1854,16 @@
     }
 
     function syncBackendResponse(res) {
-      if (Array.isArray(res.data)) {
-        rawInventoryData = res.data.map(sanitizeInventoryItem);
-        try { localStorage.setItem('ouffice_cached_inventory', JSON.stringify(rawInventoryData)); } catch (e) {}
-      }
       if (Array.isArray(res.warehouses) && res.warehouses.length > 0) {
         rawWarehouseData = res.warehouses;
         localStorage.setItem('ouffice_warehouse_data', JSON.stringify(rawWarehouseData));
         initWarehouseDropdowns();
+      }
+      if (Array.isArray(res.data)) {
+        rawInventoryData = res.data.map(sanitizeInventoryItem);
+        try { localStorage.setItem('ouffice_cached_inventory', JSON.stringify(rawInventoryData)); } catch (e) {}
+      } else {
+        rawInventoryData = rawInventoryData.map(sanitizeInventoryItem);
       }
       if (Array.isArray(res.mutasi)) {
         rawMutasiData = res.mutasi;
@@ -1876,8 +1888,11 @@
 
     function formatDateOnly(str) {
       if (!str) return '-';
-      const s = String(str).trim();
+      let s = String(str).trim();
       if (!s) return '-';
+      if (s.includes('T')) s = s.split('T')[0];
+      if (s.includes(' ')) s = s.split(' ')[0];
+
       if (/^\d{2}-\d{2}-\d{4}$/.test(s)) return s;
       if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
         const parts = s.split('-');
@@ -1895,8 +1910,11 @@
 
     function toISODateString(str) {
       if (!str) return '';
-      const s = String(str).trim();
+      let s = String(str).trim();
       if (!s) return '';
+      if (s.includes('T')) s = s.split('T')[0];
+      if (s.includes(' ')) s = s.split(' ')[0];
+
       if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
       if (/^\d{2}-\d{2}-\d{4}$/.test(s)) {
         const parts = s.split('-');
@@ -2067,40 +2085,39 @@
         warehouseQtyMap[w.nama] = { total: 0, baik: 0, rusak: 0 };
       });
 
-      const effectiveData = selectedGlobalWarehouse 
-        ? rawInventoryData.filter(i => (i.gudang || (rawWarehouseData[0] ? rawWarehouseData[0].nama : '')) === selectedGlobalWarehouse)
-        : rawInventoryData;
-
-      effectiveData.forEach((item) => {
+      rawInventoryData.forEach((item) => {
         const qty = Number(item.quantity) || 0;
-        const gName = item.gudang || (rawWarehouseData[0] ? rawWarehouseData[0].nama : 'Gudang Utama');
+        const gName = getCanonicalWarehouseName(item.gudang);
 
         if (!warehouseQtyMap[gName]) {
           warehouseQtyMap[gName] = { total: 0, baik: 0, rusak: 0 };
         }
 
         if (item.jenisTransaksi === 'Masuk' || item.jenisTransaksi === 'Mutasi Masuk') {
-          totalMasuk += qty;
           warehouseQtyMap[gName].total += qty;
-          if (item.statusKondisi === 'Berfungsi') {
-            berfungsiMasuk += qty;
-            warehouseQtyMap[gName].baik += qty;
-          }
-          if (item.statusKondisi === 'Tidak Berfungsi') {
-            rusakMasuk += qty;
-            warehouseQtyMap[gName].rusak += qty;
-          }
+          if (item.statusKondisi === 'Berfungsi') warehouseQtyMap[gName].baik += qty;
+          if (item.statusKondisi === 'Tidak Berfungsi') warehouseQtyMap[gName].rusak += qty;
+        } else if (item.jenisTransaksi === 'Keluar' || item.jenisTransaksi === 'Mutasi Keluar') {
+          warehouseQtyMap[gName].total = Math.max(0, warehouseQtyMap[gName].total - qty);
+          if (item.statusKondisi === 'Berfungsi') warehouseQtyMap[gName].baik = Math.max(0, warehouseQtyMap[gName].baik - qty);
+          if (item.statusKondisi === 'Tidak Berfungsi') warehouseQtyMap[gName].rusak = Math.max(0, warehouseQtyMap[gName].rusak - qty);
+        }
+      });
+
+      const effectiveData = selectedGlobalWarehouse 
+        ? rawInventoryData.filter(i => getCanonicalWarehouseName(i.gudang) === selectedGlobalWarehouse)
+        : rawInventoryData;
+
+      effectiveData.forEach((item) => {
+        const qty = Number(item.quantity) || 0;
+        if (item.jenisTransaksi === 'Masuk' || item.jenisTransaksi === 'Mutasi Masuk') {
+          totalMasuk += qty;
+          if (item.statusKondisi === 'Berfungsi') berfungsiMasuk += qty;
+          if (item.statusKondisi === 'Tidak Berfungsi') rusakMasuk += qty;
         } else if (item.jenisTransaksi === 'Keluar' || item.jenisTransaksi === 'Mutasi Keluar') {
           totalKeluar += qty;
-          warehouseQtyMap[gName].total = Math.max(0, warehouseQtyMap[gName].total - qty);
-          if (item.statusKondisi === 'Berfungsi') {
-            berfungsiKeluar += qty;
-            warehouseQtyMap[gName].baik = Math.max(0, warehouseQtyMap[gName].baik - qty);
-          }
-          if (item.statusKondisi === 'Tidak Berfungsi') {
-            rusakKeluar += qty;
-            warehouseQtyMap[gName].rusak = Math.max(0, warehouseQtyMap[gName].rusak - qty);
-          }
+          if (item.statusKondisi === 'Berfungsi') berfungsiKeluar += qty;
+          if (item.statusKondisi === 'Tidak Berfungsi') rusakKeluar += qty;
         }
       });
 
@@ -2209,10 +2226,13 @@
       if (distEl) {
         distEl.innerHTML = rawWarehouseData.map(w => {
           const stats = warehouseQtyMap[w.nama] || { total: 0, baik: 0, rusak: 0 };
+          const isSelected = selectedGlobalWarehouse === w.nama;
+          const escapedName = w.nama.replace(/'/g, "\\'");
           return `
-            <div class="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl flex flex-col justify-between hover:border-amber-400 transition cursor-pointer" onclick="filterByWarehouseCard('${w.nama}')">
+            <div class="p-3.5 rounded-xl flex flex-col justify-between transition cursor-pointer relative ${isSelected ? 'bg-orange-50/90 border-2 border-orange-500 shadow-md ring-2 ring-orange-200' : 'bg-slate-50 border border-slate-200/80 hover:border-amber-400 hover:shadow-xs'}" onclick="filterByWarehouseCard('${escapedName}')">
+              ${isSelected ? '<span class="absolute -top-2 -right-2 bg-orange-600 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow-sm">AKTIF</span>' : ''}
               <div class="flex items-center justify-between mb-2">
-                <span class="font-extrabold text-slate-800 text-xs truncate max-w-[160px]">${w.nama}</span>
+                <span class="font-extrabold text-slate-800 text-xs truncate max-w-[160px]" title="${w.nama}">${w.nama}</span>
                 <span class="text-[9px] font-mono px-1.5 py-0.5 bg-white border border-slate-200 rounded font-bold text-slate-600">${w.kode}</span>
               </div>
               <div class="flex items-baseline justify-between">
@@ -2224,6 +2244,10 @@
                   <div class="text-emerald-600"><i class="fa-solid fa-circle-check text-[9px]"></i> ${stats.baik}</div>
                   <div class="text-rose-600"><i class="fa-solid fa-circle-xmark text-[9px]"></i> ${stats.rusak}</div>
                 </div>
+              </div>
+              <div class="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px]">
+                <span class="text-slate-400 font-medium">${isSelected ? 'Klik untuk batal filter' : 'Klik untuk filter'}</span>
+                <span class="font-bold text-orange-600">${isSelected ? 'Semua Gudang ✕' : 'Filter Gudang →'}</span>
               </div>
             </div>
           `;
@@ -2238,10 +2262,14 @@
 
     function filterByWarehouseCard(whName) {
       const globalSelect = document.getElementById('globalWarehouseSelect');
-      if (globalSelect) {
-        globalSelect.value = whName;
-        handleGlobalWarehouseChange();
+      if (selectedGlobalWarehouse === whName) {
+        selectedGlobalWarehouse = '';
+        if (globalSelect) globalSelect.value = '';
+      } else {
+        selectedGlobalWarehouse = whName;
+        if (globalSelect) globalSelect.value = whName;
       }
+      handleGlobalWarehouseChange();
     }
 
     function animateCounter(id, target) {
@@ -2413,7 +2441,7 @@
       const targetWarehouse = selectedGlobalWarehouse || gudangFilter;
 
       filteredInventoryData = rawInventoryData.filter((item) => {
-        const itemWarehouse = item.gudang || (rawWarehouseData[0] ? rawWarehouseData[0].nama : '');
+        const itemWarehouse = getCanonicalWarehouseName(item.gudang);
         const matchGudang = !targetWarehouse || itemWarehouse === targetWarehouse;
 
         const matchQ = !q || (
@@ -3758,146 +3786,6 @@
         `;
       }).join('');
     }
-    function openClientModal() { document.getElementById('clientForm').reset(); document.getElementById('clientModal').classList.remove('hidden'); }
-    function closeClientModal() { document.getElementById('clientModal').classList.add('hidden'); }
-    function handleClientSubmit(e) {
-      e.preventDefault();
-      const p = {
-        id: `CLI-${Date.now()}`,
-        nama: document.getElementById('formNamaClient').value,
-        kontak: document.getElementById('formKontakClient').value,
-        email: document.getElementById('formEmailClient').value,
-        telepon: document.getElementById('formTeleponClient').value,
-        alamat: document.getElementById('formAlamatClient').value,
-        status: document.getElementById('formStatusClient').value
-      };
-      rawClientData.push(p);
-      localStorage.setItem('ouffice_client_data', JSON.stringify(rawClientData));
-      renderClient(rawClientData);
-      closeClientModal();
-      Swal.fire({ icon: 'success', title: 'Client Tersimpan!', timer: 1000, showConfirmButton: false });
-    }
-
-    function loadSupplier() { renderSupplier(rawSupplierData); }
-    function renderSupplier(data) {
-      const container = document.getElementById('supplierListContainer');
-      if (!container) return;
-      if (!data || data.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-slate-400">Belum ada supplier.</div>`;
-        return;
-      }
-      container.innerHTML = `
-        <table class="w-full text-left border-collapse text-xs">
-          <thead>
-            <tr class="bg-slate-50 text-slate-500 uppercase text-[10px] font-extrabold">
-              <th class="py-3 px-4">Nama Supplier</th>
-              <th class="py-3 px-4">PIC</th>
-              <th class="py-3 px-4">Kontak</th>
-              <th class="py-3 px-4 text-center">Status</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
-            ${data.map(s => `
-              <tr class="hover:bg-slate-50 transition">
-                <td class="py-3 px-4 font-bold text-slate-800">${s.nama}</td>
-                <td class="py-3 px-4">${s.kontak || '-'}</td>
-                <td class="py-3 px-4 text-[11px] text-slate-500">${s.telepon || '-'}</td>
-                <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">${s.status}</span></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
-    }
-    function openSupplierModal() { document.getElementById('supplierForm').reset(); document.getElementById('supplierModal').classList.remove('hidden'); }
-    function closeSupplierModal() { document.getElementById('supplierModal').classList.add('hidden'); }
-    function handleSupplierSubmit(e) {
-      e.preventDefault();
-      const p = {
-        id: `SUP-${Date.now()}`,
-        nama: document.getElementById('formNamaSupplier').value,
-        kontak: document.getElementById('formKontakSupplier').value,
-        email: document.getElementById('formEmailSupplier').value,
-        telepon: document.getElementById('formTeleponSupplier').value,
-        status: document.getElementById('formStatusSupplier').value
-      };
-      rawSupplierData.push(p);
-      localStorage.setItem('ouffice_supplier_data', JSON.stringify(rawSupplierData));
-      renderSupplier(rawSupplierData);
-      closeSupplierModal();
-      Swal.fire({ icon: 'success', title: 'Supplier Tersimpan!', timer: 1000, showConfirmButton: false });
-    }
-
-    function loadRetur() { renderRetur(rawReturData); }
-    function renderRetur(data) {
-      const container = document.getElementById('returTableContainer');
-      if (!container) return;
-      if (!data || data.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-slate-400">Belum ada data retur barang.</div>`;
-        return;
-      }
-      container.innerHTML = `
-        <div class="max-h-[calc(100vh-240px)] min-h-[450px] overflow-y-auto custom-scrollbar overflow-x-auto">
-          <table class="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr class="bg-slate-900 text-white uppercase text-[10px] font-extrabold">
-                <th class="py-3.5 px-3">Tanggal</th>
-                <th class="py-3.5 px-3">Gudang Penerima</th>
-                <th class="py-3.5 px-3">Nama Barang</th>
-                <th class="py-3.5 px-3 text-center">Qty</th>
-                <th class="py-3.5 px-3">Asal Retur</th>
-                <th class="py-3.5 px-3">Alasan</th>
-                <th class="py-3.5 px-3 text-center">Status</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
-              ${[...data].reverse().map(r => `
-                <tr class="hover:bg-slate-50 transition">
-                  <td class="py-3 px-3 font-mono text-[11px] whitespace-nowrap">${formatDateOnly(r.tanggal)}</td>
-                  <td class="py-3 px-3 font-bold text-amber-700">${r.gudang || 'Gudang Utama'}</td>
-                  <td class="py-3 px-3 font-bold text-slate-800">${r.namaBarang}</td>
-                  <td class="py-3 px-3 text-center font-bold font-mono text-rose-600">${r.quantity} ${r.satuan||'Pcs'}</td>
-                  <td class="py-3 px-3 font-semibold">${r.asalRetur}</td>
-                  <td class="py-3 px-3 text-slate-600 text-[11px]">${r.catatan || '-'}</td>
-                  <td class="py-3 px-3 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">${r.status || 'Diproses'}</span></td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-      `;
-    }
-    function filterReturData() {
-      const q = (document.getElementById('searchRetur').value || '').toLowerCase();
-      renderRetur(rawReturData.filter(r => (r.namaBarang||'').toLowerCase().includes(q) || (r.asalRetur||'').toLowerCase().includes(q)));
-    }
-    function openReturModal() {
-      document.getElementById('returForm').reset();
-      document.getElementById('formReturTanggal').value = new Date().toISOString().split('T')[0];
-      const datalist = document.getElementById('returBarangList');
-      if (datalist) datalist.innerHTML = [...new Set(rawInventoryData.map(i => i.namaBarang))].map(b => `<option value="${b}"></option>`).join('');
-      document.getElementById('returModal').classList.remove('hidden');
-    }
-    function closeReturModal() { document.getElementById('returModal').classList.add('hidden'); }
-    function handleReturSubmit(e) {
-      e.preventDefault();
-      const p = {
-        id: `RTR-${Date.now()}`,
-        tanggal: document.getElementById('formReturTanggal').value,
-        gudang: document.getElementById('formReturGudang').value,
-        namaBarang: document.getElementById('formReturNamaBarang').value.trim(),
-        quantity: Number(document.getElementById('formReturQuantity').value) || 1,
-        satuan: document.getElementById('formReturSatuan').value.trim() || 'Pcs',
-        asalRetur: document.getElementById('formReturAsal').value.trim(),
-        catatan: document.getElementById('formReturCatatan').value.trim(),
-        status: document.getElementById('formReturStatus').value
-      };
-      rawReturData.push(p);
-      localStorage.setItem('ouffice_retur_data', JSON.stringify(rawReturData));
-      renderRetur(rawReturData);
-      closeReturModal();
-      Swal.fire({ icon: 'success', title: 'Retur Tersimpan!', timer: 1000, showConfirmButton: false });
-    }
 
     async function openScannerModal(target) {
       activeScanTarget = target || 'search';
@@ -4014,8 +3902,6 @@
       loadUsers();
       Swal.fire({ icon: 'success', title: 'User Dihapus', timer: 1000, showConfirmButton: false });
     }
-    function openHistoryModal() { document.getElementById('historyModal').classList.remove('hidden'); }
-    function closeHistoryModal() { document.getElementById('historyModal').classList.add('hidden'); }
   </script>
 </body>
 </html>
