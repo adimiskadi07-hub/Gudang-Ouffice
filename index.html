@@ -1020,13 +1020,14 @@
   <div id="mutasiModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-5 sm:p-6 relative">
       <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-        <h3 class="font-bold text-slate-800 uppercase text-xs tracking-wider flex items-center gap-2">
+        <h3 id="modalMutasiTitle" class="font-bold text-slate-800 uppercase text-xs tracking-wider flex items-center gap-2">
           <i class="fa-solid fa-arrow-right-arrow-left text-indigo-600"></i> Mutasi Stok Antar Gudang
         </h3>
         <button onclick="closeMutasiModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <form id="mutasiForm" onsubmit="handleMutasiSubmit(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="formMutasiId">
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-slate-700 uppercase mb-1">Tanggal Mutasi *</label>
@@ -1055,15 +1056,32 @@
           <div id="mutasiStockInfo" class="text-[11px] text-slate-500 mt-1 font-semibold"></div>
         </div>
 
+        <!-- BARIS TIPE DAN BRAND -->
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Quantity Dimutasi *</label>
-            <input type="number" id="formMutasiQty" required min="1" value="1" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono font-bold">
+            <label class="block font-bold text-slate-700 uppercase mb-1">Brand / Merek</label>
+            <input type="text" id="formMutasiBrand" placeholder="Brand barang..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
           </div>
           <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Serial Number (SN)</label>
-            <input type="text" id="formMutasiSN" placeholder="SN unit yang dipindahkan..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono">
+            <label class="block font-bold text-slate-700 uppercase mb-1">Tipe / Seri Barang</label>
+            <input type="text" id="formMutasiTipe" placeholder="Contoh: Managed Switch / SG350" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
           </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Quantity Dimutasi *</label>
+          <input type="number" id="formMutasiQty" oninput="updateMutasiSnBadge()" required min="1" value="1" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono font-bold">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Serial Number (SN) - Tekan Spasi / Enter untuk pisah</label>
+          <div class="relative">
+            <input type="text" id="formMutasiSN" onkeydown="handleMutasiSnKeyDown(event)" oninput="updateMutasiSnBadge()" placeholder="Ketik SN lalu tekan Spasi atau Enter..." class="w-full pl-3 pr-9 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-xs">
+            <button type="button" onclick="openScannerModal('mutasi')" title="Scan QR SN" class="absolute inset-y-0 right-0 px-2.5 text-indigo-600 hover:text-indigo-700">
+              <i class="fa-solid fa-qrcode text-sm"></i>
+            </button>
+          </div>
+          <div id="mutasiSnHelperBadge" class="mt-2 flex flex-wrap gap-1.5 items-center hidden"></div>
         </div>
 
         <div>
@@ -1073,8 +1091,8 @@
 
         <div class="pt-3 flex justify-end gap-2">
           <button type="button" onclick="closeMutasiModal()" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-bold hover:bg-slate-200">Batal</button>
-          <button type="submit" class="px-5 py-2 bg-indigo-600 text-white rounded-xl font-bold shadow-md hover:bg-indigo-700 flex items-center gap-1.5">
-            <i class="fa-solid fa-check"></i> Eksekusi Mutasi
+          <button type="submit" id="btnSubmitMutasi" class="px-5 py-2 bg-indigo-600 text-white rounded-xl font-bold shadow-md hover:bg-indigo-700 flex items-center gap-1.5">
+            <i class="fa-solid fa-check"></i> <span id="btnSubmitMutasiText">Eksekusi Mutasi</span>
           </button>
         </div>
       </form>
@@ -2701,7 +2719,9 @@
         return;
       }
 
+      const isManager = currentUser && currentUser.role === 'Manager';
       const displayData = [...rawMutasiData].reverse();
+
       container.innerHTML = `
         <div class="max-h-[calc(100vh-240px)] min-h-[450px] overflow-y-auto custom-scrollbar overflow-x-auto">
           <table class="w-full text-left border-collapse text-xs">
@@ -2713,9 +2733,11 @@
                 <th class="py-3.5 px-3 text-center"><i class="fa-solid fa-arrow-right"></i></th>
                 <th class="py-3.5 px-3">Gudang Tujuan</th>
                 <th class="py-3.5 px-3">Nama Barang</th>
+                <th class="py-3.5 px-3">Brand / Tipe</th>
                 <th class="py-3.5 px-3 text-center">Qty</th>
                 <th class="py-3.5 px-3">Serial Number</th>
                 <th class="py-3.5 px-3">Catatan</th>
+                <th class="py-3.5 px-3 text-center w-24">Aksi</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
@@ -2727,9 +2749,22 @@
                   <td class="py-3 px-3 text-center text-indigo-500 font-bold">→</td>
                   <td class="py-3 px-3 font-bold text-emerald-700">${m.gudangTujuan}</td>
                   <td class="py-3 px-3 font-bold text-slate-900">${m.namaBarang}</td>
+                  <td class="py-3 px-3 text-slate-600">${[m.brand, m.tipe].filter(Boolean).join(' • ') || '-'}</td>
                   <td class="py-3 px-3 text-center font-bold font-mono text-indigo-700">${m.quantity} ${m.satuan || 'Unit'}</td>
-                  <td class="py-3 px-3 font-mono text-[11px] text-slate-500">${m.serialNumber || '-'}</td>
+                  <td class="py-3 px-3 font-mono text-[11px] text-slate-500 max-w-xs truncate">${m.serialNumber || '-'}</td>
                   <td class="py-3 px-3 text-slate-600 text-[11px]">${m.catatan || '-'}</td>
+                  <td class="py-3 px-3 text-center">
+                    ${isManager ? '-' : `
+                    <div class="flex items-center justify-center gap-1.5">
+                      <button onclick="editMutasi('${m.id}')" title="Edit Mutasi" class="w-7 h-7 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-600 rounded-lg text-slate-600 transition flex items-center justify-center">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                      </button>
+                      ${currentUser && currentUser.role === 'Master Admin' ? `
+                      <button onclick="deleteMutasi('${m.id}')" title="Hapus Mutasi" class="w-7 h-7 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-600 transition flex items-center justify-center">
+                        <i class="fa-solid fa-trash"></i>
+                      </button>` : ''}
+                    </div>`}
+                  </td>
                 </tr>
               `).join('')}
             </tbody>
@@ -2741,14 +2776,61 @@
     function openMutasiModal() {
       if (currentUser && currentUser.role === 'Manager') return;
       document.getElementById('mutasiForm').reset();
+      document.getElementById('formMutasiId').value = '';
+      document.getElementById('modalMutasiTitle').innerHTML = '<i class="fa-solid fa-arrow-right-arrow-left text-indigo-600"></i> Mutasi Stok Antar Gudang';
+      document.getElementById('btnSubmitMutasiText').innerText = 'Eksekusi Mutasi';
       document.getElementById('formMutasiTanggal').value = new Date().toISOString().split('T')[0];
       document.getElementById('formMutasiRef').value = `MUT-${Date.now().toString().slice(-6)}`;
       populateMutasiBarangOptions();
+      updateMutasiSnBadge();
       document.getElementById('mutasiModal').classList.remove('hidden');
     }
 
     function closeMutasiModal() {
       document.getElementById('mutasiModal').classList.add('hidden');
+    }
+
+    function handleMutasiSnKeyDown(e) {
+      const input = e.target;
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        const val = input.value.trim();
+        if (val.length > 0) {
+          const tokens = val.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
+          input.value = tokens.join(' ') + ' ';
+          updateMutasiSnBadge();
+        }
+      }
+    }
+
+    function updateMutasiSnBadge() {
+      const input = document.getElementById('formMutasiSN');
+      const qtyInput = document.getElementById('formMutasiQty');
+      const qty = Number(qtyInput ? qtyInput.value : 1) || 1;
+      const badge = document.getElementById('mutasiSnHelperBadge');
+      if (!input || !badge) return;
+
+      const rawVal = input.value;
+      const snList = rawVal.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
+
+      if (snList.length > 0) {
+        badge.classList.remove('hidden');
+        let chipsHtml = snList.map((sn, idx) => `
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold ${idx < qty ? 'bg-indigo-100 text-indigo-800 border border-indigo-200' : 'bg-rose-100 text-rose-800 border border-rose-200'}">
+            <i class="fa-solid fa-barcode text-[9px]"></i> #${idx + 1}: ${sn}
+          </span>
+        `).join('');
+
+        chipsHtml += `
+          <span class="ml-auto px-2 py-0.5 rounded-md text-[10px] font-bold border ${snList.length === qty ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-amber-700 bg-amber-50 border-amber-200'}">
+            ${snList.length} / ${qty} SN
+          </span>
+        `;
+        badge.innerHTML = chipsHtml;
+      } else {
+        badge.classList.add('hidden');
+        badge.innerHTML = '';
+      }
     }
 
     function populateMutasiBarangOptions() {
@@ -2788,27 +2870,112 @@
       const barangSelect = document.getElementById('formMutasiBarangSelect');
       const infoEl = document.getElementById('mutasiStockInfo');
       const qtyInput = document.getElementById('formMutasiQty');
+      const brandInput = document.getElementById('formMutasiBrand');
+      const tipeInput = document.getElementById('formMutasiTipe');
       if (!barangSelect || !infoEl) return;
 
       const opt = barangSelect.selectedOptions[0];
       if (opt && opt.dataset.sisa) {
         infoEl.innerText = `Stok maksimum yang dapat dipindahkan: ${opt.dataset.sisa} ${opt.dataset.satuan}`;
         if (qtyInput) qtyInput.max = opt.dataset.sisa;
+        if (brandInput && !brandInput.value) brandInput.value = opt.dataset.brand || '';
+        if (tipeInput && !tipeInput.value) tipeInput.value = [opt.dataset.tipe, opt.dataset.seri].filter(Boolean).join(' / ');
       } else {
         infoEl.innerText = '';
       }
+    }
+
+    function editMutasi(id) {
+      if (currentUser && currentUser.role === 'Manager') return;
+      const m = rawMutasiData.find(x => x.id === id);
+      if (!m) return;
+
+      openMutasiModal();
+      document.getElementById('formMutasiId').value = m.id;
+      document.getElementById('modalMutasiTitle').innerHTML = '<i class="fa-solid fa-pen-to-square text-indigo-600"></i> Edit Data Mutasi Stok';
+      document.getElementById('btnSubmitMutasiText').innerText = 'Simpan Perubahan';
+      document.getElementById('formMutasiTanggal').value = toISODateString(m.tanggal);
+      document.getElementById('formMutasiRef').value = m.refNo || '';
+      document.getElementById('formMutasiAsal').value = m.gudangAsal || '';
+      document.getElementById('formMutasiTujuan').value = m.gudangTujuan || '';
+
+      populateMutasiBarangOptions();
+
+      const barangSelect = document.getElementById('formMutasiBarangSelect');
+      if (barangSelect) {
+        let optExists = Array.from(barangSelect.options).some(o => o.value === m.namaBarang);
+        if (!optExists) {
+          barangSelect.innerHTML += `<option value="${m.namaBarang}" data-sisa="${m.quantity}" data-satuan="${m.satuan}" data-brand="${m.brand || ''}" data-tipe="${m.tipe || ''}">${m.namaBarang} (Stok Mutasi)</option>`;
+        }
+        barangSelect.value = m.namaBarang;
+      }
+
+      document.getElementById('formMutasiBrand').value = m.brand || '';
+      document.getElementById('formMutasiTipe').value = m.tipe || '';
+      document.getElementById('formMutasiQty').value = m.quantity || 1;
+      document.getElementById('formMutasiSN').value = m.serialNumber || '';
+      document.getElementById('formMutasiCatatan').value = m.catatan || '';
+
+      updateMutasiSnBadge();
+    }
+
+    function deleteMutasi(id) {
+      if (currentUser && currentUser.role !== 'Master Admin') return;
+
+      Swal.fire({
+        title: 'Hapus Riwayat Mutasi?',
+        text: 'Riwayat mutasi ini akan dihapus dari sistem.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Ya, Hapus'
+      }).then((res) => {
+        if (res.isConfirmed) {
+          const m = rawMutasiData.find(x => x.id === id);
+          if (m) {
+            // Hapus juga transaksi mutasi terkait di inventaris jika ada
+            rawInventoryData = rawInventoryData.filter(item => 
+              !(item.peruntukan && item.peruntukan.includes(m.refNo))
+            );
+            try { localStorage.setItem('ouffice_cached_inventory', JSON.stringify(rawInventoryData)); } catch(e){}
+          }
+
+          rawMutasiData = rawMutasiData.filter(x => x.id !== id);
+          localStorage.setItem('ouffice_mutasi_data', JSON.stringify(rawMutasiData));
+
+          renderMutasiTable();
+          filterData();
+          updateStatsAndDashboard();
+
+          const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+          if (isGASNative) {
+            google.script.run.deleteMutasi(id);
+          } else if (CUSTOM_GAS_URL) {
+            fetch(CUSTOM_GAS_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: 'deleteMutasi', id: id })
+            }).catch(() => {});
+          }
+
+          Swal.fire({ icon: 'success', title: 'Mutasi Berhasil Dihapus!', timer: 1000, showConfirmButton: false });
+        }
+      });
     }
 
     function handleMutasiSubmit(e) {
       e.preventDefault();
       if (currentUser && currentUser.role === 'Manager') return;
 
+      const editId = document.getElementById('formMutasiId').value;
       const tgl = document.getElementById('formMutasiTanggal').value;
       const ref = document.getElementById('formMutasiRef').value || `MUT-${Date.now()}`;
       const asal = document.getElementById('formMutasiAsal').value;
       const tujuan = document.getElementById('formMutasiTujuan').value;
       const barangSelect = document.getElementById('formMutasiBarangSelect');
       const opt = barangSelect.selectedOptions[0];
+      const brandVal = document.getElementById('formMutasiBrand').value.trim() || (opt ? opt.dataset.brand : '');
+      const tipeVal = document.getElementById('formMutasiTipe').value.trim() || (opt ? opt.dataset.tipe : '');
       const qty = Number(document.getElementById('formMutasiQty').value) || 1;
       const sn = document.getElementById('formMutasiSN').value.trim();
       const catatan = document.getElementById('formMutasiCatatan').value.trim();
@@ -2822,12 +2989,84 @@
         return;
       }
 
-      const sisa = Number(opt.dataset.sisa) || 0;
-      if (qty > sisa) {
-        Swal.fire('Stok Kurang', `Jumlah mutasi (${qty}) melebihi stok yang tersedia (${sisa}).`, 'error');
+      if (!editId) {
+        const sisa = Number(opt.dataset.sisa) || 0;
+        if (qty > sisa) {
+          Swal.fire('Stok Kurang', `Jumlah mutasi (${qty}) melebihi stok yang tersedia (${sisa}).`, 'error');
+          return;
+        }
+      }
+
+      if (editId) {
+        // Mode UPDATE Mutasi
+        const idx = rawMutasiData.findIndex(x => x.id === editId);
+        const oldMutasi = idx !== -1 ? rawMutasiData[idx] : null;
+
+        const updatedMutasi = {
+          id: editId,
+          refNo: ref,
+          tanggal: tgl,
+          gudangAsal: asal,
+          gudangTujuan: tujuan,
+          namaBarang: opt.value,
+          brand: brandVal,
+          tipe: tipeVal,
+          quantity: qty,
+          satuan: (opt && opt.dataset.satuan) ? opt.dataset.satuan : 'Unit',
+          serialNumber: sn,
+          catatan: catatan
+        };
+
+        if (idx !== -1) rawMutasiData[idx] = updatedMutasi;
+
+        // Perbarui entri stok terkait jika nomor ref cocok
+        if (oldMutasi) {
+          rawInventoryData.forEach(item => {
+            if (item.peruntukan && item.peruntukan.includes(oldMutasi.refNo)) {
+              item.tanggal = tgl;
+              item.namaBarang = opt.value;
+              item.brand = brandVal;
+              item.tipe = tipeVal;
+              item.quantity = qty;
+              item.serialNumber = sn;
+              item.deskripsi = catatan;
+              if (item.jenisTransaksi === 'Mutasi Keluar') {
+                item.gudang = asal;
+                item.endUser = tujuan;
+                item.peruntukan = `Transfer Mutasi ke ${tujuan} (Ref: ${ref})`;
+              } else if (item.jenisTransaksi === 'Mutasi Masuk') {
+                item.gudang = tujuan;
+                item.endUser = asal;
+                item.peruntukan = `Penerimaan Mutasi dari ${asal} (Ref: ${ref})`;
+              }
+            }
+          });
+        }
+
+        localStorage.setItem('ouffice_mutasi_data', JSON.stringify(rawMutasiData));
+        try { localStorage.setItem('ouffice_cached_inventory', JSON.stringify(rawInventoryData)); } catch(e){}
+
+        closeMutasiModal();
+        filterData();
+        updateStatsAndDashboard();
+        renderMutasiTable();
+
+        const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+        if (isGASNative) {
+          google.script.run.updateMutasi(updatedMutasi);
+        } else if (CUSTOM_GAS_URL) {
+          fetch(CUSTOM_GAS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify({ action: 'updateMutasi', mutasi: updatedMutasi })
+          }).catch(() => {});
+        }
+
+        Swal.fire({ icon: 'success', title: 'Data Mutasi Berhasil Diperbarui!', timer: 1200, showConfirmButton: false });
         return;
       }
 
+      // Mode CREATE Baru Mutasi
       const mutasiRecord = {
         id: `MUT-${Date.now()}`,
         refNo: ref,
@@ -2835,7 +3074,8 @@
         gudangAsal: asal,
         gudangTujuan: tujuan,
         namaBarang: opt.value,
-        brand: opt.dataset.brand || '',
+        brand: brandVal,
+        tipe: tipeVal,
         quantity: qty,
         satuan: opt.dataset.satuan || 'Unit',
         serialNumber: sn,
@@ -2848,9 +3088,9 @@
         gudang: asal,
         jenisTransaksi: 'Mutasi Keluar',
         namaBarang: opt.value,
-        brand: opt.dataset.brand || '',
-        tipe: opt.dataset.tipe || '',
-        seri: opt.dataset.seri || '',
+        brand: brandVal,
+        tipe: tipeVal,
+        seri: '',
         serialNumber: sn,
         lokasi: 'Staging Area',
         quantity: qty,
@@ -2867,9 +3107,9 @@
         gudang: tujuan,
         jenisTransaksi: 'Mutasi Masuk',
         namaBarang: opt.value,
-        brand: opt.dataset.brand || '',
-        tipe: opt.dataset.tipe || '',
-        seri: opt.dataset.seri || '',
+        brand: brandVal,
+        tipe: tipeVal,
+        seri: '',
         serialNumber: sn,
         lokasi: 'Indoor Section A',
         quantity: qty,
@@ -3812,8 +4052,15 @@
               const snInput = document.getElementById('formSerialNumber');
               if (snInput) {
                 const currentVal = snInput.value.trim();
-                snInput.value = currentVal ? `${currentVal}, ${decodedText}` : decodedText;
+                snInput.value = currentVal ? `${currentVal} ${decodedText}` : decodedText;
                 updateSnBadge();
+              }
+            } else if (activeScanTarget === 'mutasi') {
+              const mutasiSnInput = document.getElementById('formMutasiSN');
+              if (mutasiSnInput) {
+                const currentVal = mutasiSnInput.value.trim();
+                mutasiSnInput.value = currentVal ? `${currentVal} ${decodedText}` : decodedText;
+                updateMutasiSnBadge();
               }
             }
             closeScannerModal();
@@ -3850,11 +4097,18 @@
           if (activeScanTarget === 'search') {
             document.getElementById('searchInput').value = decodedText;
             filterData();
+          } else if (activeScanTarget === 'mutasi') {
+            const snInput = document.getElementById('formMutasiSN');
+            if (snInput) {
+              const cur = snInput.value.trim();
+              snInput.value = cur ? `${cur} ${decodedText}` : decodedText;
+              updateMutasiSnBadge();
+            }
           } else {
             const snInput = document.getElementById('formSerialNumber');
             if (snInput) {
               const cur = snInput.value.trim();
-              snInput.value = cur ? `${cur}, ${decodedText}` : decodedText;
+              snInput.value = cur ? `${cur} ${decodedText}` : decodedText;
               updateSnBadge();
             }
           }
