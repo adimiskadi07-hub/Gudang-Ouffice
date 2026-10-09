@@ -1410,6 +1410,11 @@
 
   <!-- APPLICATION LOGIC SCRIPT -->
   <script>
+    const BULAN_INDONESIA = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+
     let rawWarehouseData = JSON.parse(localStorage.getItem('ouffice_warehouse_data')) || [
       { id: 'WH-01', kode: 'WH-CENTRAL', nama: 'Gudang Utama (HQ Tebet)', alamat: 'Jl. Rambutan No. 4, Jakarta Selatan', pic: 'Kepala Gudang', kontak: '0812-1111-2222', status: 'Aktif' },
       { id: 'WH-02', kode: 'WH-TRANSIT', nama: 'Gudang Transit (Cikarang)', alamat: 'Kawasan Industri GIIC Cikarang Pusat', pic: 'Staff Logistik', kontak: '0813-3333-4444', status: 'Aktif' }
@@ -1434,44 +1439,14 @@
     let realtimeSyncTimer = null;
     let isFetchingBackend = false;
     let selectedGlobalWarehouse = '';
+    let lastDataFingerprint = ''; // Mencegah re-render jika data tidak berubah
+    let lastLocalActionTime = 0; // Mencegah data baru tertimpa cache server lama
 
     const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbziiQkjGRqo_SBRGsJbXlVlQM5q8_iPU3kMD9cBQPbPreYyXHtP7JIVYOJPOe4pWsYGqw/exec';
     let CUSTOM_GAS_URL = localStorage.getItem('ouffice_gas_url') || DEFAULT_GAS_URL;
 
-    /**
-     * Resolusi nama canonical gudang
-     */
-    function getCanonicalWarehouseName(rawGudang) {
-      if (!rawWarehouseData || rawWarehouseData.length === 0) return rawGudang || 'Gudang Utama';
-      const val = String(rawGudang || '').trim();
-      if (!val) return rawWarehouseData[0].nama;
-      const valLower = val.toLowerCase();
-
-      let match = rawWarehouseData.find(w => w.nama.trim().toLowerCase() === valLower);
-      if (match) return match.nama;
-
-      match = rawWarehouseData.find(w => w.kode && w.kode.trim().toLowerCase() === valLower);
-      if (match) return match.nama;
-
-      match = rawWarehouseData.find(w => w.id && w.id.trim().toLowerCase() === valLower);
-      if (match) return match.nama;
-
-      const cleanVal = valLower.replace(/\s*\([^)]*\)/g, '').trim();
-      match = rawWarehouseData.find(w => {
-        const cleanName = w.nama.toLowerCase().replace(/\s*\([^)]*\)/g, '').trim();
-        return cleanName === cleanVal || (cleanName && cleanVal && (cleanName.includes(cleanVal) || cleanVal.includes(cleanName)));
-      });
-      if (match) return match.nama;
-
-      if (valLower.includes('utama') || valLower.includes('central') || valLower.includes('pusat') || valLower.includes('tebet')) {
-        const primary = rawWarehouseData.find(w => (w.kode && w.kode.toUpperCase() === 'WH-CENTRAL') || w.nama.toLowerCase().includes('utama'));
-        if (primary) return primary.nama;
-      }
-
-      return rawWarehouseData[0].nama;
-    }
-
     window.onload = function () {
+      initWarehouseDropdowns();
       loadCachedData();
 
       const savedUser = sessionStorage.getItem('ouffice_user') || localStorage.getItem('ouffice_user');
@@ -1492,16 +1467,121 @@
         formJenisElem.addEventListener('change', updateFormLabels);
       }
 
-      initWarehouseDropdowns();
       loadDataFromBackend(true, true);
       startRealtimeSync();
+
+      // Sinkronkan saat pengguna kembali membuka tab browser
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && currentUser && !isFetchingBackend) {
+          loadDataFromBackend(true);
+        }
+      });
     };
+
+    function loadCachedData() {
+      try {
+        const cached = localStorage.getItem('ouffice_cached_inventory');
+        if (cached) {
+          rawInventoryData = JSON.parse(cached);
+          lastDataFingerprint = computeDataFingerprint(rawInventoryData, rawWarehouseData, rawMutasiData);
+          filterData();
+          updateStatsAndDashboard();
+          refreshCurrentView();
+        }
+      } catch (e) {}
+    }
+
+    function refreshCurrentView() {
+      if (currentActiveView === 'dashboard') updateStatsAndDashboard();
+      if (currentActiveView === 'gudang') renderWarehouseCards();
+      if (currentActiveView === 'produk') filterData();
+      if (currentActiveView === 'laporan') calculateStockSummary();
+      if (currentActiveView === 'users') loadUsers();
+      if (currentActiveView === 'client') loadClient();
+      if (currentActiveView === 'supplier') loadSupplier();
+      if (currentActiveView === 'stok-masuk') renderFilteredView('Masuk', 'stokMasukTableContainer');
+      if (currentActiveView === 'stok-keluar') renderFilteredView('Keluar', 'stokKeluarTableContainer');
+      if (currentActiveView === 'mutasi') renderMutasiTable();
+      if (currentActiveView === 'delivery-order') renderDeliveryOrders();
+      if (currentActiveView === 'retur') loadRetur();
+    }
+
+    function startRealtimeSync() {
+      if (realtimeSyncTimer) clearInterval(realtimeSyncTimer);
+      // Interval sinkronisasi stabil (30 detik) agar tidak memicu race condition
+      realtimeSyncTimer = setInterval(() => {
+        if (currentUser && !isFetchingBackend && document.visibilityState === 'visible') {
+          loadDataFromBackend(true);
+        }
+      }, 30000);
+    }
+
+    function computeDataFingerprint(inv, whs, mut) {
+      const invSig = Array.isArray(inv) ? `${inv.length}_${inv.map(i => `${i.id||''}:${i.quantity||0}:${i.jenisTransaksi||''}`).join('|')}` : '';
+      const whSig = Array.isArray(whs) ? `${whs.length}_${whs.map(w => `${w.id||''}:${w.nama||''}`).join('|')}` : '';
+      const mutSig = Array.isArray(mut) ? `${mut.length}_${mut.map(m => `${m.id||''}:${m.quantity||0}`).join('|')}` : '';
+      return `${invSig}###${whSig}###${mutSig}`;
+    }
 
     function toggleSidebar() {
       const sidebar = document.getElementById('mainSidebar');
       const overlay = document.getElementById('sidebarOverlay');
       if (sidebar) sidebar.classList.toggle('-translate-x-full');
       if (overlay) overlay.classList.toggle('hidden');
+    }
+
+    function applyRolePermissions() {
+      if (!currentUser) return;
+      const sbUsername = document.getElementById('sidebarUsername');
+      const sbRole = document.getElementById('sidebarRole');
+      const badgeRole = document.getElementById('currentUserRoleBadge');
+
+      if (sbUsername) sbUsername.innerText = currentUser.username || 'Admin';
+      if (sbRole) sbRole.innerText = currentUser.role || 'Staff Gudang';
+      if (badgeRole) badgeRole.innerText = currentUser.role || 'STAFF GUDANG';
+
+      const isManager = currentUser.role === 'Manager';
+
+      const btnNavUsers = document.getElementById('btnNavUsers');
+      if (btnNavUsers) {
+        if (currentUser.role === 'Master Admin') {
+          btnNavUsers.classList.remove('hidden');
+        } else {
+          btnNavUsers.classList.add('hidden');
+        }
+      }
+
+      const btnHistoryLogin = document.getElementById('btnHistoryLogin');
+      if (btnHistoryLogin) {
+        if (currentUser.role === 'Master Admin') {
+          btnHistoryLogin.style.display = '';
+        } else {
+          btnHistoryLogin.style.display = 'none';
+        }
+      }
+
+      const addButtons = [
+        'btnTambahDataMobile',
+        'btnTambahGudang',
+        'btnTambahClient',
+        'btnTambahSupplier',
+        'btnTambahStokMasuk',
+        'btnTambahStokKeluar',
+        'btnTambahMutasi',
+        'btnTambahDoKeluar',
+        'btnTambahRetur'
+      ];
+
+      addButtons.forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+          if (isManager) {
+            btn.classList.add('hidden');
+          } else {
+            btn.classList.remove('hidden');
+          }
+        }
+      });
     }
 
     function switchView(viewId) {
@@ -1518,7 +1598,7 @@
         'delivery-order': 'Delivery Order (Surat Jalan)',
         'retur': 'Retur Barang',
         'users': 'Manajemen Pengguna',
-        'laporan': 'Laporan Rekap Stok Multi-Gudang'
+        'laporan': 'Laporan Rekap Stok'
       };
 
       const titleElem = document.getElementById('currentViewTitle');
@@ -1550,117 +1630,11 @@
       refreshCurrentView();
     }
 
-    function refreshCurrentView() {
-      if (currentActiveView === 'gudang') renderWarehouseCards();
-      if (currentActiveView === 'mutasi') renderMutasiTable();
-      if (currentActiveView === 'laporan') calculateStockSummary();
-      if (currentActiveView === 'users') loadUsers();
-      if (currentActiveView === 'client') loadClient();
-      if (currentActiveView === 'supplier') loadSupplier();
-      if (currentActiveView === 'stok-masuk') renderFilteredView('Masuk', 'stokMasukTableContainer');
-      if (currentActiveView === 'stok-keluar') renderFilteredView('Keluar', 'stokKeluarTableContainer');
-      if (currentActiveView === 'delivery-order') renderDeliveryOrders();
-      if (currentActiveView === 'retur') loadRetur();
-    }
-
-    function applyRolePermissions() {
-      if (!currentUser) return;
-      const sbUsername = document.getElementById('sidebarUsername');
-      const sbRole = document.getElementById('sidebarRole');
-      const badgeRole = document.getElementById('currentUserRoleBadge');
-
-      if (sbUsername) sbUsername.innerText = currentUser.nama || currentUser.username || 'Admin';
-      if (sbRole) sbRole.innerText = currentUser.role || 'Staff Gudang';
-      if (badgeRole) badgeRole.innerText = (currentUser.role || 'STAFF GUDANG').toUpperCase();
-
-      const isManager = currentUser.role === 'Manager';
-      const isMasterAdmin = currentUser.role === 'Master Admin';
-
-      const btnNavUsers = document.getElementById('btnNavUsers');
-      if (btnNavUsers) {
-        if (isMasterAdmin) btnNavUsers.classList.remove('hidden');
-        else btnNavUsers.classList.add('hidden');
-      }
-
-      const btnHistoryLogin = document.getElementById('btnHistoryLogin');
-      if (btnHistoryLogin) {
-        if (isMasterAdmin) btnHistoryLogin.style.display = '';
-        else btnHistoryLogin.style.display = 'none';
-      }
-
-      const addButtons = [
-        'btnTambahDataMobile',
-        'btnTambahGudang',
-        'btnTambahClient',
-        'btnTambahSupplier',
-        'btnTambahStokMasuk',
-        'btnTambahStokKeluar',
-        'btnTambahMutasi',
-        'btnTambahDoKeluar',
-        'btnTambahRetur'
-      ];
-
-      addButtons.forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) {
-          if (isManager) btn.classList.add('hidden');
-          else btn.classList.remove('hidden');
-        }
-      });
-    }
-
-    function startRealtimeSync() {
-      if (realtimeSyncTimer) clearInterval(realtimeSyncTimer);
-      realtimeSyncTimer = setInterval(() => {
-        if (currentUser && !isFetchingBackend && document.visibilityState === 'visible') {
-          loadDataFromBackend(true);
-        }
-      }, 5000);
-    }
-
-    function loadDataFromBackend(isSilent = false, force = false) {
-      if (force) isFetchingBackend = false;
-      if (isFetchingBackend) return;
-      isFetchingBackend = true;
-
-      const syncIcon = document.getElementById('syncIcon');
-      if (syncIcon && !isSilent) syncIcon.classList.add('fa-spin');
-
-      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
-      if (isGASNative) {
-        google.script.run
-          .withSuccessHandler((res) => {
-            isFetchingBackend = false;
-            if (syncIcon) syncIcon.classList.remove('fa-spin');
-            if (res && res.success) syncBackendResponse(res);
-          })
-          .withFailureHandler(() => {
-            isFetchingBackend = false;
-            if (syncIcon) syncIcon.classList.remove('fa-spin');
-          })
-          .readData();
-      } else if (CUSTOM_GAS_URL) {
-        fetch(`${CUSTOM_GAS_URL}?action=read`)
-          .then((r) => r.json())
-          .then((res) => {
-            isFetchingBackend = false;
-            if (syncIcon) syncIcon.classList.remove('fa-spin');
-            if (res && res.success) syncBackendResponse(res);
-          })
-          .catch(() => {
-            isFetchingBackend = false;
-            if (syncIcon) syncIcon.classList.remove('fa-spin');
-          });
-      } else {
-        isFetchingBackend = false;
-        if (syncIcon) syncIcon.classList.remove('fa-spin');
-      }
-    }
-
     function handleLoginSubmit(e) {
       e.preventDefault();
       const u = document.getElementById('loginUsername').value.trim();
       const p = document.getElementById('loginPassword').value;
+
       if (!u || !p) return;
 
       const Toast = Swal.mixin({
@@ -1668,34 +1642,31 @@
         position: 'top-end',
         showConfirmButton: false,
         timer: 2000,
-        timerProgressBar: true,
-        customClass: { popup: 'swal2-aesthetic-popup' }
+        timerProgressBar: true
       });
 
-      const localAccounts = {
-        'admin': { id: 'USR-ADMIN', username: 'admin', nama: 'Administrator Utama', role: 'Master Admin', pass: 'admin123' },
-        'staff': { id: 'USR-STAFF', username: 'staff', nama: 'Staff Gudang Logistik', role: 'Staff Gudang', pass: 'staff123' },
-        'manager': { id: 'USR-MGR', username: 'manager', nama: 'Manager Logistik', role: 'Manager', pass: 'manager123' }
-      };
+      const matchUser = rawUsersData.find(usr => 
+        (usr.username || '').toLowerCase() === u.toLowerCase() && 
+        ((usr.password && usr.password === p) || (usr.pass && usr.pass === p))
+      );
 
-      const matchLocal = localAccounts[u.toLowerCase()];
-      if (matchLocal && matchLocal.pass === p) {
-        currentUser = { id: matchLocal.id, username: matchLocal.username, nama: matchLocal.nama, role: matchLocal.role };
+      if (matchUser) {
+        currentUser = { id: matchUser.id, username: matchUser.username, nama: matchUser.nama || matchUser.username, role: matchUser.role || 'Staff Gudang' };
         sessionStorage.setItem('ouffice_user', JSON.stringify(currentUser));
         localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
+
         document.getElementById('loginScreen').classList.add('hidden');
         applyRolePermissions();
-        isFetchingBackend = false;
         loadDataFromBackend(false, true);
         startRealtimeSync();
+
         Toast.fire({ icon: 'success', title: `Selamat datang, ${currentUser.username}!` });
         return;
       }
 
       Swal.fire({
-        title: '<div class="text-slate-800 font-bold text-sm uppercase">Memverifikasi Akun...</div>',
+        title: '<div class="text-slate-800 font-bold text-sm uppercase">Memverifikasi...</div>',
         allowOutsideClick: false,
-        customClass: { popup: 'swal2-aesthetic-popup' },
         didOpen: () => Swal.showLoading()
       });
 
@@ -1712,19 +1683,18 @@
               currentUser = res.user;
               sessionStorage.setItem('ouffice_user', JSON.stringify(currentUser));
               localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
+
               document.getElementById('loginScreen').classList.add('hidden');
               applyRolePermissions();
-              isFetchingBackend = false;
               loadDataFromBackend(false, true);
               startRealtimeSync();
+
               Toast.fire({ icon: 'success', title: `Selamat datang, ${currentUser.username}!` });
             } else {
               Swal.fire({
                 icon: 'error',
-                title: '<div class="text-rose-600 font-extrabold text-sm uppercase">Gagal Login</div>',
-                text: res ? res.message : 'Username atau password salah',
-                buttonsStyling: false,
-                customClass: { popup: 'swal2-aesthetic-popup', confirmButton: 'swal2-aesthetic-confirm' }
+                title: 'Gagal Login',
+                text: res ? res.message : 'Username atau Password salah!'
               });
             }
           })
@@ -1732,34 +1702,27 @@
             Swal.close();
             Swal.fire({
               icon: 'error',
-              title: '<div class="text-rose-600 font-extrabold text-sm uppercase">Koneksi Gagal</div>',
-              text: 'Gagal terhubung ke database server.',
-              buttonsStyling: false,
-              customClass: { popup: 'swal2-aesthetic-popup', confirmButton: 'swal2-aesthetic-confirm' }
+              title: 'Gagal Login',
+              text: 'Username atau Password salah atau gagal terhubung ke database.'
             });
           });
+      } else {
+        Swal.close();
+        Swal.fire({ icon: 'error', title: 'Gagal Login', text: 'Username atau password salah!' });
       }
     }
 
     function handleLogout() {
       Swal.fire({
-        title: '<div class="text-slate-900 font-extrabold text-base uppercase tracking-wide">Logout Sistem</div>',
-        html: '<p class="text-xs text-slate-500 font-medium mt-1">Anda akan keluar dari sesi aplikasi <strong>Ouffice Inventory</strong>.</p>',
+        title: 'Logout / Keluar',
+        text: 'Anda akan keluar dari sesi aplikasi Ouffice Inventory.',
         icon: 'question',
-        iconColor: '#ea580c',
         showCancelButton: true,
-        confirmButtonText: '<i class="fa-solid fa-power-off me-1.5"></i> Ya, Logout',
-        cancelButtonText: 'Batal',
-        buttonsStyling: false,
-        customClass: {
-          popup: 'swal2-aesthetic-popup',
-          confirmButton: 'swal2-aesthetic-confirm',
-          cancelButton: 'swal2-aesthetic-cancel'
-        }
+        confirmButtonText: 'Ya, Logout',
+        cancelButtonText: 'Batal'
       }).then((res) => {
         if (res.isConfirmed) {
           sessionStorage.removeItem('ouffice_user');
-          localStorage.removeItem('ouffice_user');
           currentUser = null;
           document.getElementById('loginForm').reset();
           document.getElementById('loginScreen').classList.remove('hidden');
@@ -1767,335 +1730,203 @@
       });
     }
 
+    function loadDataFromBackend(isSilent = false, force = false) {
+      if (force) isFetchingBackend = false;
+      if (isFetchingBackend) return;
+      isFetchingBackend = true;
+
+      const syncIcon = document.getElementById('syncIcon');
+      if (syncIcon && !isSilent) syncIcon.classList.add('fa-spin');
+
+      if (CUSTOM_GAS_URL) {
+        fetch(`${CUSTOM_GAS_URL}?action=read`)
+          .then(r => r.json())
+          .then(res => {
+            isFetchingBackend = false;
+            if (syncIcon) syncIcon.classList.remove('fa-spin');
+
+            if (res && res.success) {
+              // Jika ada aksi lokal (tambah/edit/mutasi) dalam 10 detik terakhir,
+              // lindungi data baru agar tidak tertimpa respon lama dari Google Sheets
+              const timeSinceLocalAction = Date.now() - lastLocalActionTime;
+              const isRecentLocalAction = timeSinceLocalAction < 10000;
+
+              let incomingInv = Array.isArray(res.data) ? res.data : rawInventoryData;
+              if (isRecentLocalAction && Array.isArray(res.data)) {
+                // Pastikan item lokal yang baru dibuat tidak hilang
+                const serverIdSet = new Set(res.data.map(d => d.id));
+                const missingLocalItems = rawInventoryData.filter(d => !serverIdSet.has(d.id));
+                if (missingLocalItems.length > 0) {
+                  incomingInv = [...missingLocalItems, ...res.data];
+                }
+              }
+
+              const incomingWhs = Array.isArray(res.warehouses) && res.warehouses.length > 0 ? res.warehouses : rawWarehouseData;
+              const incomingMut = Array.isArray(res.mutasi) ? res.mutasi : rawMutasiData;
+
+              // Hitung signature data untuk mendeteksi apakah data benar-benar berubah
+              const newFingerprint = computeDataFingerprint(incomingInv, incomingWhs, incomingMut);
+
+              if (newFingerprint === lastDataFingerprint && !force) {
+                // DATA IDENTIK: Jangan render ulang DOM agar tampilan tidak berubah-ubah/berkedip
+                return;
+              }
+
+              lastDataFingerprint = newFingerprint;
+              rawWarehouseData = incomingWhs;
+              rawInventoryData = incomingInv;
+              rawMutasiData = incomingMut;
+
+              try { localStorage.setItem('ouffice_warehouse_data', JSON.stringify(rawWarehouseData)); } catch(e){}
+              try { localStorage.setItem('ouffice_cached_inventory', JSON.stringify(rawInventoryData)); } catch(e){}
+              try { localStorage.setItem('ouffice_mutasi_data', JSON.stringify(rawMutasiData)); } catch(e){}
+
+              if (Array.isArray(res.client)) {
+                rawClientData = res.client;
+                try { localStorage.setItem('ouffice_client_data', JSON.stringify(rawClientData)); } catch(e){}
+              }
+
+              if (Array.isArray(res.supplier)) {
+                rawSupplierData = res.supplier;
+                try { localStorage.setItem('ouffice_supplier_data', JSON.stringify(rawSupplierData)); } catch(e){}
+              }
+
+              if (Array.isArray(res.retur)) {
+                rawReturData = res.retur;
+                try { localStorage.setItem('ouffice_retur_data', JSON.stringify(rawReturData)); } catch(e){}
+              }
+
+              initWarehouseDropdowns();
+              filterData();
+              updateStatsAndDashboard();
+              refreshCurrentView();
+            }
+          })
+          .catch(() => {
+            isFetchingBackend = false;
+            if (syncIcon) syncIcon.classList.remove('fa-spin');
+          });
+      } else {
+        isFetchingBackend = false;
+        if (syncIcon) syncIcon.classList.remove('fa-spin');
+      }
+    }
+
+    function getCanonicalWarehouseName(wh) {
+      if (!wh) return rawWarehouseData[0] ? rawWarehouseData[0].nama : 'Gudang Utama';
+      const clean = String(wh).trim().toLowerCase();
+      // Pencocokan persis nama atau kode terlebih dahulu
+      const exactMatch = rawWarehouseData.find(w => 
+        w.nama.toLowerCase() === clean || 
+        w.kode.toLowerCase() === clean
+      );
+      if (exactMatch) return exactMatch.nama;
+
+      // Pencocokan parsial yang aman tanpa salah memetakan kata umum
+      const partialMatch = rawWarehouseData.find(w => {
+        const wNama = w.nama.toLowerCase();
+        return (clean.length >= 4 && wNama.includes(clean)) || (wNama.length >= 4 && clean.includes(wNama));
+      });
+      return partialMatch ? partialMatch.nama : String(wh).trim();
+    }
+
     function initWarehouseDropdowns() {
-      const globalSelect = document.getElementById('globalWarehouseSelect');
-      const formGudang = document.getElementById('formGudang');
-      const filterGudang = document.getElementById('filterGudang');
+      const globalSel = document.getElementById('globalWarehouseSelect');
+      const filterSel = document.getElementById('filterGudang');
+      const formSel = document.getElementById('formGudang');
       const mutasiAsal = document.getElementById('formMutasiAsal');
       const mutasiTujuan = document.getElementById('formMutasiTujuan');
       const returGudang = document.getElementById('formReturGudang');
 
-      const warehouseOptions = rawWarehouseData.map(w => `<option value="${w.nama}">${w.nama}</option>`).join('');
+      // Ambil nilai yang sedang aktif sebelum merender ulang dropdown
+      const curGlobal = selectedGlobalWarehouse || (globalSel ? globalSel.value : '');
+      const curFilter = filterSel ? filterSel.value : '';
+      const curForm = formSel ? formSel.value : '';
+      const curMutasiAsal = mutasiAsal ? mutasiAsal.value : '';
+      const curMutasiTujuan = mutasiTujuan ? mutasiTujuan.value : '';
+      const curRetur = returGudang ? returGudang.value : '';
 
-      if (globalSelect) {
-        const curVal = globalSelect.value;
-        globalSelect.innerHTML = `<option value="">Semua Gudang</option>` + warehouseOptions;
-        if (curVal && rawWarehouseData.some(w => w.nama === curVal)) {
-          globalSelect.value = curVal;
+      const optionsHtml = rawWarehouseData.map(w => `<option value="${w.nama}">${w.nama}</option>`).join('');
+
+      if (globalSel) {
+        globalSel.innerHTML = `<option value="">Semua Gudang</option>${optionsHtml}`;
+        if (curGlobal && rawWarehouseData.some(w => w.nama === curGlobal)) {
+          globalSel.value = curGlobal;
+          selectedGlobalWarehouse = curGlobal;
+        } else {
+          globalSel.value = '';
+          selectedGlobalWarehouse = '';
         }
       }
 
-      if (formGudang) formGudang.innerHTML = warehouseOptions;
+      if (filterSel) {
+        filterSel.innerHTML = `<option value="">Semua Gudang</option>${optionsHtml}`;
+        if (curFilter && rawWarehouseData.some(w => w.nama === curFilter)) {
+          filterSel.value = curFilter;
+        } else {
+          filterSel.value = selectedGlobalWarehouse || '';
+        }
+      }
 
-      if (filterGudang) {
-        const curVal = filterGudang.value;
-        filterGudang.innerHTML = `<option value="">Semua Gudang</option>` + warehouseOptions;
-        if (curVal) filterGudang.value = curVal;
+      if (formSel) {
+        formSel.innerHTML = optionsHtml;
+        if (curForm && rawWarehouseData.some(w => w.nama === curForm)) formSel.value = curForm;
       }
 
       if (mutasiAsal) {
-        mutasiAsal.innerHTML = warehouseOptions;
-        if (rawWarehouseData.length > 0) mutasiAsal.value = rawWarehouseData[0].nama;
+        mutasiAsal.innerHTML = optionsHtml;
+        if (curMutasiAsal && rawWarehouseData.some(w => w.nama === curMutasiAsal)) mutasiAsal.value = curMutasiAsal;
       }
 
       if (mutasiTujuan) {
-        mutasiTujuan.innerHTML = warehouseOptions;
-        if (rawWarehouseData.length > 1) {
-          mutasiTujuan.value = rawWarehouseData[1].nama;
-        } else if (rawWarehouseData.length > 0) {
-          mutasiTujuan.value = rawWarehouseData[0].nama;
+        mutasiTujuan.innerHTML = optionsHtml;
+        if (curMutasiTujuan && rawWarehouseData.some(w => w.nama === curMutasiTujuan)) {
+          mutasiTujuan.value = curMutasiTujuan;
+        } else if (rawWarehouseData.length > 1) {
+          mutasiTujuan.selectedIndex = 1;
         }
       }
 
-      if (returGudang) returGudang.innerHTML = warehouseOptions;
+      if (returGudang) {
+        returGudang.innerHTML = optionsHtml;
+        if (curRetur && rawWarehouseData.some(w => w.nama === curRetur)) returGudang.value = curRetur;
+      }
     }
 
     function handleGlobalWarehouseChange() {
-      const globalSelect = document.getElementById('globalWarehouseSelect');
-      selectedGlobalWarehouse = globalSelect ? globalSelect.value : '';
-      
+      const globalSel = document.getElementById('globalWarehouseSelect');
+      selectedGlobalWarehouse = globalSel ? globalSel.value : '';
       const filterGudang = document.getElementById('filterGudang');
-      if (filterGudang) {
-        filterGudang.value = selectedGlobalWarehouse;
-      }
+      if (filterGudang) filterGudang.value = selectedGlobalWarehouse;
 
       filterData();
       updateStatsAndDashboard();
       refreshCurrentView();
     }
 
-    function loadCachedData() {
-      try {
-        const cached = localStorage.getItem('ouffice_cached_inventory');
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed)) {
-            rawInventoryData = parsed.map(sanitizeInventoryItem);
-          }
-        }
-      } catch (e) {}
-      filterData();
-      updateStatsAndDashboard();
-      refreshCurrentView();
-    }
-
-    function sanitizeInventoryItem(item) {
-      if (!item) return item;
-      let rawJenis = String(item.jenisTransaksi || item.jenis || '').trim();
-      let gudang = String(item.gudang || '').trim();
-      let nama = String(item.namaBarang || '').trim();
-
-      // Pulihkan nama barang dari catatan Mutasi jika sebelumnya tersimpan kosong / 'Barang Inventaris'
-      if ((!nama || nama === 'Barang Inventaris') && item.peruntukan) {
-        const refMatch = item.peruntukan.match(/Ref:\s*(MUT-[A-Za-z0-9_-]+)/i);
-        if (refMatch && Array.isArray(rawMutasiData)) {
-          const m = rawMutasiData.find(x => x.refNo === refMatch[1] || x.id === refMatch[1]);
-          if (m && m.namaBarang) {
-            nama = m.namaBarang;
-          }
-        }
-      }
-
-      // Normalisasi Jenis Transaksi secara case-insensitive & aman
-      const jLower = rawJenis.toLowerCase();
-      let normalizedJenis = 'Masuk';
-      if (jLower.includes('mutasi')) {
-        normalizedJenis = jLower.includes('keluar') ? 'Mutasi Keluar' : 'Mutasi Masuk';
-      } else if (jLower.includes('keluar') || jLower === 'out') {
-        normalizedJenis = 'Keluar';
+    function filterByWarehouseCard(whName) {
+      const targetName = getCanonicalWarehouseName(whName);
+      if (selectedGlobalWarehouse === targetName) {
+        selectedGlobalWarehouse = '';
       } else {
-        normalizedJenis = 'Masuk';
+        selectedGlobalWarehouse = targetName;
       }
 
-      const canonicalGudang = getCanonicalWarehouseName(gudang);
+      const globalSel = document.getElementById('globalWarehouseSelect');
+      if (globalSel) globalSel.value = selectedGlobalWarehouse;
 
-      return {
-        ...item,
-        gudang: canonicalGudang,
-        jenisTransaksi: normalizedJenis,
-        namaBarang: nama || item.brand || item.tipe || 'Barang Inventaris',
-        statusKondisi: item.statusKondisi || 'Berfungsi',
-        quantity: Number(item.quantity) || 1
-      };
-    }
+      const filterGudang = document.getElementById('filterGudang');
+      if (filterGudang) filterGudang.value = selectedGlobalWarehouse;
 
-    function syncBackendResponse(res) {
-      if (Array.isArray(res.warehouses) && res.warehouses.length > 0) {
-        rawWarehouseData = res.warehouses;
-        localStorage.setItem('ouffice_warehouse_data', JSON.stringify(rawWarehouseData));
-        initWarehouseDropdowns();
-      }
-      if (Array.isArray(res.data)) {
-        rawInventoryData = res.data.map(sanitizeInventoryItem);
-        try { localStorage.setItem('ouffice_cached_inventory', JSON.stringify(rawInventoryData)); } catch (e) {}
-      } else {
-        rawInventoryData = rawInventoryData.map(sanitizeInventoryItem);
-      }
-      if (Array.isArray(res.mutasi)) {
-        rawMutasiData = res.mutasi;
-        localStorage.setItem('ouffice_mutasi_data', JSON.stringify(rawMutasiData));
-      }
-      if (Array.isArray(res.client)) {
-        rawClientData = res.client;
-        localStorage.setItem('ouffice_client_data', JSON.stringify(rawClientData));
-      }
-      if (Array.isArray(res.supplier)) {
-        rawSupplierData = res.supplier;
-        localStorage.setItem('ouffice_supplier_data', JSON.stringify(rawSupplierData));
-      }
-      if (Array.isArray(res.retur)) {
-        rawReturData = res.retur;
-        localStorage.setItem('ouffice_retur_data', JSON.stringify(rawReturData));
-      }
       filterData();
       updateStatsAndDashboard();
       refreshCurrentView();
     }
 
-    function formatDateOnly(str) {
-      if (!str) return '-';
-      let s = String(str).trim();
-      if (!s) return '-';
-      if (s.includes('T')) s = s.split('T')[0];
-      if (s.includes(' ')) s = s.split(' ')[0];
-
-      if (/^\d{2}-\d{2}-\d{4}$/.test(s)) return s;
-      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
-        const parts = s.split('-');
-        return `${parts[2]}-${parts[1]}-${parts[0]}`;
-      }
-      const d = new Date(s);
-      if (!isNaN(d.getTime())) {
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const dd = String(d.getDate()).padStart(2, '0');
-        return `${dd}-${mm}-${yyyy}`;
-      }
-      return s || '-';
-    }
-
-    function toISODateString(str) {
-      if (!str) return '';
-      let s = String(str).trim();
-      if (!s) return '';
-      if (s.includes('T')) s = s.split('T')[0];
-      if (s.includes(' ')) s = s.split(' ')[0];
-
-      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-      if (/^\d{2}-\d{2}-\d{4}$/.test(s)) {
-        const parts = s.split('-');
-        return `${parts[2]}-${parts[1]}-${parts[0]}`;
-      }
-      const d = new Date(s);
-      if (!isNaN(d.getTime())) {
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const dd = String(d.getDate()).padStart(2, '0');
-        return `${yyyy}-${mm}-${dd}`;
-      }
-      return '';
-    }
-
-    function getItemTimestamp(item) {
-      if (!item || !item.tanggal) return 0;
-      const s = String(item.tanggal).trim();
-      if (!s) return 0;
-      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
-        const parts = s.split('-');
-        return new Date(parts[0], parts[1] - 1, parts[2]).getTime() || 0;
-      }
-      if (/^\d{2}-\d{2}-\d{4}$/.test(s)) {
-        const parts = s.split('-');
-        return new Date(parts[2], parts[1] - 1, parts[0]).getTime() || 0;
-      }
-      const d = new Date(s);
-      return !isNaN(d.getTime()) ? d.getTime() : 0;
-    }
-
-    function sortByDateDescending(items) {
-      if (!Array.isArray(items)) return [];
-      return [...items].sort((a, b) => {
-        const timeA = getItemTimestamp(a);
-        const timeB = getItemTimestamp(b);
-        if (timeB !== timeA) return timeB - timeA;
-        return String(b.id || '').localeCompare(String(a.id || ''));
-      });
-    }
-
-    function renderTable(data) {
-      const tbody = document.getElementById('inventoryTableBody');
-      const mobileContainer = document.getElementById('mobileCardsContainer');
-      const countInfo = document.getElementById('recordCountInfo');
-
-      if (countInfo) countInfo.innerText = `Menampilkan ${data.length} dari ${rawInventoryData.length} data`;
-
-      if (!data || data.length === 0) {
-        if (tbody) tbody.innerHTML = `<tr><td colspan="13" class="py-8 text-center text-slate-400 font-medium">Belum ada data inventaris di gudang ini.</td></tr>`;
-        if (mobileContainer) mobileContainer.innerHTML = `<div class="p-6 text-center text-slate-400 text-xs">Belum ada data inventaris di gudang ini.</div>`;
-        return;
-      }
-
-      const displayData = sortByDateDescending(data);
-
-      if (tbody) {
-        tbody.innerHTML = displayData.map((item, idx) => {
-          const dateOnly = formatDateOnly(item.tanggal);
-          const isMasuk = item.jenisTransaksi === 'Masuk';
-          const isMutasiKeluar = item.jenisTransaksi === 'Mutasi Keluar';
-          const isMutasiMasuk = item.jenisTransaksi === 'Mutasi Masuk';
-
-          let badgeJenis = isMasuk
-            ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">↓ Masuk</span>'
-            : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-700">↑ Keluar</span>';
-
-          if (isMutasiKeluar) badgeJenis = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">⇄ Mutasi Keluar</span>';
-          if (isMutasiMasuk) badgeJenis = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700">⇄ Mutasi Masuk</span>';
-
-          const isBerfungsi = item.statusKondisi === 'Berfungsi';
-          const textStatus = isBerfungsi
-            ? '<span class="font-bold text-emerald-600">Berfungsi</span>'
-            : '<span class="font-bold text-rose-600">Tidak Berfungsi</span>';
-
-          const actionButtons = (currentUser && currentUser.role === 'Manager') ? '-' : `
-            <div class="flex items-center justify-center gap-1.5">
-              <button onclick="editData('${item.id}')" title="Edit" class="w-7 h-7 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 rounded-lg text-slate-600 transition flex items-center justify-center">
-                <i class="fa-solid fa-pen-to-square"></i>
-              </button>
-              ${currentUser && currentUser.role === 'Master Admin' ? `
-              <button onclick="deleteData('${item.id}')" title="Hapus" class="w-7 h-7 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-600 transition flex items-center justify-center">
-                <i class="fa-solid fa-trash"></i>
-              </button>` : ''}
-            </div>
-          `;
-
-          const brandSeri = [item.brand, item.seri].filter(Boolean).join(' • ') || '-';
-
-          return `
-            <tr class="hover:bg-slate-50 transition">
-              <td class="py-3 px-3 text-center text-slate-400 font-mono">${idx + 1}</td>
-              <td class="py-3 px-3 whitespace-nowrap font-mono text-[11px] text-slate-600">${dateOnly}</td>
-              <td class="py-3 px-3 whitespace-nowrap">
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-900 border border-amber-200 rounded-md text-[10px] font-bold">
-                  <i class="fa-solid fa-warehouse text-[9px] text-amber-600"></i> ${item.gudang || 'Gudang Utama'}
-                </span>
-              </td>
-              <td class="py-3 px-3 whitespace-nowrap">${badgeJenis}</td>
-              <td class="py-3 px-3 font-bold text-slate-800">${item.namaBarang || '-'}</td>
-              <td class="py-3 px-3 text-slate-600">${brandSeri}</td>
-              <td class="py-3 px-3 font-mono text-[11px] text-slate-500">${item.serialNumber ? 'SN: ' + item.serialNumber : '-'}</td>
-              <td class="py-3 px-3 text-center"><span class="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold text-slate-600">${item.lokasi || '-'}</span></td>
-              <td class="py-3 px-3 text-center font-bold font-mono text-slate-800">${item.quantity || 0} ${item.satuan || ''}</td>
-              <td class="py-3 px-3 text-slate-700">${item.endUser || '-'}</td>
-              <td class="py-3 px-3 text-slate-700">${item.peruntukan || '-'}</td>
-              <td class="py-3 px-3 text-center">${textStatus}</td>
-              <td class="py-3 px-3 text-center">${actionButtons}</td>
-            </tr>
-          `;
-        }).join('');
-      }
-
-      if (mobileContainer) {
-        mobileContainer.innerHTML = displayData.map((item, idx) => {
-          const dateOnly = formatDateOnly(item.tanggal);
-          const isMasuk = item.jenisTransaksi === 'Masuk';
-          const badgeJenis = isMasuk
-            ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">↓ Masuk</span>'
-            : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-700">↑ Keluar</span>';
-
-          const isBerfungsi = item.statusKondisi === 'Berfungsi';
-          const textStatus = isBerfungsi
-            ? '<span class="font-bold text-emerald-600 text-[10px]">Berfungsi</span>'
-            : '<span class="font-bold text-rose-600 text-[10px]">Rusak</span>';
-
-          return `
-            <div class="p-4 space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="text-[10px] font-bold text-slate-400 font-mono">#${idx + 1} • ${dateOnly}</span>
-                <div class="flex items-center gap-1.5">
-                  ${badgeJenis}
-                  ${textStatus}
-                </div>
-              </div>
-              <div>
-                <h4 class="font-bold text-slate-900 text-sm">${item.namaBarang || '-'}</h4>
-                <p class="text-xs text-slate-500 font-medium">${item.brand || ''} ${item.seri ? '• ' + item.seri : ''}</p>
-                <div class="mt-1">
-                  <span class="text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
-                    <i class="fa-solid fa-warehouse mr-1"></i>${item.gudang || 'Gudang Utama'}
-                  </span>
-                </div>
-              </div>
-              <div class="grid grid-cols-2 gap-2 pt-1 text-[11px] text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                <div><span class="text-slate-400 block text-[10px]">Qty:</span> <strong class="text-slate-800 font-mono">${item.quantity} ${item.satuan}</strong></div>
-                <div><span class="text-slate-400 block text-[10px]">Lokasi Rak:</span> <strong class="text-slate-800">${item.lokasi || '-'}</strong></div>
-                <div><span class="text-slate-400 block text-[10px]">${isMasuk ? 'Supplier:' : 'End User:'}</span> <span class="text-slate-700 truncate block">${item.endUser || '-'}</span></div>
-                <div><span class="text-slate-400 block text-[10px]">Pekerjaan:</span> <span class="text-slate-700 truncate block">${item.peruntukan || '-'}</span></div>
-              </div>
-              ${item.serialNumber ? `<div class="font-mono text-[10px] text-slate-500">SN: ${item.serialNumber}</div>` : ''}
-            </div>
-          `;
-        }).join('');
-      }
+    function updateCounterSmooth(id, target) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.innerText = target;
     }
 
     function updateStatsAndDashboard() {
@@ -2106,41 +1937,21 @@
       let rusakMasuk = 0;
       let rusakKeluar = 0;
 
-      const warehouseQtyMap = {};
-      rawWarehouseData.forEach(w => {
-        warehouseQtyMap[w.nama] = { total: 0, baik: 0, rusak: 0 };
-      });
-
-      rawInventoryData.forEach((item) => {
-        const qty = Number(item.quantity) || 0;
-        const gName = getCanonicalWarehouseName(item.gudang);
-
-        if (!warehouseQtyMap[gName]) {
-          warehouseQtyMap[gName] = { total: 0, baik: 0, rusak: 0 };
-        }
-
-        if (item.jenisTransaksi === 'Masuk' || item.jenisTransaksi === 'Mutasi Masuk') {
-          warehouseQtyMap[gName].total += qty;
-          if (item.statusKondisi === 'Berfungsi') warehouseQtyMap[gName].baik += qty;
-          if (item.statusKondisi === 'Tidak Berfungsi') warehouseQtyMap[gName].rusak += qty;
-        } else if (item.jenisTransaksi === 'Keluar' || item.jenisTransaksi === 'Mutasi Keluar') {
-          warehouseQtyMap[gName].total = Math.max(0, warehouseQtyMap[gName].total - qty);
-          if (item.statusKondisi === 'Berfungsi') warehouseQtyMap[gName].baik = Math.max(0, warehouseQtyMap[gName].baik - qty);
-          if (item.statusKondisi === 'Tidak Berfungsi') warehouseQtyMap[gName].rusak = Math.max(0, warehouseQtyMap[gName].rusak - qty);
-        }
-      });
-
-      const effectiveData = selectedGlobalWarehouse 
+      const effectiveData = selectedGlobalWarehouse
         ? rawInventoryData.filter(i => getCanonicalWarehouseName(i.gudang) === selectedGlobalWarehouse)
         : rawInventoryData;
 
-      effectiveData.forEach((item) => {
+      effectiveData.forEach(item => {
         const qty = Number(item.quantity) || 0;
-        if (item.jenisTransaksi === 'Masuk' || item.jenisTransaksi === 'Mutasi Masuk') {
+        const jLower = (item.jenisTransaksi || '').toLowerCase();
+        const isMasuk = jLower.includes('masuk');
+        const isKeluar = jLower.includes('keluar');
+
+        if (isMasuk) {
           totalMasuk += qty;
           if (item.statusKondisi === 'Berfungsi') berfungsiMasuk += qty;
           if (item.statusKondisi === 'Tidak Berfungsi') rusakMasuk += qty;
-        } else if (item.jenisTransaksi === 'Keluar' || item.jenisTransaksi === 'Mutasi Keluar') {
+        } else if (isKeluar) {
           totalKeluar += qty;
           if (item.statusKondisi === 'Berfungsi') berfungsiKeluar += qty;
           if (item.statusKondisi === 'Tidak Berfungsi') rusakKeluar += qty;
@@ -2150,10 +1961,10 @@
       const safeBerfungsi = Math.max(0, berfungsiMasuk - berfungsiKeluar);
       const safeTidakBerfungsi = Math.max(0, rusakMasuk - rusakKeluar);
 
-      animateCounter('statMasuk', totalMasuk);
-      animateCounter('statKeluar', totalKeluar);
-      animateCounter('statBerfungsi', safeBerfungsi);
-      animateCounter('statTidakBerfungsi', safeTidakBerfungsi);
+      updateCounterSmooth('statMasuk', totalMasuk);
+      updateCounterSmooth('statKeluar', totalKeluar);
+      updateCounterSmooth('statBerfungsi', safeBerfungsi);
+      updateCounterSmooth('statTidakBerfungsi', safeTidakBerfungsi);
 
       const totalKondisi = safeBerfungsi + safeTidakBerfungsi;
       const ratio = totalKondisi > 0 ? Math.round((safeBerfungsi / totalKondisi) * 100) : 0;
@@ -2173,7 +1984,6 @@
       const textRusak = document.getElementById('pieTextRusak');
 
       const cx = 50, cy = 50, r = 45;
-
       function getSlicePath(startAngle, endAngle) {
         if ((endAngle - startAngle) >= (2 * Math.PI - 0.001)) {
           return `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx} ${cy + r} A ${r} ${r} 0 1 1 ${cx} ${cy - r} Z`;
@@ -2194,7 +2004,6 @@
           sliceSiap.setAttribute('d', getSlicePath(0, 2 * Math.PI));
           sliceSiap.style.display = 'block';
           sliceRusak.style.display = 'none';
-
           textSiap.setAttribute('x', '50');
           textSiap.setAttribute('y', '50');
           textSiap.textContent = `${ratio}%`;
@@ -2204,7 +2013,6 @@
           sliceRusak.setAttribute('d', getSlicePath(0, 2 * Math.PI));
           sliceRusak.style.display = 'block';
           sliceSiap.style.display = 'none';
-
           textRusak.setAttribute('x', '50');
           textRusak.setAttribute('y', '50');
           textRusak.textContent = `${ratioRusak}%`;
@@ -2214,236 +2022,254 @@
           const startSiap = -Math.PI / 2;
           const endSiap = startSiap + (pSiap * 2 * Math.PI);
           const midSiap = (startSiap + endSiap) / 2;
-
           const startRusak = endSiap;
           const endRusak = startSiap + (2 * Math.PI);
           const midRusak = (startRusak + endRusak) / 2;
 
           sliceSiap.setAttribute('d', getSlicePath(startSiap, endSiap));
           sliceSiap.style.display = 'block';
-
           sliceRusak.setAttribute('d', getSlicePath(startRusak, endRusak));
           sliceRusak.style.display = 'block';
 
           const rtSiap = r * (pSiap < 0.2 ? 0.7 : 0.52);
-          const txSiap = cx + rtSiap * Math.cos(midSiap);
-          const tySiap = cy + rtSiap * Math.sin(midSiap);
-          textSiap.setAttribute('x', txSiap.toFixed(1));
-          textSiap.setAttribute('y', tySiap.toFixed(1));
+          textSiap.setAttribute('x', (cx + rtSiap * Math.cos(midSiap)).toFixed(1));
+          textSiap.setAttribute('y', (cy + rtSiap * Math.sin(midSiap)).toFixed(1));
           textSiap.textContent = `${ratio}%`;
           textSiap.style.display = 'block';
 
           const rtRusak = r * (pRusak < 0.2 ? 0.7 : 0.52);
-          const txRusak = cx + rtRusak * Math.cos(midRusak);
-          const tyRusak = cy + rtRusak * Math.sin(midRusak);
-          textRusak.setAttribute('x', txRusak.toFixed(1));
-          textRusak.setAttribute('y', tyRusak.toFixed(1));
+          textRusak.setAttribute('x', (cx + rtRusak * Math.cos(midRusak)).toFixed(1));
+          textRusak.setAttribute('y', (cy + rtRusak * Math.sin(midRusak)).toFixed(1));
           textRusak.textContent = `${ratioRusak}%`;
           textRusak.style.display = 'block';
         }
-      } else if (sliceSiap && sliceRusak) {
-        sliceSiap.style.display = 'none';
-        sliceRusak.style.display = 'none';
-        if (textSiap) textSiap.style.display = 'none';
-        if (textRusak) textRusak.style.display = 'none';
       }
 
-      const distEl = document.getElementById('warehouseStockDistribution');
-      if (distEl) {
-        distEl.innerHTML = rawWarehouseData.map(w => {
-          const stats = warehouseQtyMap[w.nama] || { total: 0, baik: 0, rusak: 0 };
-          const isSelected = selectedGlobalWarehouse === w.nama;
-          const escapedName = w.nama.replace(/'/g, "\\'");
+      // Warehouse Stock Distribution Cards
+      const distContainer = document.getElementById('warehouseStockDistribution');
+      if (distContainer) {
+        distContainer.innerHTML = rawWarehouseData.map(wh => {
+          let whMasuk = 0;
+          let whKeluar = 0;
+          let whBerfungsi = 0;
+          let whRusak = 0;
+
+          rawInventoryData.forEach(item => {
+            if (getCanonicalWarehouseName(item.gudang) === wh.nama) {
+              const q = Number(item.quantity) || 0;
+              const j = (item.jenisTransaksi || '').toLowerCase();
+              if (j.includes('masuk')) {
+                whMasuk += q;
+                if (item.statusKondisi === 'Berfungsi') whBerfungsi += q;
+                if (item.statusKondisi === 'Tidak Berfungsi') whRusak += q;
+              } else if (j.includes('keluar')) {
+                whKeluar += q;
+                if (item.statusKondisi === 'Berfungsi') whBerfungsi -= q;
+                if (item.statusKondisi === 'Tidak Berfungsi') whRusak -= q;
+              }
+            }
+          });
+
+          const totalSisa = Math.max(0, whMasuk - whKeluar);
+          const isSelected = selectedGlobalWarehouse === wh.nama;
+
           return `
-            <div class="p-3.5 rounded-xl flex flex-col justify-between transition cursor-pointer relative ${isSelected ? 'bg-orange-50/90 border-2 border-orange-500 shadow-md ring-2 ring-orange-200' : 'bg-slate-50 border border-slate-200/80 hover:border-amber-400 hover:shadow-xs'}" onclick="filterByWarehouseCard('${escapedName}')">
-              ${isSelected ? '<span class="absolute -top-2 -right-2 bg-orange-600 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full shadow-sm">AKTIF</span>' : ''}
-              <div class="flex items-center justify-between mb-2">
-                <span class="font-extrabold text-slate-800 text-xs truncate max-w-[160px]" title="${w.nama}">${w.nama}</span>
-                <span class="text-[9px] font-mono px-1.5 py-0.5 bg-white border border-slate-200 rounded font-bold text-slate-600">${w.kode}</span>
+            <div onclick="filterByWarehouseCard('${wh.nama}')" class="p-3.5 rounded-xl border ${isSelected ? 'border-orange-500 bg-orange-50/70 shadow-sm ring-2 ring-orange-500/20' : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/70'} cursor-pointer transition select-none">
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="font-extrabold text-slate-800 text-xs truncate max-w-[150px]">${wh.nama}</span>
+                <span class="text-[10px] font-mono font-bold text-slate-500 bg-white px-1.5 py-0.5 rounded border border-slate-200">${wh.kode}</span>
               </div>
               <div class="flex items-baseline justify-between">
                 <div>
-                  <div class="text-xl font-black font-mono text-slate-900">${stats.total} <span class="text-[10px] text-slate-500 font-normal">unit</span></div>
-                  <div class="text-[10px] text-slate-500 mt-0.5">PIC: ${w.pic || '-'}</div>
+                  <span class="text-xl font-black font-mono text-slate-900">${totalSisa}</span>
+                  <span class="text-[10px] text-slate-500 font-semibold ml-1">unit</span>
                 </div>
-                <div class="text-right text-[10px] font-semibold space-y-0.5">
-                  <div class="text-emerald-600"><i class="fa-solid fa-circle-check text-[9px]"></i> ${stats.baik}</div>
-                  <div class="text-rose-600"><i class="fa-solid fa-circle-xmark text-[9px]"></i> ${stats.rusak}</div>
+                <div class="text-[10px] font-bold flex gap-2">
+                  <span class="text-emerald-600">✓ ${Math.max(0, whBerfungsi)}</span>
+                  <span class="text-rose-600">✗ ${Math.max(0, whRusak)}</span>
                 </div>
               </div>
-              <div class="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[10px]">
-                <span class="text-slate-400 font-medium">${isSelected ? 'Klik untuk batal filter' : 'Klik untuk filter'}</span>
-                <span class="font-bold text-orange-600">${isSelected ? 'Semua Gudang ✕' : 'Filter Gudang →'}</span>
-              </div>
+              <div class="text-[10px] text-slate-400 truncate mt-1">PIC: ${wh.pic || '-'}</div>
             </div>
           `;
         }).join('');
       }
 
-      renderProporsiStokKeluar();
-      renderLowStockAlerts(effectiveData);
-      renderMonthlyChart(effectiveData);
-      renderRecentTransactions(effectiveData);
-    }
-
-    function filterByWarehouseCard(whName) {
-      const globalSelect = document.getElementById('globalWarehouseSelect');
-      if (selectedGlobalWarehouse === whName) {
-        selectedGlobalWarehouse = '';
-        if (globalSelect) globalSelect.value = '';
-      } else {
-        selectedGlobalWarehouse = whName;
-        if (globalSelect) globalSelect.value = whName;
-      }
-      handleGlobalWarehouseChange();
-    }
-
-    function animateCounter(id, target) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      let start = 0;
-      const duration = 400;
-      const stepTime = 20;
-      const steps = duration / stepTime;
-      const increment = target / steps;
-
-      const timer = setInterval(() => {
-        start += increment;
-        if (start >= target) {
-          el.innerText = target;
-          clearInterval(timer);
-        } else {
-          el.innerText = Math.ceil(start);
-        }
-      }, stepTime);
-    }
-
-    function renderLowStockAlerts(data) {
+      // Low Stock List
       const lowStockEl = document.getElementById('lowStockList');
-      if (!lowStockEl) return;
-      const summaryMap = {};
-      data.forEach(item => {
-        const key = `${item.gudang || 'Gudang'}___${item.namaBarang || ''}`;
-        if (!summaryMap[key]) {
-          summaryMap[key] = { nama: item.namaBarang, gudang: item.gudang, sisa: 0, satuan: item.satuan || 'Unit' };
-        }
-        const q = Number(item.quantity) || 0;
-        if (item.jenisTransaksi.includes('Masuk')) summaryMap[key].sisa += q;
-        if (item.jenisTransaksi.includes('Keluar')) summaryMap[key].sisa -= q;
-      });
+      if (lowStockEl) {
+        const stockMap = {};
+        effectiveData.forEach(item => {
+          const key = (item.namaBarang || '').trim();
+          if (!key || key === 'Barang Inventaris') return;
+          if (!stockMap[key]) stockMap[key] = { nama: key, brand: item.brand, sisa: 0, satuan: item.satuan || 'Pcs' };
+          const q = Number(item.quantity) || 0;
+          const j = (item.jenisTransaksi || '').toLowerCase();
+          if (j.includes('masuk')) stockMap[key].sisa += q;
+          if (j.includes('keluar')) stockMap[key].sisa -= q;
+        });
 
-      const lowItems = Object.values(summaryMap).filter(x => x.sisa < 5);
-      if (lowItems.length === 0) {
-        lowStockEl.innerHTML = `<div class="p-3 text-center text-slate-400 text-xs font-semibold bg-slate-50 rounded-xl">Semua stok aman (&gt;= 5 unit)</div>`;
-      } else {
-        lowStockEl.innerHTML = lowItems.slice(0, 5).map(x => `
-          <div class="p-2.5 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-between text-xs">
-            <div>
-              <span class="font-bold text-slate-900 block">${x.nama}</span>
-              <span class="text-[10px] text-slate-500">${x.gudang}</span>
+        const lowItems = Object.values(stockMap).filter(i => i.sisa < 5);
+        if (lowItems.length === 0) {
+          lowStockEl.innerHTML = `<div class="p-3 text-center text-slate-400 text-xs font-semibold bg-slate-50 rounded-xl">Stok aman (≥ 5 unit)</div>`;
+        } else {
+          lowStockEl.innerHTML = lowItems.map(x => `
+            <div class="p-2.5 bg-rose-50 border border-rose-100 rounded-xl flex items-center justify-between text-xs">
+              <div>
+                <span class="font-bold text-slate-900 block">${x.nama}</span>
+                <span class="text-[10px] text-slate-500">${x.brand || '-'}</span>
+              </div>
+              <span class="font-mono font-bold text-rose-600 bg-white px-2 py-0.5 rounded-lg border border-rose-200">${x.sisa} ${x.satuan}</span>
             </div>
-            <span class="font-mono font-bold text-rose-600 bg-white px-2 py-0.5 rounded-lg border border-rose-200">${x.sisa} ${x.satuan}</span>
-          </div>
-        `).join('');
+          `).join('');
+        }
       }
-    }
 
-    function renderMonthlyChart(data) {
+      // Monthly Chart
       const monthlyContainer = document.getElementById('monthlyChartContainer');
-      if (!monthlyContainer) return;
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-      const now = new Date();
-      const monthSlots = [];
-      for (let i = 5; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-        monthSlots.push({ key: monthKey, label: monthNames[d.getMonth()], masuk: 0, keluar: 0 });
-      }
-
-      data.forEach(item => {
-        if (!item.tanggal) return;
-        const iso = toISODateString(item.tanggal);
-        const itemKey = iso ? iso.substring(0, 7) : '';
-        const slot = monthSlots.find(s => s.key === itemKey);
-        if (slot) {
-          const qty = Number(item.quantity) || 0;
-          if (item.jenisTransaksi.includes('Masuk')) slot.masuk += qty;
-          if (item.jenisTransaksi.includes('Keluar')) slot.keluar += qty;
+      if (monthlyContainer) {
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        const now = new Date();
+        const monthSlots = [];
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const mKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          monthSlots.push({ key: mKey, label: monthNames[d.getMonth()], masuk: 0, keluar: 0 });
         }
-      });
 
-      const maxVol = Math.max(1, ...monthSlots.flatMap(s => [s.masuk, s.keluar]));
+        effectiveData.forEach(item => {
+          const iso = toISODateString(item.tanggal);
+          if (iso) {
+            const mKey = iso.substring(0, 7);
+            const slot = monthSlots.find(s => s.key === mKey);
+            if (slot) {
+              const q = Number(item.quantity) || 0;
+              const j = (item.jenisTransaksi || '').toLowerCase();
+              if (j.includes('masuk')) slot.masuk += q;
+              if (j.includes('keluar')) slot.keluar += q;
+            }
+          }
+        });
 
-      monthlyContainer.innerHTML = monthSlots.map((slot, idx) => {
-        const isLatest = idx === monthSlots.length - 1;
-        const pctMasuk = slot.masuk > 0 ? Math.max(10, Math.round((slot.masuk / maxVol) * 100)) : 4;
-        const pctKeluar = slot.keluar > 0 ? Math.max(10, Math.round((slot.keluar / maxVol) * 100)) : 4;
+        const maxVol = Math.max(1, ...monthSlots.flatMap(s => [s.masuk, s.keluar]));
 
-        return `
-          <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
-            <div class="text-[9px] font-mono font-bold text-slate-400 opacity-90 group-hover:opacity-100 flex gap-1">
-              <span class="text-emerald-600 font-extrabold">${slot.masuk}</span>/<span class="text-sky-600 font-extrabold">${slot.keluar}</span>
+        monthlyContainer.innerHTML = monthSlots.map((slot, idx) => {
+          const isLatest = idx === monthSlots.length - 1;
+          const pctMasuk = slot.masuk > 0 ? Math.max(10, Math.round((slot.masuk / maxVol) * 100)) : 4;
+          const pctKeluar = slot.keluar > 0 ? Math.max(10, Math.round((slot.keluar / maxVol) * 100)) : 4;
+
+          return `
+            <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
+              <div class="text-[9px] font-mono font-bold text-slate-400 flex gap-1">
+                <span class="text-emerald-600 font-extrabold">${slot.masuk}</span>/<span class="text-sky-600 font-extrabold">${slot.keluar}</span>
+              </div>
+              <div class="w-full flex items-end justify-center gap-1.5 h-32">
+                <div class="w-3.5 sm:w-5 bg-emerald-500 rounded-t-md transition-all duration-500" style="height: ${pctMasuk}%" title="${slot.label} - Masuk: ${slot.masuk}"></div>
+                <div class="w-3.5 sm:w-5 bg-sky-500 rounded-t-md transition-all duration-500" style="height: ${pctKeluar}%" title="${slot.label} - Keluar: ${slot.keluar}"></div>
+              </div>
+              <span class="text-[10px] ${isLatest ? 'font-extrabold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-200' : 'font-bold text-slate-500'}">${slot.label}</span>
             </div>
-            <div class="w-full flex items-end justify-center gap-1.5 h-32">
-              <div class="w-3.5 sm:w-5 bg-emerald-500 rounded-t-md transition-all duration-500 hover:bg-emerald-600 shadow-sm" style="height: ${pctMasuk}%" title="${slot.label} - Masuk: ${slot.masuk}"></div>
-              <div class="w-3.5 sm:w-5 bg-sky-500 rounded-t-md transition-all duration-500 hover:bg-sky-600 shadow-sm" style="height: ${pctKeluar}%" title="${slot.label} - Keluar: ${slot.keluar}"></div>
-            </div>
-            <span class="text-[10px] ${isLatest ? 'font-extrabold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-200' : 'font-bold text-slate-500'}">${slot.label}</span>
-          </div>
-        `;
-      }).join('');
-    }
+          `;
+        }).join('');
 
-    function renderRecentTransactions(data) {
-      const recentTbody = document.getElementById('recentTransactionsTable');
-      if (!recentTbody) return;
-      const recentData = sortByDateDescending(data).slice(0, 5);
-
-      if (recentData.length === 0) {
-        recentTbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">Belum ada transaksi</td></tr>`;
-      } else {
-        recentTbody.innerHTML = recentData.map(item => `
-          <tr class="hover:bg-slate-50">
-            <td class="py-2 px-3 font-mono text-[11px]">${formatDateOnly(item.tanggal)}</td>
-            <td class="py-2 px-3 text-[11px] font-bold text-amber-700">${item.gudang || 'Gudang Utama'}</td>
-            <td class="py-2 px-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${item.jenisTransaksi.includes('Masuk') ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-700'}">${item.jenisTransaksi}</span></td>
-            <td class="py-2 px-3 font-bold text-slate-800">${item.namaBarang}</td>
-            <td class="py-2 px-3 text-center font-bold font-mono">${item.quantity} ${item.satuan}</td>
-          </tr>
-        `).join('');
+        const periodLabel = document.getElementById('chartPeriodLabel');
+        if (periodLabel && monthSlots.length >= 6) {
+          periodLabel.innerText = `${monthSlots[0].label} - ${monthSlots[5].label}`;
+        }
       }
+
+      // Recent Transactions Table
+      const recentTbody = document.getElementById('recentTransactionsTable');
+      if (recentTbody) {
+        const recentData = sortByDateDescending(effectiveData).slice(0, 5);
+        if (recentData.length === 0) {
+          recentTbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-400">Belum ada transaksi</td></tr>`;
+        } else {
+          recentTbody.innerHTML = recentData.map(item => `
+            <tr class="hover:bg-slate-50">
+              <td class="py-2 px-3 font-mono text-[11px]">${formatDateOnly(item.tanggal)}</td>
+              <td class="py-2 px-3 font-bold text-amber-700 whitespace-nowrap">${item.gudang || 'Gudang'}</td>
+              <td class="py-2 px-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${item.jenisTransaksi.includes('Masuk') ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-100 text-sky-700'}">${item.jenisTransaksi.includes('Masuk') ? '↓' : '↑'} ${item.jenisTransaksi}</span></td>
+              <td class="py-2 px-3 font-bold text-slate-800">${item.namaBarang}</td>
+              <td class="py-2 px-3 text-center font-bold font-mono">${item.quantity} ${item.satuan}</td>
+            </tr>
+          `).join('');
+        }
+      }
+
+      renderProporsiStokKeluar();
     }
 
     function renderProporsiStokKeluar() {
+      const selectEl = document.getElementById('proporsiMonthSelect');
       const propEl = document.getElementById('proporsiStokContainer');
       const footerEl = document.getElementById('proporsiFooterText');
       if (!propEl) return;
 
-      const userMap = {};
-      let totalKeluar = 0;
-      rawInventoryData.forEach(item => {
-        if (item.jenisTransaksi.includes('Keluar')) {
-          const q = Number(item.quantity) || 0;
-          const u = item.endUser || 'Umum';
-          userMap[u] = (userMap[u] || 0) + q;
-          totalKeluar += q;
+      const effectiveData = selectedGlobalWarehouse
+        ? rawInventoryData.filter(i => getCanonicalWarehouseName(i.gudang) === selectedGlobalWarehouse)
+        : rawInventoryData;
+
+      const monthMap = {};
+      effectiveData.forEach(item => {
+        const iso = toISODateString(item.tanggal);
+        if (iso) monthMap[iso.substring(0, 7)] = true;
+      });
+
+      let availableMonths = Object.keys(monthMap).sort().reverse();
+      if (availableMonths.length === 0) {
+        const now = new Date();
+        for (let i = 0; i < 6; i++) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          availableMonths.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+        }
+      }
+
+      if (selectEl) {
+        const currentSelected = selectEl.value;
+        selectEl.innerHTML = availableMonths.map(mKey => {
+          const [yyyy, mm] = mKey.split('-');
+          const mName = BULAN_INDONESIA[parseInt(mm, 10) - 1] || mm;
+          return `<option value="${mKey}">${mName} ${yyyy}</option>`;
+        }).join('');
+
+        if (currentSelected && availableMonths.includes(currentSelected)) {
+          selectEl.value = currentSelected;
+        } else {
+          selectEl.value = availableMonths[0];
+        }
+      }
+
+      const selectedMonth = selectEl ? selectEl.value : availableMonths[0];
+      let monthTotalKeluar = 0;
+      const endUserMap = {};
+
+      effectiveData.forEach(item => {
+        const j = (item.jenisTransaksi || '').toLowerCase();
+        if (!j.includes('keluar')) return;
+        const iso = toISODateString(item.tanggal);
+        if (iso && iso.substring(0, 7) === selectedMonth) {
+          const qty = Number(item.quantity) || 0;
+          monthTotalKeluar += qty;
+          const user = (item.endUser || 'Umum / Lainnya').trim();
+          endUserMap[user] = (endUserMap[user] || 0) + qty;
         }
       });
 
-      const entries = Object.entries(userMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
-      if (entries.length === 0) {
-        propEl.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs font-medium bg-slate-50 rounded-xl">Belum ada pengeluaran barang.</div>`;
-        if (footerEl) footerEl.innerText = '0 Unit Pengeluaran';
+      const topUsers = Object.entries(endUserMap).sort((a, b) => b[1] - a[1]);
+      if (topUsers.length === 0 || monthTotalKeluar === 0) {
+        propEl.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs font-medium bg-slate-50 rounded-xl">Tidak ada transaksi barang keluar pada bulan ini.</div>`;
+        if (footerEl) footerEl.innerText = 'Belum ada pengeluaran barang.';
         return;
       }
 
-      propEl.innerHTML = entries.map(([u, q]) => {
-        const pct = totalKeluar > 0 ? Math.round((q / totalKeluar) * 100) : 0;
+      propEl.innerHTML = topUsers.map(([user, val]) => {
+        const pct = Math.round((val / monthTotalKeluar) * 100);
         return `
           <div>
             <div class="flex justify-between text-xs font-semibold mb-1">
-              <span class="text-slate-700 truncate max-w-[170px]" title="${u}">${u}</span>
-              <span class="text-sky-700 font-mono font-bold">${pct}% <span class="text-slate-400 font-normal">(${q} unit)</span></span>
+              <span class="text-slate-700 truncate max-w-[170px]">${user}</span>
+              <span class="text-sky-700 font-mono font-bold">${pct}% <span class="text-slate-400 font-normal">(${val} unit)</span></span>
             </div>
             <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
               <div class="h-full bg-sky-500 rounded-full transition-all duration-500" style="width: ${Math.min(100, pct)}%"></div>
@@ -2452,7 +2278,224 @@
         `;
       }).join('');
 
-      if (footerEl) footerEl.innerText = `Total ${totalKeluar} unit barang keluar`;
+      if (footerEl) footerEl.innerText = `Persentase dari total ${monthTotalKeluar} unit barang keluar.`;
+    }
+
+    /**
+     * Memformat tanggal menjadi standar numerik: dd/mm/yyyy (contoh: 09/10/2026)
+     */
+    function formatDateOnly(str) {
+      if (!str) return '-';
+      if (str instanceof Date) {
+        const dd = String(str.getDate()).padStart(2, '0');
+        const mm = String(str.getMonth() + 1).padStart(2, '0');
+        const yyyy = str.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+      }
+      const s = String(str).trim();
+      if (!s) return '-';
+
+      // Jika format DD-MM-YYYY atau DD/MM/YYYY
+      const indoMatch = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+      if (indoMatch) {
+        return `${indoMatch[1].padStart(2, '0')}/${indoMatch[2].padStart(2, '0')}/${indoMatch[3]}`;
+      }
+
+      // Jika format ISO YYYY-MM-DD
+      const isoMatch = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+      if (isoMatch) {
+        return `${isoMatch[3].padStart(2, '0')}/${isoMatch[2].padStart(2, '0')}/${isoMatch[1]}`;
+      }
+
+      const d = new Date(s);
+      if (!isNaN(d.getTime())) {
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+      }
+      return s || '-';
+    }
+
+    /**
+     * Standarisasi format tanggal ke dd/mm/yyyy
+     */
+    function formatDateIndoFull(str) {
+      return formatDateOnly(str);
+    }
+
+    /**
+     * Konversi tanggal inputan/data ke format ISO YYYY-MM-DD untuk keperluan input[type="date"]
+     */
+    function toISODateString(str) {
+      if (!str) return '';
+      if (str instanceof Date) {
+        const y = str.getFullYear();
+        const m = String(str.getMonth() + 1).padStart(2, '0');
+        const d = String(str.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+      const s = String(str).trim();
+      if (!s) return '';
+
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
+      const indoMatch = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+      if (indoMatch) {
+        const dd = indoMatch[1].padStart(2, '0');
+        const mm = indoMatch[2].padStart(2, '0');
+        const yyyy = indoMatch[3];
+        return `${yyyy}-${mm}-${dd}`;
+      }
+
+      const d = new Date(s);
+      if (!isNaN(d.getTime())) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+      }
+      return '';
+    }
+
+    function getItemTimestamp(item) {
+      if (!item || !item.tanggal) return 0;
+      const s = String(item.tanggal).trim();
+      if (!s) return 0;
+
+      const indoMatch = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+      if (indoMatch) {
+        return new Date(parseInt(indoMatch[3], 10), parseInt(indoMatch[2], 10) - 1, parseInt(indoMatch[1], 10)).getTime() || 0;
+      }
+      const isoMatch = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+      if (isoMatch) {
+        return new Date(parseInt(isoMatch[1], 10), parseInt(isoMatch[2], 10) - 1, parseInt(isoMatch[3], 10)).getTime() || 0;
+      }
+
+      const d = new Date(s);
+      return !isNaN(d.getTime()) ? d.getTime() : 0;
+    }
+
+    function sortByDateDescending(items) {
+      if (!Array.isArray(items)) return [];
+      return [...items].sort((a, b) => {
+        const timeA = getItemTimestamp(a);
+        const timeB = getItemTimestamp(b);
+        if (timeB !== timeA) return timeB - timeA;
+        // Penentu urutan deterministik sekunder & tersier agar baris tidak melompat acak
+        const idA = String(a.id || '');
+        const idB = String(b.id || '');
+        if (idA !== idB) return idB.localeCompare(idA);
+        return String(a.namaBarang || '').localeCompare(String(b.namaBarang || ''));
+      });
+    }
+
+    function renderTable(data) {
+      const tbody = document.getElementById('inventoryTableBody');
+      const mobileContainer = document.getElementById('mobileCardsContainer');
+      const countInfo = document.getElementById('recordCountInfo');
+
+      if (countInfo) countInfo.innerText = `Menampilkan ${data.length} dari ${rawInventoryData.length} data`;
+
+      if (!data || data.length === 0) {
+        if (tbody) tbody.innerHTML = `<tr><td colspan="13" class="py-8 text-center text-slate-400 font-medium">Belum ada data inventaris yang cocok.</td></tr>`;
+        if (mobileContainer) mobileContainer.innerHTML = `<div class="p-6 text-center text-slate-400 text-xs">Belum ada data inventaris.</div>`;
+        return;
+      }
+
+      const displayData = sortByDateDescending(data);
+
+      if (tbody) {
+        tbody.innerHTML = displayData.map((item, idx) => {
+          const dateOnly = formatDateOnly(item.tanggal);
+          const isMasuk = item.jenisTransaksi === 'Masuk' || item.jenisTransaksi === 'Mutasi Masuk';
+          const badgeJenis = isMasuk
+            ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">${item.jenisTransaksi.includes('Mutasi') ? '⇄' : '↓'} ${item.jenisTransaksi}</span>`
+            : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-700">${item.jenisTransaksi.includes('Mutasi') ? '⇄' : '↑'} ${item.jenisTransaksi}</span>`;
+
+          const isBerfungsi = item.statusKondisi === 'Berfungsi';
+          const textStatus = isBerfungsi
+            ? '<span class="font-bold text-emerald-600">Berfungsi</span>'
+            : '<span class="font-bold text-rose-600">Tidak Berfungsi</span>';
+
+          const actionButtons = (currentUser && currentUser.role === 'Manager') ? '-' : `
+            <div class="flex items-center justify-center gap-1.5">
+              <button onclick="editData('${item.id}')" title="Edit Data" class="w-7 h-7 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 rounded-lg text-slate-600 transition flex items-center justify-center">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
+              ${currentUser && currentUser.role === 'Master Admin' ? `
+              <button onclick="deleteData('${item.id}')" title="Hapus Data" class="w-7 h-7 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-600 transition flex items-center justify-center">
+                <i class="fa-solid fa-trash"></i>
+              </button>` : ''}
+            </div>
+          `;
+
+          const brandSeri = [item.brand, item.tipe || item.seri].filter(Boolean).join(' • ') || '-';
+
+          return `
+            <tr class="hover:bg-slate-50 transition">
+              <td class="py-3 px-3 text-center text-slate-400 font-mono">${idx + 1}</td>
+              <td class="py-3 px-3 whitespace-nowrap font-mono text-[11px] text-slate-600">${dateOnly}</td>
+              <td class="py-3 px-3 font-bold text-amber-700 whitespace-nowrap"><i class="fa-solid fa-warehouse text-[10px] mr-1"></i>${item.gudang || 'Gudang Utama'}</td>
+              <td class="py-3 px-3 whitespace-nowrap">${badgeJenis}</td>
+              <td class="py-3 px-3 font-bold text-slate-800">${item.namaBarang || '-'}</td>
+              <td class="py-3 px-3 text-slate-600">${brandSeri}</td>
+              <td class="py-3 px-3 font-mono text-[11px] text-slate-500 max-w-xs truncate">${item.serialNumber || '-'}</td>
+              <td class="py-3 px-3 text-center"><span class="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-bold text-slate-600">${item.lokasi || '-'}</span></td>
+              <td class="py-3 px-3 text-center font-bold font-mono text-slate-800">${item.quantity || 0} ${item.satuan || ''}</td>
+              <td class="py-3 px-3 text-slate-700">${item.endUser || '-'}</td>
+              <td class="py-3 px-3 text-slate-700">${item.peruntukan || '-'}</td>
+              <td class="py-3 px-3 text-center">${textStatus}</td>
+              <td class="py-3 px-3 text-center">${actionButtons}</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      if (mobileContainer) {
+        mobileContainer.innerHTML = displayData.map((item, idx) => {
+          const dateOnly = formatDateOnly(item.tanggal);
+          const isMasuk = item.jenisTransaksi === 'Masuk' || item.jenisTransaksi === 'Mutasi Masuk';
+          const badgeJenis = isMasuk
+            ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">${item.jenisTransaksi.includes('Mutasi') ? '⇄' : '↓'} ${item.jenisTransaksi}</span>`
+            : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-700">${item.jenisTransaksi.includes('Mutasi') ? '⇄' : '↑'} ${item.jenisTransaksi}</span>`;
+
+          const isBerfungsi = item.statusKondisi === 'Berfungsi';
+          const textStatus = isBerfungsi
+            ? '<span class="font-bold text-emerald-600">Berfungsi</span>'
+            : '<span class="font-bold text-rose-600">Tidak Berfungsi</span>';
+
+          const brandSeri = [item.brand, item.tipe || item.seri].filter(Boolean).join(' • ') || '-';
+
+          return `
+            <div class="p-4 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-slate-400 font-mono">#${idx + 1} • ${dateOnly} • <strong class="text-amber-700">${item.gudang || 'Gudang'}</strong></span>
+                <div class="flex items-center gap-1.5">
+                  ${badgeJenis}
+                  ${textStatus}
+                </div>
+              </div>
+              <div>
+                <h4 class="font-bold text-slate-900 text-sm">${item.namaBarang || '-'}</h4>
+                <p class="text-xs text-slate-500 font-medium">${brandSeri}</p>
+              </div>
+              <div class="grid grid-cols-2 gap-2 pt-1 text-[11px] text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <div><span class="text-slate-400 block text-[10px]">Quantity:</span> <strong class="text-slate-800 font-mono">${item.quantity} ${item.satuan || ''}</strong></div>
+                <div><span class="text-slate-400 block text-[10px]">Lokasi Rak:</span> <strong class="text-slate-800">${item.lokasi || '-'}</strong></div>
+                <div><span class="text-slate-400 block text-[10px]">${isMasuk ? 'Supplier / Asal:' : 'End User / Tujuan:'}</span> <span class="text-slate-700">${item.endUser || '-'}</span></div>
+                <div><span class="text-slate-400 block text-[10px]">Pekerjaan:</span> <span class="text-slate-700">${item.peruntukan || '-'}</span></div>
+              </div>
+              ${item.serialNumber ? `<div class="font-mono text-[10px] text-slate-500 truncate">SN: ${item.serialNumber}</div>` : ''}
+              ${currentUser && currentUser.role !== 'Manager' ? `
+              <div class="flex items-center justify-end gap-2 pt-1">
+                <button onclick="editData('${item.id}')" class="px-2.5 py-1 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 text-slate-700 rounded-lg text-xs font-semibold">Edit</button>
+                ${currentUser.role === 'Master Admin' ? `<button onclick="deleteData('${item.id}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-semibold">Hapus</button>` : ''}
+              </div>` : ''}
+            </div>
+          `;
+        }).join('');
+      }
     }
 
     function filterData() {
@@ -2986,6 +3029,7 @@
       e.preventDefault();
       if (currentUser && currentUser.role === 'Manager') return;
 
+      lastLocalActionTime = Date.now();
       const editId = document.getElementById('formMutasiId').value;
       const tgl = document.getElementById('formMutasiTanggal').value;
       const ref = document.getElementById('formMutasiRef').value || `MUT-${Date.now()}`;
@@ -3172,6 +3216,7 @@
       e.preventDefault();
       if (currentUser && currentUser.role === 'Manager') return;
 
+      lastLocalActionTime = Date.now();
       const id = document.getElementById('formId').value;
       const payload = {
         id: id || `INV-${Date.now()}`,
@@ -3480,6 +3525,7 @@
       const cetakOlehNama = currentUser ? (currentUser.nama || currentUser.username) : 'Admin Gudang';
       const cetakOlehRole = currentUser ? currentUser.role : 'Staff Gudang';
       const gudangLabel = selectedGlobalWarehouse || 'Semua Gudang Terpadu';
+      const tanggalCetak = formatDateOnly(new Date());
 
       // Ambil data kalkulasi stok yang sama persis
       const summaryMap = {};
@@ -3567,7 +3613,7 @@
           <div style="text-align: right;">
             <h1 style="font-size: 14px; font-weight: 900; color: #0f172a; margin: 0; text-transform: uppercase;">REKAP STOK MULTI-GUDANG</h1>
             <p style="font-size: 9.5px; color: #475569; margin: 2px 0 0 0;">Fasilitas: <strong>${gudangLabel}</strong></p>
-            <p style="font-size: 8.5px; color: #64748b; margin: 1px 0 0 0;">Tanggal Cetak: ${new Date().toISOString().split('T')[0]}</p>
+            <p style="font-size: 8.5px; color: #64748b; margin: 1px 0 0 0;">Tanggal Cetak: <strong>${tanggalCetak}</strong></p>
             <p style="font-size: 8.5px; color: #0f172a; margin: 2px 0 0 0; font-weight: bold;">Dicetak Oleh: <span style="color: #ea580c;">${cetakOlehNama}</span> (${cetakOlehRole})</p>
           </div>
         </div>
@@ -3593,7 +3639,102 @@
 
       html2pdf().set({
         margin: 8,
-        filename: `Laporan_Multi_Gudang_${new Date().toISOString().split('T')[0]}.pdf`,
+        filename: `Laporan_Multi_Gudang_${formatDateOnly(new Date()).replace(/\//g, '-')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+      }).from(element).save();
+    }
+
+    function exportDataProdukPDF() {
+      const cetakOlehNama = currentUser ? (currentUser.nama || currentUser.username) : 'Admin Gudang';
+      const cetakOlehRole = currentUser ? currentUser.role : 'Staff Gudang';
+      const startDate = document.getElementById('filterStartDate') ? document.getElementById('filterStartDate').value : '';
+      const endDate = document.getElementById('filterEndDate') ? document.getElementById('filterEndDate').value : '';
+      const jenis = document.getElementById('filterJenis') ? document.getElementById('filterJenis').value : '';
+      const kondisi = document.getElementById('filterKondisi') ? document.getElementById('filterKondisi').value : '';
+
+      let periodeText = 'Semua Periode';
+      if (startDate && endDate) {
+        periodeText = `${formatDateOnly(startDate)} s/d ${formatDateOnly(endDate)}`;
+      } else if (startDate) {
+        periodeText = `Mulai ${formatDateOnly(startDate)}`;
+      } else if (endDate) {
+        periodeText = `Sampai ${formatDateOnly(endDate)}`;
+      }
+
+      const element = document.createElement('div');
+      element.style.padding = '15px';
+      element.style.fontFamily = 'Inter, sans-serif';
+
+      const dataToExport = [...filteredInventoryData].reverse();
+
+      element.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 10px; margin-bottom: 12px;">
+          <div>
+            <h2 style="margin: 0; font-size: 16px; font-weight: 900; color: #ea580c;">OUFFICE.CO.ID</h2>
+            <p style="font-size: 9px; color: #64748b; margin: 3px 0 0 0; text-transform: uppercase; font-weight: bold;">Inventory Management System</p>
+          </div>
+          <div style="text-align: right;">
+            <h1 style="font-size: 14px; font-weight: 900; color: #0f172a; margin: 0; text-transform: uppercase;">LAPORAN TRANSAKSI DATA PRODUK</h1>
+            <p style="font-size: 9.5px; color: #475569; margin: 2px 0 0 0;">Periode: <strong>${periodeText}</strong> | Transaksi: <strong>${jenis || 'Semua'}</strong> | Kondisi: <strong>${kondisi || 'Semua'}</strong></p>
+            <p style="font-size: 8.5px; color: #64748b; margin: 1px 0 0 0;">Total Item: ${dataToExport.length} Transaksi | Tanggal Cetak: <strong>${formatDateOnly(new Date())}</strong></p>
+            <p style="font-size: 8.5px; color: #0f172a; margin: 2px 0 0 0; font-weight: bold;">Dicetak Oleh: <span style="color: #ea580c;">${cetakOlehNama}</span> (${cetakOlehRole})</p>
+          </div>
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
+          <thead>
+            <tr style="background-color: #0f172a; color: white;">
+              <th style="padding: 5px 4px; text-align: center; width: 25px;">No</th>
+              <th style="padding: 5px 4px; text-align: left; width: 75px;">Tanggal</th>
+              <th style="padding: 5px 4px; text-align: center; width: 55px;">Jenis</th>
+              <th style="padding: 5px 6px; text-align: left;">Nama Barang</th>
+              <th style="padding: 5px 6px; text-align: left;">Brand / Seri</th>
+              <th style="padding: 5px 4px; text-align: center; width: 85px;">Serial Number</th>
+              <th style="padding: 5px 4px; text-align: center; width: 45px;">Qty</th>
+              <th style="padding: 5px 6px; text-align: left;">Supplier / End User</th>
+              <th style="padding: 5px 4px; text-align: center; width: 60px;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${dataToExport.map((item, idx) => {
+              const brandSeri = [item.brand, item.tipe || item.seri].filter(Boolean).join(' • ');
+              const isMasuk = item.jenisTransaksi.includes('Masuk');
+              return `
+                <tr style="border-bottom: 1px solid #e2e8f0; ${idx % 2 === 1 ? 'background-color: #f8fafc;' : ''}">
+                  <td style="padding: 4px; text-align: center; font-family: monospace;">${idx + 1}</td>
+                  <td style="padding: 4px; font-family: monospace;">${formatDateOnly(item.tanggal)}</td>
+                  <td style="padding: 4px; text-align: center; font-weight: bold; color: ${isMasuk ? '#047857' : '#0284c7'};">${item.jenisTransaksi}</td>
+                  <td style="padding: 4px 6px; font-weight: bold; color: #1e293b;">${item.namaBarang || '-'}</td>
+                  <td style="padding: 4px 6px; color: #475569;">${brandSeri || '-'}</td>
+                  <td style="padding: 4px; text-align: center; font-family: monospace; font-size: 8px;">${item.serialNumber || '-'}</td>
+                  <td style="padding: 4px; text-align: center; font-weight: bold; font-family: monospace;">${item.quantity || 0} ${item.satuan || ''}</td>
+                  <td style="padding: 4px 6px; color: #334155;">${item.endUser || '-'}</td>
+                  <td style="padding: 4px; text-align: center; font-weight: bold; color: ${item.statusKondisi === 'Berfungsi' ? '#059669' : '#e11d48'};">${item.statusKondisi || '-'}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 8.5px;">
+          <tr>
+            <td style="width: 70%;"></td>
+            <td style="width: 30%; text-align: center; vertical-align: top;">
+              <p style="margin: 0; color: #475569;">Tanggal: <strong>${formatDateOnly(new Date())}</strong></p>
+              <p style="margin: 2px 0 0 0; font-weight: bold; color: #0f172a;">Dicetak Oleh,</p>
+              <div style="height: 40px;"></div>
+              <p style="margin: 0; font-weight: 800; text-decoration: underline; color: #0f172a;">${cetakOlehNama}</p>
+              <p style="margin: 1px 0 0 0; color: #64748b; text-transform: uppercase; font-size: 8px;">${cetakOlehRole}</p>
+            </td>
+          </tr>
+        </table>
+      `;
+
+      html2pdf().set({
+        margin: 6,
+        filename: `Laporan_Data_Produk_${formatDateOnly(new Date()).replace(/\//g, '-')}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
@@ -3742,7 +3883,7 @@
           </div>
           <div style="text-align: right;">
             <h1 style="font-size: 18px; font-weight: 900; margin: 0; color: #ea580c;">DELIVERY ORDER</h1>
-            <p style="margin: 2px 0 0 0; font-family: monospace; font-size: 10px;"><strong>No: ${doDoc.id}</strong> | Tanggal: ${doDoc.tanggal}</p>
+            <p style="margin: 2px 0 0 0; font-family: monospace; font-size: 10px;"><strong>No: ${doDoc.id}</strong> | Tanggal: ${formatDateOnly(doDoc.tanggal)}</p>
           </div>
         </div>
       `;
