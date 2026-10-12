@@ -1992,20 +1992,26 @@
           const j = (item.jenisTransaksi || '').toLowerCase();
           const isMasuk = j.includes('masuk');
           const isKeluar = j.includes('keluar');
-          const prodKey = getCanonicalProductKey(item.namaBarang, item.tipe || item.seri) || (item.namaBarang || 'item');
 
-          if (!productMap[prodKey]) {
-            productMap[prodKey] = { masuk: 0, keluar: 0 };
+          // Sertakan brand dalam pemetaan agar barang beda brand terpisah
+          const brand = (item.brand || '').trim();
+          const brandClean = (brand === '-' ? '' : brand).toLowerCase();
+          const brandKey = brandClean || '__no_brand__';
+          const prodKey = getCanonicalProductKey(item.namaBarang, item.tipe || item.seri) || (item.namaBarang || 'item');
+          const itemKey = `${brandKey}___${prodKey}`;
+
+          if (!productMap[itemKey]) {
+            productMap[itemKey] = { masuk: 0, keluar: 0 };
           }
 
           if (isMasuk) {
             totalMasuk += q;
-            productMap[prodKey].masuk += q;
+            productMap[itemKey].masuk += q;
             if (item.statusKondisi === 'Berfungsi') berfungsiMasuk += q;
             if (item.statusKondisi === 'Tidak Berfungsi') rusakMasuk += q;
           } else if (isKeluar) {
             totalKeluar += q;
-            productMap[prodKey].keluar += q;
+            productMap[itemKey].keluar += q;
             if (item.statusKondisi === 'Berfungsi') berfungsiKeluar += q;
             if (item.statusKondisi === 'Tidak Berfungsi') rusakKeluar += q;
           }
@@ -2180,13 +2186,20 @@
       if (lowStockEl) {
         const stockMap = {};
         effectiveData.forEach(item => {
-          const key = (item.namaBarang || '').trim();
-          if (!key || key === 'Barang Inventaris') return;
-          if (!stockMap[key]) stockMap[key] = { nama: key, brand: item.brand, sisa: 0, satuan: item.satuan || 'Pcs' };
+          const keyName = (item.namaBarang || '').trim();
+          if (!keyName || keyName === 'Barang Inventaris') return;
+
+          const brand = (item.brand || '').trim();
+          const brandClean = (brand === '-' ? '' : brand).toLowerCase();
+          const brandKey = brandClean || '__no_brand__';
+          const prodKey = getCanonicalProductKey(keyName, item.tipe || item.seri);
+          const compKey = `${brandKey}___${prodKey}`;
+
+          if (!stockMap[compKey]) stockMap[compKey] = { nama: keyName, brand: item.brand, sisa: 0, satuan: item.satuan || 'Pcs' };
           const q = Number(item.quantity) || 0;
           const j = (item.jenisTransaksi || '').toLowerCase();
-          if (j.includes('masuk')) stockMap[key].sisa += q;
-          if (j.includes('keluar')) stockMap[key].sisa -= q;
+          if (j.includes('masuk')) stockMap[compKey].sisa += q;
+          if (j.includes('keluar')) stockMap[compKey].sisa -= q;
         });
 
         const lowItems = Object.values(stockMap).filter(i => i.sisa < 5);
@@ -3012,9 +3025,16 @@
         if (itemWarehouse === asalGudang) {
           const key = (item.namaBarang || '').trim();
           if (key && key !== 'Barang Inventaris') {
-            const cleanKey = key.toLowerCase();
-            if (!stockMap[cleanKey]) {
-              stockMap[cleanKey] = { 
+            const brand = (item.brand || '').trim();
+            const brandClean = (brand === '-' ? '' : brand).toLowerCase();
+            const brandKey = brandClean || '__no_brand__';
+            const tipe = (item.tipe || '').trim();
+            const seri = (item.seri || '').trim();
+            const prodKey = getCanonicalProductKey(key, tipe || seri);
+            const compositeKey = `${brandKey}___${prodKey}`;
+
+            if (!stockMap[compositeKey]) {
+              stockMap[compositeKey] = { 
                 nama: key, 
                 brand: item.brand || '', 
                 tipe: item.tipe || '', 
@@ -3023,14 +3043,14 @@
                 sisa: 0 
               };
             } else {
-              if (!stockMap[cleanKey].brand && item.brand) stockMap[cleanKey].brand = item.brand;
-              if (!stockMap[cleanKey].tipe && item.tipe) stockMap[cleanKey].tipe = item.tipe;
-              if (!stockMap[cleanKey].seri && item.seri) stockMap[cleanKey].seri = item.seri;
+              if (!stockMap[compositeKey].brand && item.brand) stockMap[compositeKey].brand = item.brand;
+              if (!stockMap[compositeKey].tipe && item.tipe) stockMap[compositeKey].tipe = item.tipe;
+              if (!stockMap[compositeKey].seri && item.seri) stockMap[compositeKey].seri = item.seri;
             }
             const q = Number(item.quantity) || 0;
             const jLower = (item.jenisTransaksi || '').toLowerCase();
-            if (jLower.includes('masuk')) stockMap[cleanKey].sisa += q;
-            if (jLower.includes('keluar')) stockMap[cleanKey].sisa -= q;
+            if (jLower.includes('masuk')) stockMap[compositeKey].sisa += q;
+            if (jLower.includes('keluar')) stockMap[compositeKey].sisa -= q;
           }
         }
       });
@@ -3041,7 +3061,7 @@
       } else {
         barangSelect.innerHTML = availableItems.map(i => `
           <option value="${i.nama}" data-sisa="${i.sisa}" data-satuan="${i.satuan}" data-brand="${i.brand}" data-tipe="${i.tipe}" data-seri="${i.seri}">
-            ${i.nama} ${i.brand ? '('+i.brand+')' : ''} - Sisa: ${i.sisa} ${i.satuan}
+            ${i.nama} ${i.brand ? '('+i.brand+')' : '(Tanpa Brand)'} ${i.tipe ? '['+i.tipe+']' : ''} - Sisa: ${i.sisa} ${i.satuan}
           </option>
         `).join('');
       }
@@ -3085,11 +3105,16 @@
 
       const barangSelect = document.getElementById('formMutasiBarangSelect');
       if (barangSelect) {
-        let optExists = Array.from(barangSelect.options).some(o => o.value === m.namaBarang);
-        if (!optExists) {
-          barangSelect.innerHTML += `<option value="${m.namaBarang}" data-sisa="${m.quantity}" data-satuan="${m.satuan}" data-brand="${m.brand || ''}" data-tipe="${m.tipe || ''}">${m.namaBarang} (Stok Mutasi)</option>`;
+        let optFound = Array.from(barangSelect.options).find(o => 
+          o.value === m.namaBarang && 
+          ((o.dataset.brand || '').toLowerCase() === (m.brand || '').toLowerCase())
+        );
+        if (!optFound) {
+          barangSelect.innerHTML += `<option value="${m.namaBarang}" data-sisa="${m.quantity}" data-satuan="${m.satuan}" data-brand="${m.brand || ''}" data-tipe="${m.tipe || ''}">${m.namaBarang} ${m.brand ? '('+m.brand+')' : ''} (Stok Mutasi)</option>`;
+          barangSelect.value = m.namaBarang;
+        } else {
+          optFound.selected = true;
         }
-        barangSelect.value = m.namaBarang;
       }
 
       document.getElementById('formMutasiBrand').value = m.brand || '';
@@ -3572,9 +3597,11 @@
         const tipe = (item.tipe || '').trim();
         const seri = (item.seri || '').trim();
 
-        // Normalisasi key produk agar "Processor VX1000" dan "Processor (VX1000)" bersatu
+        // Kunci unik memisahkan brand: jika brand berbeda atau tanpa brand, menjadi baris terpisah
+        const brandClean = (brand === '-' ? '' : brand).toLowerCase();
+        const brandKey = brandClean ? brandClean : '__no_brand__';
         const prodKey = getCanonicalProductKey(nama, tipe || seri);
-        const key = `${wh.toLowerCase()}___${prodKey}`;
+        const key = `${wh.toLowerCase()}___${brandKey}___${prodKey}`;
 
         if (!summaryMap[key]) {
           summaryMap[key] = {
@@ -3592,7 +3619,7 @@
         } else {
           // Pilih nama yang lebih deskriptif jika ada
           if (nama.length > summaryMap[key].nama.length) summaryMap[key].nama = nama;
-          if ((!summaryMap[key].brand || summaryMap[key].brand === '-') && brand) summaryMap[key].brand = brand;
+          if (brand && (!summaryMap[key].brand || summaryMap[key].brand === '-')) summaryMap[key].brand = brand;
           if (!summaryMap[key].tipe && tipe) summaryMap[key].tipe = tipe;
           if (!summaryMap[key].seri && seri) summaryMap[key].seri = seri;
         }
@@ -3632,14 +3659,21 @@
         items = items.filter(i => 
           i.gudang.toLowerCase().includes(q) ||
           i.nama.toLowerCase().includes(q) ||
-          i.brand.toLowerCase().includes(q) ||
-          i.tipe.toLowerCase().includes(q) ||
-          i.seri.toLowerCase().includes(q) ||
+          (i.brand && i.brand.toLowerCase().includes(q)) ||
+          (i.tipe && i.tipe.toLowerCase().includes(q)) ||
+          (i.seri && i.seri.toLowerCase().includes(q)) ||
           i.sisaSns.some(sn => sn.toLowerCase().includes(q))
         );
       }
 
-      items.sort((a, b) => a.gudang.localeCompare(b.gudang) || a.nama.localeCompare(b.nama));
+      // Urutkan per gudang, nama barang, lalu brand
+      items.sort((a, b) => 
+        a.gudang.localeCompare(b.gudang) || 
+        a.nama.localeCompare(b.nama) || 
+        (a.brand || '').localeCompare(b.brand || '') || 
+        (a.tipe || '').localeCompare(b.tipe || '')
+      );
+
       if (items.length === 0) {
         tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-slate-400 font-medium">Tidak ada data rekap stok.</td></tr>`;
         return;
@@ -3656,7 +3690,7 @@
           <tr class="hover:bg-slate-50 transition">
             <td class="py-3 px-3 font-bold text-amber-700 whitespace-nowrap"><i class="fa-solid fa-warehouse mr-1 text-[10px]"></i> ${item.gudang}</td>
             <td class="py-3 px-3 font-bold text-slate-800">${item.nama}</td>
-            <td class="py-3 px-3 text-slate-600">${item.brand}</td>
+            <td class="py-3 px-3 font-semibold ${item.brand === '-' ? 'text-slate-400 italic' : 'text-slate-700'}">${item.brand}</td>
             <td class="py-3 px-3 font-semibold text-slate-600">${tipeSeri}</td>
             <td class="py-3 px-3 max-w-xs">${snDisplay}</td>
             <td class="py-3 px-3 text-right font-bold font-mono text-emerald-600">${item.masuk} ${item.satuan}</td>
@@ -3684,15 +3718,22 @@
         if (!nama || nama === 'Barang Inventaris') return;
 
         const brand = (item.brand || '').trim();
-        const key = `${wh.toLowerCase()}___${nama.toLowerCase()}`;
+        const tipe = (item.tipe || '').trim();
+        const seri = (item.seri || '').trim();
+
+        // Kunci pemisah brand yang sama persis dengan tabel
+        const brandClean = (brand === '-' ? '' : brand).toLowerCase();
+        const brandKey = brandClean ? brandClean : '__no_brand__';
+        const prodKey = getCanonicalProductKey(nama, tipe || seri);
+        const key = `${wh.toLowerCase()}___${brandKey}___${prodKey}`;
 
         if (!summaryMap[key]) {
           summaryMap[key] = {
             gudang: wh,
             nama: nama,
             brand: brand || '-',
-            tipe: item.tipe || '',
-            seri: item.seri || '',
+            tipe: tipe || '',
+            seri: seri || '',
             masuk: 0,
             keluar: 0,
             satuan: item.satuan || 'Pcs',
@@ -3700,9 +3741,10 @@
             snsKeluar: new Set()
           };
         } else {
-          if ((!summaryMap[key].brand || summaryMap[key].brand === '-') && brand) summaryMap[key].brand = brand;
-          if (!summaryMap[key].tipe && item.tipe) summaryMap[key].tipe = item.tipe;
-          if (!summaryMap[key].seri && item.seri) summaryMap[key].seri = item.seri;
+          if (nama.length > summaryMap[key].nama.length) summaryMap[key].nama = nama;
+          if (brand && (!summaryMap[key].brand || summaryMap[key].brand === '-')) summaryMap[key].brand = brand;
+          if (!summaryMap[key].tipe && tipe) summaryMap[key].tipe = tipe;
+          if (!summaryMap[key].seri && seri) summaryMap[key].seri = seri;
         }
 
         const qty = Number(item.quantity) || 0;
@@ -3726,7 +3768,12 @@
         ...item,
         sisa: Math.max(0, item.masuk - item.keluar),
         sisaSns: Array.from(item.snsMasuk).filter(sn => !item.snsKeluar.has(sn))
-      })).sort((a, b) => a.gudang.localeCompare(b.gudang) || a.nama.localeCompare(b.nama));
+      })).sort((a, b) => 
+        a.gudang.localeCompare(b.gudang) || 
+        a.nama.localeCompare(b.nama) || 
+        (a.brand || '').localeCompare(b.brand || '') || 
+        (a.tipe || '').localeCompare(b.tipe || '')
+      );
 
       const rowsHtml = items.map((item, idx) => {
         const tipeSeri = [item.tipe, item.seri].filter(Boolean).join(' / ') || '-';
