@@ -1825,6 +1825,11 @@
                 try { localStorage.setItem('ouffice_retur_data', JSON.stringify(rawReturData)); } catch(e){}
               }
 
+              if (Array.isArray(res.users) && res.users.length > 0) {
+                rawUsersData = res.users;
+                try { localStorage.setItem('ouffice_users_db', JSON.stringify(rawUsersData)); } catch(e){}
+              }
+
               initWarehouseDropdowns();
               filterData();
               updateStatsAndDashboard();
@@ -3872,14 +3877,19 @@
                 <th class="py-3.5 px-3">Penerima</th>
                 <th class="py-3.5 px-3">Alamat</th>
                 <th class="py-3.5 px-3">Daftar Barang</th>
-                <th class="py-3.5 px-3 text-center">Total Item</th>
+                <th class="py-3.5 px-3 text-center">Qty / Item</th>
+                <th class="py-3.5 px-3 text-center">Total Unit</th>
                 <th class="py-3.5 px-3 text-center w-36">Aksi</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
               ${doList.map((doDoc) => {
                 const totalQty = doDoc.items.reduce((sum, i) => sum + (Number(i.quantity) || 0), 0);
-                const itemsSummary = doDoc.items.map(i => `<div class="py-0.5">• <strong>${i.namaBarang}</strong> (${i.quantity} ${i.satuan||'Unit'})</div>`).join('');
+                const itemsSummary = doDoc.items.map(i => {
+                  const brandSeri = [i.brand, i.tipe || i.seri].filter(Boolean).join(' • ');
+                  return `<div class="py-0.5">• <strong>${i.namaBarang}</strong> ${brandSeri ? '(' + brandSeri + ')' : ''} ${i.serialNumber ? '<span class="text-slate-400 font-mono text-[10px]">[SN: ' + i.serialNumber + ']</span>' : ''}</div>`;
+                }).join('');
+                const itemsQtySummary = doDoc.items.map(i => `<div class="py-0.5 font-mono font-bold text-slate-800">${i.quantity} ${i.satuan || 'Unit'}</div>`).join('');
                 const doDocEscaped = JSON.stringify(doDoc).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
                 const itemIdsEscaped = JSON.stringify(doDoc.itemIds).replace(/"/g, "&quot;");
 
@@ -3891,14 +3901,15 @@
                     <td class="py-3 px-3 font-bold text-slate-800">${doDoc.endUser}</td>
                     <td class="py-3 px-3 text-slate-600 text-[11px]">${doDoc.alamatEndUser || '-'}</td>
                     <td class="py-3 px-3 text-slate-700">${itemsSummary}</td>
+                    <td class="py-3 px-3 text-center bg-slate-50/50">${itemsQtySummary}</td>
                     <td class="py-3 px-3 text-center font-bold font-mono text-slate-800">${totalQty}</td>
                     <td class="py-3 px-3 text-center">
                       ${isManager ? '-' : `
                       <div class="flex items-center justify-center gap-1.5">
-                        <button onclick='exportDOToPDF(${doDocEscaped})' class="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-[11px] font-bold flex items-center gap-1 shadow-sm">
-                          <i class="fa-solid fa-print"></i> Cetak
+                        <button onclick='exportDOToPDF(${doDocEscaped})' class="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-[11px] font-bold flex items-center gap-1 shadow-sm transition">
+                          <i class="fa-solid fa-print"></i> Cetak DO
                         </button>
-                        <button onclick='openEditDOModal("${doDoc.id}", "${doDoc.endUser.replace(/"/g, '&quot;')}", "${(doDoc.alamatEndUser||'').replace(/"/g, '&quot;')}", ${itemIdsEscaped})' title="Edit DO" class="w-7 h-7 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 rounded-lg text-slate-600 flex items-center justify-center">
+                        <button onclick='openEditDOModal("${doDoc.id}", "${doDoc.endUser.replace(/"/g, '&quot;')}", "${(doDoc.alamatEndUser||'').replace(/"/g, '&quot;')}", ${itemIdsEscaped})' title="Edit DO" class="w-7 h-7 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 rounded-lg text-slate-600 flex items-center justify-center transition">
                           <i class="fa-solid fa-pen-to-square"></i>
                         </button>
                       </div>`}
@@ -3914,31 +3925,173 @@
 
     function exportDOToPDF(doDoc) {
       if (!doDoc) return;
+
       const element = document.createElement('div');
-      element.style.padding = '12px';
+      element.style.boxSizing = 'border-box';
+      element.style.padding = '0 4px 6px 0';
       element.style.fontFamily = 'Arial, sans-serif';
-      element.style.fontSize = '10px';
+      element.style.fontSize = '9.5px';
+      element.style.color = '#0f172a';
+      element.style.backgroundColor = '#ffffff';
+
+      const itemsRows = doDoc.items.map((item, idx) => {
+        const tipeSeri = [item.brand, item.tipe, item.seri].filter(Boolean).join(' ');
+        const descText = `${item.namaBarang}${tipeSeri ? ' ' + tipeSeri : ''}`;
+        
+        let snText = '-';
+        if (item.serialNumber && item.serialNumber.trim()) {
+          const snList = item.serialNumber.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
+          if (snList.length > 0) {
+            snText = snList.map(sn => `<div style="white-space: nowrap; line-height: 1.4; font-size: 8.5px;">&bull;&nbsp;${sn}</div>`).join('');
+          }
+        }
+        
+        return `
+          <tr style="border-bottom: 1px solid #cbd5e1;">
+            <td style="padding: 5px 4px; text-align: center; border-right: 1px solid #cbd5e1;">${idx + 1}</td>
+            <td style="padding: 5px 8px; font-weight: bold; border-right: 1px solid #cbd5e1;">${item.namaBarang}</td>
+            <td style="padding: 5px 8px; border-right: 1px solid #cbd5e1;">${descText}</td>
+            <td style="padding: 5px 6px; text-align: left; font-family: monospace; border-right: 1px solid #cbd5e1;">${snText}</td>
+            <td style="padding: 5px 4px; text-align: center; font-family: monospace; font-weight: bold; border-right: 1px solid #cbd5e1;">${item.quantity}</td>
+            <td style="padding: 5px 4px; text-align: center; border-right: 1px solid #0f172a;">${item.satuan || 'Unit'}</td>
+          </tr>
+        `;
+      }).join('');
 
       element.innerHTML = `
-        <div style="border-bottom: 2px solid #ea580c; padding-bottom: 8px; margin-bottom: 12px; display: flex; justify-content: space-between;">
-          <div>
-            <h2 style="font-size: 16px; font-weight: 900; margin: 0; color: #0f172a;">OUFFICE INVENTORY</h2>
-            <p style="margin: 2px 0 0 0; font-size: 9px; color: #475569;">Gudang Asal: <strong>${doDoc.gudang || 'Gudang Utama'}</strong></p>
-          </div>
-          <div style="text-align: right;">
-            <h1 style="font-size: 18px; font-weight: 900; margin: 0; color: #ea580c;">DELIVERY ORDER</h1>
-            <p style="margin: 2px 0 0 0; font-family: monospace; font-size: 10px;"><strong>No: ${doDoc.id}</strong> | Tanggal: ${formatDateOnly(doDoc.tanggal)}</p>
-          </div>
-        </div>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px;">
+          <tr>
+            <td style="width: 58%; vertical-align: middle;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="width: 140px; vertical-align: middle; padding-right: 8px;">
+                    <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="135" crossorigin="anonymous" style="width: 135px; height: auto; max-height: 55px; object-fit: contain; display: block;" onerror="this.src='https://placehold.co/135x45/ea580c/white?text=Ouffice.co.id'">
+                  </td>
+                  <td style="vertical-align: middle; border: 1px dashed #64748b; padding: 4px 8px;">
+                    <div style="font-size: 9px; line-height: 1.35; color: #1e293b; font-family: 'Trebuchet MS', sans-serif;">
+                      <strong style="font-size: 11px; font-weight: 900; letter-spacing: 0.3px; display: inline-block; margin-bottom: 1px; color: #0f172a;">PT. CITRA SARI KENCANA</strong><br>
+                      Jl. Rambutan No. 4, Manggarai Selatan<br>
+                      Tebet, Jakarta Selatan 12860<br>
+                      Phone. [021] 835 1388
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+            <td style="width: 2%;"></td>
+            <td style="width: 40%; vertical-align: middle; text-align: center;">
+              <div style="font-size: 26px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px; font-family: 'Trebuchet MS', sans-serif; line-height: 1.1;">Delivery Order</div>
+              <div style="font-size: 10px; font-weight: bold; color: #ea580c; margin-top: 3px;">Gudang Asal: ${doDoc.gudang || 'Gudang Utama'}</div>
+            </td>
+          </tr>
+        </table>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 9.5px;">
+          <tr>
+            <td style="width: 58%; vertical-align: top;">
+              <div style="border: 1px solid #0f172a; margin-bottom: 5px; box-sizing: border-box;">
+                <div style="padding: 3px 8px; border-bottom: 1px solid #0f172a; font-weight: bold; background-color: #f8fafc;">
+                  Ship To &nbsp;&nbsp;&nbsp;: <span style="text-transform: uppercase;">${doDoc.endUser}</span>
+                </div>
+                <div style="padding: 4px 8px; line-height: 1.35; min-height: 30px;">
+                  ${doDoc.alamatEndUser || '-'}<br>
+                  Phone. 021 -
+                </div>
+              </div>
+
+              <div style="border: 1px solid #0f172a; box-sizing: border-box;">
+                <div style="padding: 3px 8px; border-bottom: 1px solid #0f172a; font-weight: bold; background-color: #f8fafc;">
+                  Bill To &nbsp;&nbsp;&nbsp;&nbsp;: <span style="text-transform: uppercase;">${doDoc.endUser}</span>
+                </div>
+                <div style="padding: 4px 8px; line-height: 1.35; min-height: 30px;">
+                  ${doDoc.alamatEndUser || '-'}<br>
+                  Phone. 021 -
+                </div>
+              </div>
+            </td>
+
+            <td style="width: 2%;"></td>
+
+            <td style="width: 40%; vertical-align: top;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; border: 1px solid #0f172a; text-align: left; box-sizing: border-box;">
+                <tr style="border-bottom: 1px solid #0f172a; background-color: #f8fafc;">
+                  <td style="padding: 4px 6px; border-right: 1px solid #0f172a; width: 50%; font-weight: bold;">Delivery Date</td>
+                  <td style="padding: 4px 6px; font-weight: bold; border-right: 1px solid #0f172a;">Delivery No.</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #0f172a; font-family: monospace; font-weight: bold;">
+                  <td style="padding: 5px 6px; border-right: 1px solid #0f172a; text-align: center;">${doDoc.tanggal}</td>
+                  <td style="padding: 5px 6px; text-align: center; border-right: 1px solid #0f172a;">${doDoc.id}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #0f172a; background-color: #f8fafc;">
+                  <td style="padding: 4px 6px; border-right: 1px solid #0f172a; font-weight: bold;">Ship Via</td>
+                  <td style="padding: 4px 6px; font-weight: bold; border-right: 1px solid #0f172a;">PO Number</td>
+                </tr>
+                <tr>
+                  <td style="padding: 5px 6px; border-right: 1px solid #0f172a; text-align: center; font-weight: bold;">OPS</td>
+                  <td style="padding: 5px 6px; text-align: center; border-right: 1px solid #0f172a;">-</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid #0f172a; margin-bottom: 8px; font-size: 9.5px; box-sizing: border-box;">
+          <thead>
+            <tr style="background-color: #ea580c; color: white; border-bottom: 1px solid #0f172a; font-weight: bold;">
+              <th style="padding: 5px; width: 30px; text-align: center; border-right: 1px solid #cbd5e1;">NO</th>
+              <th style="padding: 5px; width: 110px; text-align: center; border-right: 1px solid #cbd5e1;">ITEM</th>
+              <th style="padding: 5px; text-align: center; border-right: 1px solid #cbd5e1;">ITEM DESCRIPTION</th>
+              <th style="padding: 5px; width: 125px; text-align: center; border-right: 1px solid #cbd5e1;">SERIAL NUMBER</th>
+              <th style="padding: 5px; width: 45px; text-align: center; border-right: 1px solid #cbd5e1;">QTY</th>
+              <th style="padding: 5px; width: 55px; text-align: center; border-right: 1px solid #0f172a;">SATUAN</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsRows}
+          </tbody>
+        </table>
+
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid #0f172a; font-size: 9px; box-sizing: border-box;">
+          <tr>
+            <td style="border-right: 1px solid #0f172a; border-bottom: 1px solid #0f172a; width: 65%; vertical-align: top; padding: 0;">
+              <table style="width: 100%; border-collapse: collapse; text-align: center;">
+                <tr style="border-bottom: 1px solid #0f172a; background-color: #f8fafc; font-weight: bold;">
+                  <td style="padding: 4px; border-right: 1px solid #0f172a; width: 25%;">Prepared By</td>
+                  <td style="padding: 4px; border-right: 1px solid #0f172a; width: 25%;">Approved By</td>
+                  <td style="padding: 4px; border-right: 1px solid #0f172a; width: 25%;">Shipped By</td>
+                  <td style="padding: 4px; width: 25%;">Received By</td>
+                </tr>
+                <tr>
+                  <td style="height: 44px; border-right: 1px solid #0f172a;"></td>
+                  <td style="height: 44px; border-right: 1px solid #0f172a;"></td>
+                  <td style="height: 44px; border-right: 1px solid #0f172a;"></td>
+                  <td style="height: 44px;"></td>
+                </tr>
+                <tr style="border-top: 1px solid #0f172a; background-color: #f8fafc;">
+                  <td style="padding: 3px 4px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
+                  <td style="padding: 3px 4px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
+                  <td style="padding: 3px 4px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
+                  <td style="padding: 3px 4px; text-align: left;">Date:</td>
+                </tr>
+              </table>
+            </td>
+            <td style="vertical-align: top; padding: 5px 8px; width: 35%; border-right: 1px solid #0f172a; border-bottom: 1px solid #0f172a;">
+              <strong>Description :</strong><br>
+              <span style="color: #475569; font-size: 8.5px; line-height: 1.3;">${doDoc.peruntukan || '-'}</span>
+            </td>
+          </tr>
+        </table>
       `;
 
-      html2pdf().set({
-        margin: 8,
-        filename: `DO_${doDoc.id}.pdf`,
+      const opt = {
+        margin: [10, 8, 8, 8],
+        filename: `Delivery_Order_${doDoc.id}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, allowTaint: true, scrollX: 0, scrollY: 0 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      }).from(element).save();
+      };
+
+      html2pdf().set(opt).from(element).save();
     }
 
     function openEditDOModal(doNumber, endUser, alamat, itemIds) {
@@ -4446,19 +4599,54 @@
     function openUserManagementModal() { document.getElementById('userModal').classList.remove('hidden'); loadUsers(); }
     function closeUserManagementModal() { document.getElementById('userModal').classList.add('hidden'); }
     function loadUsers() {
+      renderUsersTableDOM(rawUsersData);
+
+      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+      if (isGASNative) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            if (res && res.success && Array.isArray(res.users) && res.users.length > 0) {
+              rawUsersData = res.users;
+              try { localStorage.setItem('ouffice_users_db', JSON.stringify(rawUsersData)); } catch(e){}
+              renderUsersTableDOM(rawUsersData);
+            }
+          })
+          .readUsers();
+      } else if (CUSTOM_GAS_URL) {
+        fetch(`${CUSTOM_GAS_URL}?action=readUsers`)
+          .then(r => r.json())
+          .then(res => {
+            if (res && res.success && Array.isArray(res.users) && res.users.length > 0) {
+              rawUsersData = res.users;
+              try { localStorage.setItem('ouffice_users_db', JSON.stringify(rawUsersData)); } catch(e){}
+              renderUsersTableDOM(rawUsersData);
+            }
+          })
+          .catch(() => {});
+      }
+    }
+
+    function renderUsersTableDOM(users) {
       const tbodyView = document.getElementById('usersViewTableBody');
       const tbodyModal = document.getElementById('userTableBody');
-      const rows = rawUsersData.map(u => `
+      if (!users || users.length === 0) {
+        const emptyHtml = `<tr><td colspan="4" class="py-4 text-center text-slate-400">Belum ada pengguna terdaftar.</td></tr>`;
+        if (tbodyView) tbodyView.innerHTML = emptyHtml;
+        if (tbodyModal) tbodyModal.innerHTML = emptyHtml;
+        return;
+      }
+      const rows = users.map(u => `
         <tr class="hover:bg-slate-50 transition">
-          <td class="py-3 px-3 font-bold text-slate-800">${u.nama}</td>
+          <td class="py-3 px-3 font-bold text-slate-800">${u.nama || u.username}</td>
           <td class="py-3 px-3 font-mono text-slate-600">${u.username}</td>
-          <td class="py-3 px-3"><span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-purple-100 text-purple-700">${u.role}</span></td>
-          <td class="py-3 px-3 text-center text-slate-400 font-semibold text-[11px]">${u.username === 'admin' ? 'Master' : `<button onclick="deleteUserAccount('${u.id}')" class="text-rose-600 hover:text-rose-800 font-bold"><i class="fa-solid fa-trash"></i></button>`}</td>
+          <td class="py-3 px-3"><span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${u.role === 'Master Admin' ? 'bg-purple-100 text-purple-700' : u.role === 'Manager' ? 'bg-sky-100 text-sky-700' : 'bg-emerald-100 text-emerald-700'}">${u.role || 'Staff Gudang'}</span></td>
+          <td class="py-3 px-3 text-center text-slate-400 font-semibold text-[11px]">${(u.username||'').toLowerCase() === 'admin' ? 'Master' : `<button onclick="deleteUserAccount('${u.id || u.username}')" class="text-rose-600 hover:text-rose-800 font-bold p-1"><i class="fa-solid fa-trash"></i></button>`}</td>
         </tr>
       `).join('');
       if (tbodyView) tbodyView.innerHTML = rows;
       if (tbodyModal) tbodyModal.innerHTML = rows;
     }
+
     function handleAddUser(e) {
       e.preventDefault();
       const nama = document.getElementById('newNama').value.trim();
@@ -4467,19 +4655,77 @@
       const r = document.getElementById('newRole').value;
       if (!nama || !u || !p) return;
 
-      const newUser = { id: `USR-${Date.now()}`, nama, username: u, pass: p, role: r };
+      const newUser = { id: `USR-${Date.now()}`, nama, username: u, pass: p, password: p, role: r };
       rawUsersData.push(newUser);
-      localStorage.setItem('ouffice_users_db', JSON.stringify(rawUsersData));
+      try { localStorage.setItem('ouffice_users_db', JSON.stringify(rawUsersData)); } catch(e){}
       document.getElementById('addUserForm').reset();
-      loadUsers();
-      Swal.fire({ icon: 'success', title: 'User Didaftarkan!', timer: 1000, showConfirmButton: false });
+      renderUsersTableDOM(rawUsersData);
+
+      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+      if (isGASNative) {
+        google.script.run
+          .withSuccessHandler(() => {
+            Swal.fire({ icon: 'success', title: 'User Tersimpan ke Google Sheets!', timer: 1200, showConfirmButton: false });
+          })
+          .addUser(newUser);
+      } else if (CUSTOM_GAS_URL) {
+        fetch(CUSTOM_GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'addUser', ...newUser })
+        })
+          .then(r => r.json())
+          .then(() => {
+            Swal.fire({ icon: 'success', title: 'User Tersimpan ke Google Sheets!', timer: 1200, showConfirmButton: false });
+          })
+          .catch(() => {
+            Swal.fire({ icon: 'success', title: 'User Tersimpan Secara Lokal!', timer: 1200, showConfirmButton: false });
+          });
+      } else {
+        Swal.fire({ icon: 'success', title: 'User Didaftarkan!', timer: 1000, showConfirmButton: false });
+      }
     }
+
     function deleteUserAccount(id) {
       if (currentUser && currentUser.role !== 'Master Admin') return;
-      rawUsersData = rawUsersData.filter(u => u.id !== id);
-      localStorage.setItem('ouffice_users_db', JSON.stringify(rawUsersData));
-      loadUsers();
-      Swal.fire({ icon: 'success', title: 'User Dihapus', timer: 1000, showConfirmButton: false });
+
+      Swal.fire({
+        title: 'Hapus User ini?',
+        text: 'Pengguna akan dihapus permanen dari sistem dan Google Sheets.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Ya, Hapus'
+      }).then((res) => {
+        if (res.isConfirmed) {
+          rawUsersData = rawUsersData.filter(u => u.id !== id && u.username !== id);
+          try { localStorage.setItem('ouffice_users_db', JSON.stringify(rawUsersData)); } catch(e){}
+          renderUsersTableDOM(rawUsersData);
+
+          const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+          if (isGASNative) {
+            google.script.run
+              .withSuccessHandler(() => {
+                Swal.fire({ icon: 'success', title: 'User Terhapus dari Google Sheets!', timer: 1000, showConfirmButton: false });
+              })
+              .deleteUser(id);
+          } else if (CUSTOM_GAS_URL) {
+            fetch(CUSTOM_GAS_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: 'deleteUser', id: id })
+            })
+              .then(() => {
+                Swal.fire({ icon: 'success', title: 'User Terhapus dari Google Sheets!', timer: 1000, showConfirmButton: false });
+              })
+              .catch(() => {
+                Swal.fire({ icon: 'success', title: 'User Terhapus Lokal!', timer: 1000, showConfirmButton: false });
+              });
+          } else {
+            Swal.fire({ icon: 'success', title: 'User Dihapus', timer: 1000, showConfirmButton: false });
+          }
+        }
+      });
     }
   </script>
 </body>
