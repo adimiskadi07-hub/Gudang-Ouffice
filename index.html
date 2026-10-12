@@ -1417,15 +1417,43 @@
       'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
     ];
 
-    let rawWarehouseData = JSON.parse(localStorage.getItem('ouffice_warehouse_data')) || [
-      { id: 'WH-01', kode: 'WH-CENTRAL', nama: 'Gudang Utama (HQ Tebet)', alamat: 'Jl. Rambutan No. 4, Jakarta Selatan', pic: 'Kepala Gudang', kontak: '0812-1111-2222', status: 'Aktif' },
-      { id: 'WH-02', kode: 'WH-TRANSIT', nama: 'Gudang Transit (Cikarang)', alamat: 'Kawasan Industri GIIC Cikarang Pusat', pic: 'Staff Logistik', kontak: '0813-3333-4444', status: 'Aktif' }
+    // MASTER SEED DATA CADANGAN (Mencegah data hilang jika localStorage kosong/terhapus)
+    const SEED_WAREHOUSES = [
+      { id: 'WH-01', kode: 'WH-KANTOR', nama: 'Ouffice', alamat: 'Jl. Rambutan No.07, Manggarai Selatan, Tebet Jakarta Selatan 12680', pic: 'Admin', kontak: '0895-3972-33737', status: 'Aktif' },
+      { id: 'WH-02', kode: 'WH-CRB', nama: 'Cahaya Robbani', alamat: 'Jl. Tebet Barat Dalam, Jakarta Selatan', pic: 'Staff Gudang', kontak: '0812-3456-7890', status: 'Aktif' }
     ];
 
-    let rawMutasiData = JSON.parse(localStorage.getItem('ouffice_mutasi_data')) || [];
-    let rawInventoryData = JSON.parse(localStorage.getItem('ouffice_cached_inventory')) || [];
+    const SEED_INVENTORY = [
+      { id: 'INV-101', tanggal: '07/10/2026', gudang: 'Cahaya Robbani', jenisTransaksi: 'Masuk', namaBarang: 'Processor NovaStar VX1000', brand: 'NovaStar', tipe: 'VX1000', seri: 'VX1000', serialNumber: 'MIV011623W2070005406', lokasi: 'Indoor Section A', quantity: 2, satuan: 'Unit', endUser: 'PT Optima Teknologi', peruntukan: 'Pengadaan Display LED', statusKondisi: 'Berfungsi', deskripsi: 'Penerimaan unit baru' },
+      { id: 'INV-102', tanggal: '07/10/2026', gudang: 'Cahaya Robbani', jenisTransaksi: 'Masuk', namaBarang: 'Module P1.86', brand: 'GKGD', tipe: 'P1.86 Indoor', seri: 'P1.86', serialNumber: '', lokasi: 'Indoor Section B', quantity: 770, satuan: 'Pcs', endUser: 'PT Optima Teknologi', peruntukan: 'Pengadaan Modul LED', statusKondisi: 'Berfungsi', deskripsi: 'Penerimaan stok modul' },
+      { id: 'INV-103', tanggal: '08/10/2026', gudang: 'Cahaya Robbani', jenisTransaksi: 'Mutasi Keluar', namaBarang: 'Processor NovaStar VX1000', brand: 'NovaStar', tipe: 'VX1000', seri: 'VX1000', serialNumber: 'MIV011623W2070005406', lokasi: 'Staging Area', quantity: 2, satuan: 'Unit', endUser: 'Ouffice', peruntukan: 'Mutasi ke Ouffice (Ref: MUT-896966)', statusKondisi: 'Berfungsi', deskripsi: 'Pemindahan ke kantor Ouffice' },
+      { id: 'INV-104', tanggal: '08/10/2026', gudang: 'Ouffice', jenisTransaksi: 'Mutasi Masuk', namaBarang: 'Processor NovaStar VX1000', brand: 'NovaStar', tipe: 'VX1000', seri: 'VX1000', serialNumber: 'MIV011623W2070005406', lokasi: 'Indoor Section A', quantity: 2, satuan: 'Unit', endUser: 'Cahaya Robbani', peruntukan: 'Mutasi dari Cahaya Robbani (Ref: MUT-896966)', statusKondisi: 'Berfungsi', deskripsi: 'Diterima dari Cahaya Robbani' },
+      { id: 'INV-105', tanggal: '08/10/2026', gudang: 'Cahaya Robbani', jenisTransaksi: 'Mutasi Keluar', namaBarang: 'Module P1.86', brand: 'GKGD', tipe: 'P1.86 Indoor', seri: 'P1.86', serialNumber: '', lokasi: 'Staging Area', quantity: 12, satuan: 'Pcs', endUser: 'Ouffice', peruntukan: 'Mutasi ke Ouffice (Ref: MUT-896967)', statusKondisi: 'Berfungsi', deskripsi: 'Mutasi sampel modul' },
+      { id: 'INV-106', tanggal: '08/10/2026', gudang: 'Ouffice', jenisTransaksi: 'Mutasi Masuk', namaBarang: 'Module P1.86', brand: 'GKGD', tipe: 'P1.86 Indoor', seri: 'P1.86', serialNumber: '', lokasi: 'Indoor Section A', quantity: 12, satuan: 'Pcs', endUser: 'Cahaya Robbani', peruntukan: 'Mutasi dari Cahaya Robbani (Ref: MUT-896967)', statusKondisi: 'Berfungsi', deskripsi: 'Sampel modul' },
+      { id: 'INV-107', tanggal: '09/10/2026', gudang: 'Ouffice', jenisTransaksi: 'Masuk', namaBarang: 'Kabel LAN RJ45', brand: 'Belden', tipe: 'Cat6', seri: 'RJ45-1M', serialNumber: '', lokasi: 'Rack Cabinet', quantity: 10, satuan: 'Pcs', endUser: 'Vendor Kabel', peruntukan: 'Stok Aksesoris', statusKondisi: 'Berfungsi', deskripsi: 'Stok kabel LAN' },
+      { id: 'INV-108', tanggal: '09/10/2026', gudang: 'Ouffice', jenisTransaksi: 'Masuk', namaBarang: 'Kabel Power Supply Module', brand: 'Standard', tipe: 'Power 5V', seri: '', serialNumber: '', lokasi: 'Rack Cabinet', quantity: 50, satuan: 'Pcs', endUser: 'Vendor Kabel', peruntukan: 'Stok Aksesoris', statusKondisi: 'Berfungsi', deskripsi: 'Stok kabel power' },
+      { id: 'INV-109', tanggal: '09/10/2026', gudang: 'Ouffice', jenisTransaksi: 'Masuk', namaBarang: 'Kabel Flat Module 12 PIN', brand: 'Standard', tipe: '12 PIN Ribbon', seri: '', serialNumber: '', lokasi: 'Rack Cabinet', quantity: 80, satuan: 'Pcs', endUser: 'Vendor Kabel', peruntukan: 'Stok Aksesoris', statusKondisi: 'Berfungsi', deskripsi: 'Stok kabel data flat' },
+      { id: 'INV-110', tanggal: '10/10/2026', gudang: 'Ouffice', jenisTransaksi: 'Keluar', namaBarang: 'Processor NovaStar VX1000', brand: 'NovaStar', tipe: 'VX1000', seri: 'VX1000', serialNumber: 'MIV011623W2070005406', lokasi: 'Indoor Section A', quantity: 1, satuan: 'Unit', endUser: 'SETJEN KEMENDAGRI UP PAK DEDDY', peruntukan: 'Instalasi Ruang Rapat Gedung A', customDoNumber: 'DO-1789385132313', alamatEndUser: 'Jl. Medan Merdeka Utara No. 7', statusKondisi: 'Berfungsi', deskripsi: 'Pengiriman via DO-1789385132313' },
+      { id: 'INV-111', tanggal: '10/10/2026', gudang: 'Ouffice', jenisTransaksi: 'Keluar', namaBarang: 'Kabel LAN RJ45', brand: 'Belden', tipe: 'Cat6', seri: 'RJ45-1M', serialNumber: '', lokasi: 'Rack Cabinet', quantity: 3, satuan: 'Pcs', endUser: 'SETJEN KEMENDAGRI UP PAK DEDDY', peruntukan: 'Instalasi Ruang Rapat Gedung A', customDoNumber: 'DO-1789385132313', alamatEndUser: 'Jl. Medan Merdeka Utara No. 7', statusKondisi: 'Berfungsi', deskripsi: 'Pengiriman via DO-1789385132313' },
+      { id: 'INV-112', tanggal: '10/10/2026', gudang: 'Ouffice', jenisTransaksi: 'Keluar', namaBarang: 'Kabel Power Supply Module', brand: 'Standard', tipe: 'Power 5V', seri: '', serialNumber: '', lokasi: 'Rack Cabinet', quantity: 18, satuan: 'Pcs', endUser: 'SETJEN KEMENDAGRI UP PAK DEDDY', peruntukan: 'Instalasi Ruang Rapat Gedung A', customDoNumber: 'DO-1789385132313', alamatEndUser: 'Jl. Medan Merdeka Utara No. 7', statusKondisi: 'Berfungsi', deskripsi: 'Pengiriman via DO-1789385132313' },
+      { id: 'INV-113', tanggal: '10/10/2026', gudang: 'Ouffice', jenisTransaksi: 'Keluar', namaBarang: 'Kabel Flat Module 12 PIN', brand: 'Standard', tipe: '12 PIN Ribbon', seri: '', serialNumber: '', lokasi: 'Rack Cabinet', quantity: 20, satuan: 'Pcs', endUser: 'SETJEN KEMENDAGRI UP PAK DEDDY', peruntukan: 'Instalasi Ruang Rapat Gedung A', customDoNumber: 'DO-1789385132313', alamatEndUser: 'Jl. Medan Merdeka Utara No. 7', statusKondisi: 'Berfungsi', deskripsi: 'Pengiriman via DO-1789385132313' }
+    ];
+
+    const SEED_MUTASI = [
+      { id: 'MUT-01', refNo: 'MUT-896966', tanggal: '08/10/2026', gudangAsal: 'Cahaya Robbani', gudangTujuan: 'Ouffice', namaBarang: 'Processor NovaStar VX1000', brand: 'NovaStar', tipe: 'VX1000', quantity: 2, satuan: 'Unit', serialNumber: 'MIV011623W2070005406', catatan: 'Pemindahan ke kantor Ouffice' },
+      { id: 'MUT-02', refNo: 'MUT-896967', tanggal: '08/10/2026', gudangAsal: 'Cahaya Robbani', gudangTujuan: 'Ouffice', namaBarang: 'Module P1.86', brand: 'GKGD', tipe: 'P1.86 Indoor', quantity: 12, satuan: 'Pcs', serialNumber: '', catatan: 'Sampel modul' }
+    ];
+
+    const SEED_CLIENTS = [
+      { id: 'CLI-01', nama: 'SETJEN KEMENDAGRI UP PAK DEDDY', kontak: 'Bpk. Deddy', email: 'info@kemendagri.go.id', telepon: '021 -', alamat: 'Jl. Medan Merdeka Utara No. 7', status: 'Aktif' },
+      { id: 'CLI-02', nama: 'Ouffice', kontak: 'Admin', email: 'admin@ouffice.co.id', telepon: '0895-3972-33737', alamat: 'Jl. Rambutan No.07, Manggarai Selatan', status: 'Aktif' }
+    ];
+
+    let rawWarehouseData = JSON.parse(localStorage.getItem('ouffice_warehouse_data')) || SEED_WAREHOUSES;
+    let rawMutasiData = JSON.parse(localStorage.getItem('ouffice_mutasi_data')) || SEED_MUTASI;
+    let rawInventoryData = JSON.parse(localStorage.getItem('ouffice_cached_inventory')) || SEED_INVENTORY;
     let filteredInventoryData = [];
-    let rawClientData = JSON.parse(localStorage.getItem('ouffice_client_data')) || [];
+    let rawClientData = JSON.parse(localStorage.getItem('ouffice_client_data')) || SEED_CLIENTS;
     let rawSupplierData = JSON.parse(localStorage.getItem('ouffice_supplier_data')) || [];
     let rawReturData = JSON.parse(localStorage.getItem('ouffice_retur_data')) || [];
     let rawUsersData = JSON.parse(localStorage.getItem('ouffice_users_db')) || [
@@ -1484,14 +1512,34 @@
       try {
         const cached = localStorage.getItem('ouffice_cached_inventory');
         if (cached) {
-          rawInventoryData = JSON.parse(cached);
-          repairBarangInventarisNames();
-          lastDataFingerprint = computeDataFingerprint(rawInventoryData, rawWarehouseData, rawMutasiData);
-          filterData();
-          updateStatsAndDashboard();
-          refreshCurrentView();
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            rawInventoryData = parsed;
+          }
         }
-      } catch (e) {}
+        // Jika data inventaris ternyata kosong, pulihkan seketika dari cadangan
+        if (!Array.isArray(rawInventoryData) || rawInventoryData.length === 0) {
+          const backup = localStorage.getItem('ouffice_inventory_backup');
+          rawInventoryData = backup ? JSON.parse(backup) : [...SEED_INVENTORY];
+          localStorage.setItem('ouffice_cached_inventory', JSON.stringify(rawInventoryData));
+        }
+
+        // Pastikan juga master gudang terisi
+        if (!Array.isArray(rawWarehouseData) || rawWarehouseData.length === 0) {
+          rawWarehouseData = [...SEED_WAREHOUSES];
+          localStorage.setItem('ouffice_warehouse_data', JSON.stringify(rawWarehouseData));
+        }
+
+        repairBarangInventarisNames();
+        lastDataFingerprint = computeDataFingerprint(rawInventoryData, rawWarehouseData, rawMutasiData);
+        filterData();
+        updateStatsAndDashboard();
+        refreshCurrentView();
+      } catch (e) {
+        rawInventoryData = [...SEED_INVENTORY];
+        filterData();
+        updateStatsAndDashboard();
+      }
     }
 
     function repairBarangInventarisNames() {
@@ -1780,9 +1828,9 @@
               const timeSinceLocalAction = Date.now() - lastLocalActionTime;
               const isRecentLocalAction = timeSinceLocalAction < 10000;
 
-              let incomingInv = Array.isArray(res.data) ? res.data : rawInventoryData;
-              if (isRecentLocalAction && Array.isArray(res.data)) {
-                // Pastikan item lokal yang baru dibuat tidak hilang
+              // PROTEKSI ANTI-HAPUS: Hanya perbarui inventaris jika respon server memiliki data
+              let incomingInv = (Array.isArray(res.data) && res.data.length > 0) ? res.data : rawInventoryData;
+              if (isRecentLocalAction && Array.isArray(res.data) && res.data.length > 0) {
                 const serverIdSet = new Set(res.data.map(d => d.id));
                 const missingLocalItems = rawInventoryData.filter(d => !serverIdSet.has(d.id));
                 if (missingLocalItems.length > 0) {
@@ -1790,14 +1838,13 @@
                 }
               }
 
-              const incomingWhs = Array.isArray(res.warehouses) && res.warehouses.length > 0 ? res.warehouses : rawWarehouseData;
-              const incomingMut = Array.isArray(res.mutasi) ? res.mutasi : rawMutasiData;
+              const incomingWhs = (Array.isArray(res.warehouses) && res.warehouses.length > 0) ? res.warehouses : rawWarehouseData;
+              const incomingMut = (Array.isArray(res.mutasi) && res.mutasi.length > 0) ? res.mutasi : rawMutasiData;
 
               // Hitung signature data untuk mendeteksi apakah data benar-benar berubah
               const newFingerprint = computeDataFingerprint(incomingInv, incomingWhs, incomingMut);
 
               if (newFingerprint === lastDataFingerprint && !force) {
-                // DATA IDENTIK: Jangan render ulang DOM agar tampilan tidak berubah-ubah/berkedip
                 return;
               }
 
@@ -1806,21 +1853,25 @@
               rawInventoryData = incomingInv;
               rawMutasiData = incomingMut;
 
-              try { localStorage.setItem('ouffice_warehouse_data', JSON.stringify(rawWarehouseData)); } catch(e){}
-              try { localStorage.setItem('ouffice_cached_inventory', JSON.stringify(rawInventoryData)); } catch(e){}
-              try { localStorage.setItem('ouffice_mutasi_data', JSON.stringify(rawMutasiData)); } catch(e){}
+              // Simpan cadangan aman
+              try {
+                localStorage.setItem('ouffice_warehouse_data', JSON.stringify(rawWarehouseData));
+                localStorage.setItem('ouffice_cached_inventory', JSON.stringify(rawInventoryData));
+                localStorage.setItem('ouffice_mutasi_data', JSON.stringify(rawMutasiData));
+                localStorage.setItem('ouffice_inventory_backup', JSON.stringify(rawInventoryData));
+              } catch(e){}
 
-              if (Array.isArray(res.client)) {
+              if (Array.isArray(res.client) && res.client.length > 0) {
                 rawClientData = res.client;
                 try { localStorage.setItem('ouffice_client_data', JSON.stringify(rawClientData)); } catch(e){}
               }
 
-              if (Array.isArray(res.supplier)) {
+              if (Array.isArray(res.supplier) && res.supplier.length > 0) {
                 rawSupplierData = res.supplier;
                 try { localStorage.setItem('ouffice_supplier_data', JSON.stringify(rawSupplierData)); } catch(e){}
               }
 
-              if (Array.isArray(res.retur)) {
+              if (Array.isArray(res.retur) && res.retur.length > 0) {
                 rawReturData = res.retur;
                 try { localStorage.setItem('ouffice_retur_data', JSON.stringify(rawReturData)); } catch(e){}
               }
@@ -2248,17 +2299,17 @@
 
         monthlyContainer.innerHTML = monthSlots.map((slot, idx) => {
           const isLatest = idx === monthSlots.length - 1;
-          const pctMasuk = slot.masuk > 0 ? Math.max(10, Math.round((slot.masuk / maxVol) * 100)) : 4;
-          const pctKeluar = slot.keluar > 0 ? Math.max(10, Math.round((slot.keluar / maxVol) * 100)) : 4;
+          const pctMasuk = slot.masuk > 0 ? Math.max(8, Math.round((slot.masuk / maxVol) * 100)) : 3;
+          const pctKeluar = slot.keluar > 0 ? Math.max(8, Math.round((slot.keluar / maxVol) * 100)) : 3;
 
           return `
             <div class="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group">
               <div class="text-[9px] font-mono font-bold text-slate-400 flex gap-1">
-                <span class="text-emerald-600 font-extrabold">${slot.masuk}</span>/<span class="text-sky-600 font-extrabold">${slot.keluar}</span>
+                <span id="chartLabelMasuk-${idx}" class="text-emerald-600 font-extrabold" data-val="${slot.masuk}">${slot.masuk}</span>/<span id="chartLabelKeluar-${idx}" class="text-sky-600 font-extrabold" data-val="${slot.keluar}">${slot.keluar}</span>
               </div>
               <div class="w-full flex items-end justify-center gap-1.5 h-32">
-                <div class="w-3.5 sm:w-5 bg-emerald-500 rounded-t-md transition-all duration-500" style="height: ${pctMasuk}%" title="${slot.label} - Masuk: ${slot.masuk}"></div>
-                <div class="w-3.5 sm:w-5 bg-sky-500 rounded-t-md transition-all duration-500" style="height: ${pctKeluar}%" title="${slot.label} - Keluar: ${slot.keluar}"></div>
+                <div id="chartBarMasuk-${idx}" class="w-3.5 sm:w-5 bg-emerald-500 rounded-t-md transition-all duration-[1800ms] ease-out shadow-xs" style="height: 0%" data-target="${pctMasuk}%" title="${slot.label} - Masuk: ${slot.masuk}"></div>
+                <div id="chartBarKeluar-${idx}" class="w-3.5 sm:w-5 bg-sky-500 rounded-t-md transition-all duration-[1800ms] ease-out shadow-xs" style="height: 0%" data-target="${pctKeluar}%" title="${slot.label} - Keluar: ${slot.keluar}"></div>
               </div>
               <span class="text-[10px] ${isLatest ? 'font-extrabold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-200' : 'font-bold text-slate-500'}">${slot.label}</span>
             </div>
@@ -2269,6 +2320,9 @@
         if (periodLabel && monthSlots.length >= 6) {
           periodLabel.innerText = `${monthSlots[0].label} - ${monthSlots[5].label}`;
         }
+
+        // Mulai animasi batang bertumbuh perlahan dari 0 ke target
+        triggerMonthlyChartAnimation(monthSlots.length);
       }
 
       // Recent Transactions Table
@@ -2365,26 +2419,108 @@
               <span class="text-sky-700 font-mono font-bold">${pct}% <span class="text-slate-400 font-normal">(${val} unit)</span></span>
             </div>
             <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-              <div class="h-full bg-sky-500 rounded-full transition-all duration-500" style="width: ${Math.min(100, pct)}%"></div>
+              <div class="proporsi-progress-bar h-full bg-sky-500 rounded-full transition-all duration-[1800ms] ease-out" style="width: 0%" data-target-width="${Math.min(100, pct)}%"></div>
             </div>
           </div>
         `;
       }).join('');
 
+      setTimeout(() => {
+        const pBars = document.querySelectorAll('.proporsi-progress-bar');
+        pBars.forEach(b => {
+          if (b.dataset.targetWidth) b.style.width = b.dataset.targetWidth;
+        });
+      }, 100);
+
       if (footerEl) footerEl.innerText = `Persentase dari total ${monthTotalKeluar} unit barang keluar.`;
+    }
+
+    let chartAnimationLoopTimer = null;
+
+    /**
+     * Memainkan animasi grafik batang dari nol hingga target,
+     * serta mengulanginya setiap jeda 30 detik secara mulus.
+     */
+    function triggerMonthlyChartAnimation(slotCount) {
+      function playAnimation() {
+        // 1. Reset sejenak ke 0
+        for (let i = 0; i < slotCount; i++) {
+          const barMasuk = document.getElementById(`chartBarMasuk-${i}`);
+          const barKeluar = document.getElementById(`chartBarKeluar-${i}`);
+          const lblMasuk = document.getElementById(`chartLabelMasuk-${i}`);
+          const lblKeluar = document.getElementById(`chartLabelKeluar-${i}`);
+
+          if (barMasuk) barMasuk.style.height = '0%';
+          if (barKeluar) barKeluar.style.height = '0%';
+          if (lblMasuk) lblMasuk.innerText = '0';
+          if (lblKeluar) lblKeluar.innerText = '0';
+        }
+
+        // Animasikan juga progress bar Proporsi Stok Keluar ke 0%
+        const propBars = document.querySelectorAll('.proporsi-progress-bar');
+        propBars.forEach(b => { b.style.width = '0%'; });
+
+        // 2. Beri jeda sepersekian detik, lalu animasikan perlahan ke atas (duration: 1800ms)
+        setTimeout(() => {
+          for (let i = 0; i < slotCount; i++) {
+            const barMasuk = document.getElementById(`chartBarMasuk-${i}`);
+            const barKeluar = document.getElementById(`chartBarKeluar-${i}`);
+            const lblMasuk = document.getElementById(`chartLabelMasuk-${i}`);
+            const lblKeluar = document.getElementById(`chartLabelKeluar-${i}`);
+
+            if (barMasuk && barMasuk.dataset.target) barMasuk.style.height = barMasuk.dataset.target;
+            if (barKeluar && barKeluar.dataset.target) barKeluar.style.height = barKeluar.dataset.target;
+
+            // Rolling angka perlahan dari 0 ke total terinput
+            if (lblMasuk) animateSingleNumber(lblMasuk, parseInt(lblMasuk.dataset.val, 10) || 0, 1800);
+            if (lblKeluar) animateSingleNumber(lblKeluar, parseInt(lblKeluar.dataset.val, 10) || 0, 1800);
+          }
+
+          // Kembalikan progress bar Proporsi Stok Keluar ke targetnya
+          propBars.forEach(b => {
+            if (b.dataset.targetWidth) b.style.width = b.dataset.targetWidth;
+          });
+        }, 120);
+      }
+
+      // Mainkan animasi saat ini
+      playAnimation();
+
+      // Atur timer loop per 30 detik
+      if (chartAnimationLoopTimer) clearInterval(chartAnimationLoopTimer);
+      chartAnimationLoopTimer = setInterval(() => {
+        if (currentActiveView === 'dashboard' && document.visibilityState === 'visible') {
+          playAnimation();
+        }
+      }, 30000);
+    }
+
+    /**
+     * Efek rolling angka dari 0 sampai nilai target terinput
+     */
+    function animateSingleNumber(element, targetVal, durationMs) {
+      if (!element || targetVal === 0) {
+        if (element) element.innerText = targetVal;
+        return;
+      }
+      const startTime = performance.now();
+      function updateNumber(now) {
+        const progress = Math.min((now - startTime) / durationMs, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 3); // cubic ease-out
+        element.innerText = Math.round(targetVal * easeOut);
+        if (progress < 1) {
+          requestAnimationFrame(updateNumber);
+        } else {
+          element.innerText = targetVal;
+        }
+      }
+      requestAnimationFrame(updateNumber);
     }
 
     /**
      * Memformat tanggal menjadi standar numerik: dd/mm/yyyy (contoh: 09/10/2026)
      */
     function formatDateOnly(str) {
-      if (!str) return '-';
-      if (str instanceof Date) {
-        const dd = String(str.getDate()).padStart(2, '0');
-        const mm = String(str.getMonth() + 1).padStart(2, '0');
-        const yyyy = str.getFullYear();
-        return `${dd}/${mm}/${yyyy}`;
-      }
       const s = String(str).trim();
       if (!s) return '-';
 
