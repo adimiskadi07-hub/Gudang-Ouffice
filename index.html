@@ -1483,12 +1483,39 @@
         const cached = localStorage.getItem('ouffice_cached_inventory');
         if (cached) {
           rawInventoryData = JSON.parse(cached);
+          repairBarangInventarisNames();
           lastDataFingerprint = computeDataFingerprint(rawInventoryData, rawWarehouseData, rawMutasiData);
           filterData();
           updateStatsAndDashboard();
           refreshCurrentView();
         }
       } catch (e) {}
+    }
+
+    function repairBarangInventarisNames() {
+      if (!Array.isArray(rawInventoryData) || !Array.isArray(rawMutasiData)) return;
+      const mutMap = {};
+      rawMutasiData.forEach(m => {
+        if (m.refNo) mutMap[m.refNo] = m;
+        if (m.id) mutMap[m.id] = m;
+      });
+
+      rawInventoryData.forEach(item => {
+        const namaLower = String(item.namaBarang || '').trim().toLowerCase();
+        const peruntukan = String(item.peruntukan || '');
+        const deskripsi = String(item.deskripsi || '');
+        const allText = peruntukan + ' ' + deskripsi + ' ' + (item.customDoNumber || '');
+        const matchRef = allText.match(/MUT-[\w-]+/);
+
+        if (matchRef && mutMap[matchRef[0]]) {
+          const m = mutMap[matchRef[0]];
+          if (!item.namaBarang || namaLower === 'barang inventaris' || namaLower === 'barang') {
+            item.namaBarang = m.namaBarang || item.namaBarang;
+          }
+          if (!item.brand && m.brand) item.brand = m.brand;
+          if (!item.tipe && m.tipe) item.tipe = m.tipe;
+        }
+      });
     }
 
     function refreshCurrentView() {
@@ -1926,10 +1953,24 @@
     function updateCounterSmooth(id, target) {
       const el = document.getElementById(id);
       if (!el) return;
+      const current = parseInt(el.innerText, 10) || 0;
+      if (current === target) return;
       el.innerText = target;
     }
 
+    function getCanonicalProductKey(nama, tipe) {
+      const n = String(nama || '').toLowerCase().trim();
+      const t = String(tipe || '').toLowerCase().trim();
+      const nClean = n.replace(/[^a-z0-9]/g, '');
+      const tClean = t.replace(/[^a-z0-9]/g, '');
+      if (tClean && !nClean.includes(tClean)) {
+        return `${n} ${t}`.trim();
+      }
+      return n;
+    }
+
     function updateStatsAndDashboard() {
+      repairBarangInventarisNames();
       let totalMasuk = 0;
       let totalKeluar = 0;
       let berfungsiMasuk = 0;
@@ -2064,8 +2105,8 @@
                 if (item.statusKondisi === 'Tidak Berfungsi') whRusak += q;
               } else if (j.includes('keluar')) {
                 whKeluar += q;
-                if (item.statusKondisi === 'Berfungsi') whBerfungsi -= q;
-                if (item.statusKondisi === 'Tidak Berfungsi') whRusak -= q;
+                if (item.statusKondisi === 'Berfungsi') whBerfungsi = Math.max(0, whBerfungsi - q);
+                if (item.statusKondisi === 'Tidak Berfungsi') whRusak = Math.max(0, whRusak - q);
               }
             }
           });
@@ -2615,12 +2656,13 @@
       const isManager = currentUser && currentUser.role === 'Manager';
 
       container.innerHTML = rawWarehouseData.map((wh) => {
-        const whItems = rawInventoryData.filter(i => (i.gudang || '') === wh.nama);
+        const whItems = rawInventoryData.filter(i => getCanonicalWarehouseName(i.gudang) === wh.nama);
         let stockCount = 0;
         whItems.forEach(i => {
           const q = Number(i.quantity) || 0;
-          if (i.jenisTransaksi.includes('Masuk')) stockCount += q;
-          if (i.jenisTransaksi.includes('Keluar')) stockCount = Math.max(0, stockCount - q);
+          const j = (i.jenisTransaksi || '').toLowerCase();
+          if (j.includes('masuk')) stockCount += q;
+          if (j.includes('keluar')) stockCount = Math.max(0, stockCount - q);
         });
 
         return `
@@ -2889,7 +2931,7 @@
       const barangSelect = document.getElementById('formMutasiBarangSelect');
       if (!asalSelect || !barangSelect) return;
 
-      const asalGudang = asalSelect.value;
+      const asalGudang = getCanonicalWarehouseName(asalSelect.value);
       const stockMap = {};
 
       rawInventoryData.forEach(item => {
@@ -2897,8 +2939,9 @@
         if (itemWarehouse === asalGudang) {
           const key = (item.namaBarang || '').trim();
           if (key && key !== 'Barang Inventaris') {
-            if (!stockMap[key]) {
-              stockMap[key] = { 
+            const cleanKey = key.toLowerCase();
+            if (!stockMap[cleanKey]) {
+              stockMap[cleanKey] = { 
                 nama: key, 
                 brand: item.brand || '', 
                 tipe: item.tipe || '', 
@@ -2906,11 +2949,15 @@
                 satuan: item.satuan || 'Pcs', 
                 sisa: 0 
               };
+            } else {
+              if (!stockMap[cleanKey].brand && item.brand) stockMap[cleanKey].brand = item.brand;
+              if (!stockMap[cleanKey].tipe && item.tipe) stockMap[cleanKey].tipe = item.tipe;
+              if (!stockMap[cleanKey].seri && item.seri) stockMap[cleanKey].seri = item.seri;
             }
             const q = Number(item.quantity) || 0;
             const jLower = (item.jenisTransaksi || '').toLowerCase();
-            if (jLower.includes('masuk')) stockMap[key].sisa += q;
-            if (jLower.includes('keluar')) stockMap[key].sisa -= q;
+            if (jLower.includes('masuk')) stockMap[cleanKey].sisa += q;
+            if (jLower.includes('keluar')) stockMap[cleanKey].sisa -= q;
           }
         }
       });
@@ -2921,7 +2968,7 @@
       } else {
         barangSelect.innerHTML = availableItems.map(i => `
           <option value="${i.nama}" data-sisa="${i.sisa}" data-satuan="${i.satuan}" data-brand="${i.brand}" data-tipe="${i.tipe}" data-seri="${i.seri}">
-            ${i.nama} (${i.brand || '-'}) - Sisa: ${i.sisa} ${i.satuan}
+            ${i.nama} ${i.brand ? '('+i.brand+')' : ''} - Sisa: ${i.sisa} ${i.satuan}
           </option>
         `).join('');
       }
@@ -2940,8 +2987,8 @@
       if (opt && opt.dataset.sisa) {
         infoEl.innerText = `Stok maksimum yang dapat dipindahkan: ${opt.dataset.sisa} ${opt.dataset.satuan}`;
         if (qtyInput) qtyInput.max = opt.dataset.sisa;
-        if (brandInput && !brandInput.value) brandInput.value = opt.dataset.brand || '';
-        if (tipeInput && !tipeInput.value) tipeInput.value = [opt.dataset.tipe, opt.dataset.seri].filter(Boolean).join(' / ');
+        if (brandInput) brandInput.value = opt.dataset.brand || '';
+        if (tipeInput) tipeInput.value = [opt.dataset.tipe, opt.dataset.seri].filter(Boolean).join(' / ') || '';
       } else {
         infoEl.innerText = '';
       }
@@ -3033,28 +3080,31 @@
       const editId = document.getElementById('formMutasiId').value;
       const tgl = document.getElementById('formMutasiTanggal').value;
       const ref = document.getElementById('formMutasiRef').value || `MUT-${Date.now()}`;
-      const asal = document.getElementById('formMutasiAsal').value;
-      const tujuan = document.getElementById('formMutasiTujuan').value;
+      const asal = getCanonicalWarehouseName(document.getElementById('formMutasiAsal').value);
+      const tujuan = getCanonicalWarehouseName(document.getElementById('formMutasiTujuan').value);
       const barangSelect = document.getElementById('formMutasiBarangSelect');
       const opt = barangSelect.selectedOptions[0];
+      const selectedNamaBarang = (opt && opt.value) ? opt.value : (barangSelect ? barangSelect.value : '');
       const brandVal = document.getElementById('formMutasiBrand').value.trim() || (opt ? opt.dataset.brand : '');
       const tipeVal = document.getElementById('formMutasiTipe').value.trim() || (opt ? opt.dataset.tipe : '');
+      const optSeri = (opt && opt.dataset.seri) ? opt.dataset.seri : '';
       const qty = Number(document.getElementById('formMutasiQty').value) || 1;
       const sn = document.getElementById('formMutasiSN').value.trim();
       const catatan = document.getElementById('formMutasiCatatan').value.trim();
+      const satuanVal = (opt && opt.dataset.satuan) ? opt.dataset.satuan : 'Unit';
 
       if (asal === tujuan) {
         Swal.fire('Gagal Mutasi', 'Gudang Asal dan Gudang Tujuan tidak boleh sama!', 'warning');
         return;
       }
-      if (!opt || !opt.value) {
+      if (!selectedNamaBarang) {
         Swal.fire('Gagal Mutasi', 'Pilih barang yang tersedia di gudang asal.', 'warning');
         return;
       }
 
       if (!editId) {
-        const sisa = Number(opt.dataset.sisa) || 0;
-        if (qty > sisa) {
+        const sisa = Number(opt ? opt.dataset.sisa : 0) || 0;
+        if (sisa > 0 && qty > sisa) {
           Swal.fire('Stok Kurang', `Jumlah mutasi (${qty}) melebihi stok yang tersedia (${sisa}).`, 'error');
           return;
         }
@@ -3071,36 +3121,41 @@
           tanggal: tgl,
           gudangAsal: asal,
           gudangTujuan: tujuan,
-          namaBarang: opt.value,
+          namaBarang: selectedNamaBarang,
           brand: brandVal,
           tipe: tipeVal,
           quantity: qty,
-          satuan: (opt && opt.dataset.satuan) ? opt.dataset.satuan : 'Unit',
+          satuan: satuanVal,
           serialNumber: sn,
           catatan: catatan
         };
 
         if (idx !== -1) rawMutasiData[idx] = updatedMutasi;
 
-        // Perbarui entri stok terkait jika nomor ref cocok
+        let entryKeluarToUpdate = null;
+        let entryMasukToUpdate = null;
+
         if (oldMutasi) {
           rawInventoryData.forEach(item => {
             if (item.peruntukan && item.peruntukan.includes(oldMutasi.refNo)) {
               item.tanggal = tgl;
-              item.namaBarang = opt.value;
+              item.namaBarang = selectedNamaBarang;
               item.brand = brandVal;
               item.tipe = tipeVal;
               item.quantity = qty;
+              item.satuan = satuanVal;
               item.serialNumber = sn;
               item.deskripsi = catatan;
               if (item.jenisTransaksi === 'Mutasi Keluar') {
                 item.gudang = asal;
                 item.endUser = tujuan;
-                item.peruntukan = `Transfer Mutasi ke ${tujuan} (Ref: ${ref})`;
+                item.peruntukan = `Mutasi ke ${tujuan} (Ref: ${ref})`;
+                entryKeluarToUpdate = item;
               } else if (item.jenisTransaksi === 'Mutasi Masuk') {
                 item.gudang = tujuan;
                 item.endUser = asal;
-                item.peruntukan = `Penerimaan Mutasi dari ${asal} (Ref: ${ref})`;
+                item.peruntukan = `Mutasi dari ${asal} (Ref: ${ref})`;
+                entryMasukToUpdate = item;
               }
             }
           });
@@ -3121,7 +3176,12 @@
           fetch(CUSTOM_GAS_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({ action: 'updateMutasi', mutasi: updatedMutasi })
+            body: JSON.stringify({ 
+              action: 'updateMutasi', 
+              mutasi: updatedMutasi,
+              entryKeluar: entryKeluarToUpdate,
+              entryMasuk: entryMasukToUpdate 
+            })
           }).catch(() => {});
         }
 
@@ -3130,9 +3190,6 @@
       }
 
       // Mode CREATE Baru Mutasi
-      const selectedNamaBarang = (opt && opt.value) ? opt.value : (barangSelect ? barangSelect.value : '');
-      const optSeri = (opt && opt.dataset.seri) ? opt.dataset.seri : '';
-
       const mutasiRecord = {
         id: `MUT-${Date.now()}`,
         refNo: ref,
@@ -3143,11 +3200,12 @@
         brand: brandVal,
         tipe: tipeVal,
         quantity: qty,
-        satuan: (opt && opt.dataset.satuan) ? opt.dataset.satuan : 'Unit',
+        satuan: satuanVal,
         serialNumber: sn,
         catatan: catatan
       };
 
+      // Entri Pengurangan Stok (Gudang Asal)
       const entryKeluar = {
         id: `INV-MUT-OUT-${Date.now()}`,
         tanggal: tgl,
@@ -3160,13 +3218,14 @@
         serialNumber: sn,
         lokasi: 'Staging Area',
         quantity: qty,
-        satuan: (opt && opt.dataset.satuan) ? opt.dataset.satuan : 'Unit',
+        satuan: satuanVal,
         endUser: tujuan,
-        peruntukan: `Transfer Mutasi ke ${tujuan} (Ref: ${ref})`,
+        peruntukan: `Mutasi ke ${tujuan} (Ref: ${ref})`,
         statusKondisi: 'Berfungsi',
         deskripsi: catatan
       };
 
+      // Entri Penambahan Stok (Gudang Tujuan)
       const entryMasuk = {
         id: `INV-MUT-IN-${Date.now() + 1}`,
         tanggal: tgl,
@@ -3179,9 +3238,9 @@
         serialNumber: sn,
         lokasi: 'Indoor Section A',
         quantity: qty,
-        satuan: (opt && opt.dataset.satuan) ? opt.dataset.satuan : 'Unit',
+        satuan: satuanVal,
         endUser: asal,
-        peruntukan: `Penerimaan Mutasi dari ${asal} (Ref: ${ref})`,
+        peruntukan: `Mutasi dari ${asal} (Ref: ${ref})`,
         statusKondisi: 'Berfungsi',
         deskripsi: catatan
       };
@@ -3209,7 +3268,7 @@
         }).catch(() => {});
       }
 
-      Swal.fire({ icon: 'success', title: 'Mutasi Berhasil Dieksekusi!', timer: 1200, showConfirmButton: false });
+      Swal.fire({ icon: 'success', title: 'Mutasi Berhasil! Stok Asal Berkurang & Tujuan Bertambah.', timer: 1500, showConfirmButton: false });
     }
 
     function handleFormSubmit(e) {
@@ -3412,6 +3471,7 @@
     }
 
     function calculateStockSummary() {
+      repairBarangInventarisNames();
       const tbody = document.getElementById('laporanViewStokTableBody');
       if (!tbody) return;
       const qInput = document.getElementById('searchLaporanStok');
@@ -3425,19 +3485,23 @@
       effectiveData.forEach(item => {
         const wh = getCanonicalWarehouseName(item.gudang);
         const nama = (item.namaBarang || '').trim();
-        if (!nama || nama === 'Barang Inventaris') return;
+        if (!nama) return;
 
         const brand = (item.brand || '').trim();
-        // Mengelompokkan berdasarkan Gudang + Nama Barang (+ Brand jika ada)
-        const key = `${wh.toLowerCase()}___${nama.toLowerCase()}___${brand.toLowerCase()}`;
+        const tipe = (item.tipe || '').trim();
+        const seri = (item.seri || '').trim();
+
+        // Normalisasi key produk agar "Processor VX1000" dan "Processor (VX1000)" bersatu
+        const prodKey = getCanonicalProductKey(nama, tipe || seri);
+        const key = `${wh.toLowerCase()}___${prodKey}`;
 
         if (!summaryMap[key]) {
           summaryMap[key] = {
             gudang: wh,
             nama: nama,
             brand: brand || '-',
-            tipe: item.tipe || '',
-            seri: item.seri || '',
+            tipe: tipe || '',
+            seri: seri || '',
             masuk: 0,
             keluar: 0,
             satuan: item.satuan || 'Pcs',
@@ -3445,9 +3509,11 @@
             snsKeluar: new Set()
           };
         } else {
-          if (!summaryMap[key].tipe && item.tipe) summaryMap[key].tipe = item.tipe;
-          if (!summaryMap[key].seri && item.seri) summaryMap[key].seri = item.seri;
-          if (summaryMap[key].brand === '-' && brand) summaryMap[key].brand = brand;
+          // Pilih nama yang lebih deskriptif jika ada
+          if (nama.length > summaryMap[key].nama.length) summaryMap[key].nama = nama;
+          if ((!summaryMap[key].brand || summaryMap[key].brand === '-') && brand) summaryMap[key].brand = brand;
+          if (!summaryMap[key].tipe && tipe) summaryMap[key].tipe = tipe;
+          if (!summaryMap[key].seri && seri) summaryMap[key].seri = seri;
         }
 
         const qty = Number(item.quantity) || 0;
@@ -3461,7 +3527,7 @@
           summaryMap[key].keluar += qty;
         }
 
-        // Pengelolaan Serial Number (SN keluar otomatis mengurangi daftar SN sisa)
+        // Pengelolaan Serial Number
         if (item.serialNumber && item.serialNumber.trim()) {
           const snList = item.serialNumber.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
           snList.forEach(sn => {
@@ -3473,7 +3539,6 @@
 
       let items = Object.values(summaryMap).map(item => {
         const sisa = Math.max(0, item.masuk - item.keluar);
-        // Sisa Serial Number = SN Masuk dikurangi SN Keluar
         const sisaSns = Array.from(item.snsMasuk).filter(sn => !item.snsKeluar.has(sn));
         return {
           ...item,
@@ -3527,7 +3592,6 @@
       const gudangLabel = selectedGlobalWarehouse || 'Semua Gudang Terpadu';
       const tanggalCetak = formatDateOnly(new Date());
 
-      // Ambil data kalkulasi stok yang sama persis
       const summaryMap = {};
       const effectiveData = selectedGlobalWarehouse 
         ? rawInventoryData.filter(i => getCanonicalWarehouseName(i.gudang) === selectedGlobalWarehouse)
@@ -3539,7 +3603,7 @@
         if (!nama || nama === 'Barang Inventaris') return;
 
         const brand = (item.brand || '').trim();
-        const key = `${wh.toLowerCase()}___${nama.toLowerCase()}___${brand.toLowerCase()}`;
+        const key = `${wh.toLowerCase()}___${nama.toLowerCase()}`;
 
         if (!summaryMap[key]) {
           summaryMap[key] = {
@@ -3555,9 +3619,9 @@
             snsKeluar: new Set()
           };
         } else {
+          if ((!summaryMap[key].brand || summaryMap[key].brand === '-') && brand) summaryMap[key].brand = brand;
           if (!summaryMap[key].tipe && item.tipe) summaryMap[key].tipe = item.tipe;
           if (!summaryMap[key].seri && item.seri) summaryMap[key].seri = item.seri;
-          if (summaryMap[key].brand === '-' && brand) summaryMap[key].brand = brand;
         }
 
         const qty = Number(item.quantity) || 0;
@@ -3735,36 +3799,6 @@
       html2pdf().set({
         margin: 6,
         filename: `Laporan_Data_Produk_${formatDateOnly(new Date()).replace(/\//g, '-')}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-      }).from(element).save();
-    }
-
-    function exportDataProdukPDF() {
-      const cetakOlehNama = currentUser ? (currentUser.nama || currentUser.username) : 'Admin Gudang';
-      const cetakOlehRole = currentUser ? currentUser.role : 'Staff Gudang';
-
-      const element = document.createElement('div');
-      element.style.padding = '15px';
-      element.style.fontFamily = 'Inter, sans-serif';
-
-      element.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 10px; margin-bottom: 12px;">
-          <div>
-            <h2 style="margin: 0; font-size: 16px; font-weight: 900; color: #ea580c;">OUFFICE.CO.ID</h2>
-            <p style="font-size: 9px; color: #64748b; margin: 3px 0 0 0; text-transform: uppercase; font-weight: bold;">Inventory Management System</p>
-          </div>
-          <div style="text-align: right;">
-            <h1 style="font-size: 14px; font-weight: 900; color: #0f172a; margin: 0; text-transform: uppercase;">LAPORAN TRANSAKSI DATA PRODUK</h1>
-            <p style="font-size: 8.5px; color: #0f172a; margin: 2px 0 0 0; font-weight: bold;">Dicetak Oleh: <span style="color: #ea580c;">${cetakOlehNama}</span> (${cetakOlehRole})</p>
-          </div>
-        </div>
-      `;
-
-      html2pdf().set({
-        margin: 6,
-        filename: `Laporan_Produk_${new Date().toISOString().split('T')[0]}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
