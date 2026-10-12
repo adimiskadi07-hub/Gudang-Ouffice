@@ -857,6 +857,8 @@
             <select id="formJenis" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-semibold">
               <option value="Masuk">↓ Masuk (Penerimaan)</option>
               <option value="Keluar">↑ Keluar (Pengeluaran)</option>
+              <option value="Mutasi Keluar">⇄ Mutasi Keluar (Transfer Keluar)</option>
+              <option value="Mutasi Masuk">⇄ Mutasi Masuk (Transfer Masuk)</option>
             </select>
           </div>
         </div>
@@ -3419,6 +3421,14 @@
       if (jenis === 'Masuk') {
         if (labelEndUser) labelEndUser.innerText = 'Supplier / Asal Barang';
         if (inputEndUser) inputEndUser.placeholder = 'Nama supplier / vendor';
+        if (doFieldsGroup) doFieldsGroup.classList.add('hidden');
+      } else if (jenis === 'Mutasi Masuk') {
+        if (labelEndUser) labelEndUser.innerText = 'Gudang Asal / Pengirim';
+        if (inputEndUser) inputEndUser.placeholder = 'Nama gudang asal pemindahan';
+        if (doFieldsGroup) doFieldsGroup.classList.add('hidden');
+      } else if (jenis === 'Mutasi Keluar') {
+        if (labelEndUser) labelEndUser.innerText = 'Gudang Tujuan / Penerima';
+        if (inputEndUser) inputEndUser.placeholder = 'Nama gudang tujuan pemindahan';
         if (doFieldsGroup) doFieldsGroup.classList.add('hidden');
       } else {
         if (labelEndUser) labelEndUser.innerText = 'End User / Penerima *';
