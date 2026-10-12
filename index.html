@@ -1976,6 +1976,59 @@
       return n;
     }
 
+    function getWarehouseStockStats(whName) {
+      const targetWh = getCanonicalWarehouseName(whName);
+      let totalMasuk = 0;
+      let totalKeluar = 0;
+      let berfungsiMasuk = 0;
+      let berfungsiKeluar = 0;
+      let rusakMasuk = 0;
+      let rusakKeluar = 0;
+      const productMap = {};
+
+      rawInventoryData.forEach(item => {
+        if (getCanonicalWarehouseName(item.gudang) === targetWh) {
+          const q = Number(item.quantity) || 0;
+          const j = (item.jenisTransaksi || '').toLowerCase();
+          const isMasuk = j.includes('masuk');
+          const isKeluar = j.includes('keluar');
+          const prodKey = getCanonicalProductKey(item.namaBarang, item.tipe || item.seri) || (item.namaBarang || 'item');
+
+          if (!productMap[prodKey]) {
+            productMap[prodKey] = { masuk: 0, keluar: 0 };
+          }
+
+          if (isMasuk) {
+            totalMasuk += q;
+            productMap[prodKey].masuk += q;
+            if (item.statusKondisi === 'Berfungsi') berfungsiMasuk += q;
+            if (item.statusKondisi === 'Tidak Berfungsi') rusakMasuk += q;
+          } else if (isKeluar) {
+            totalKeluar += q;
+            productMap[prodKey].keluar += q;
+            if (item.statusKondisi === 'Berfungsi') berfungsiKeluar += q;
+            if (item.statusKondisi === 'Tidak Berfungsi') rusakKeluar += q;
+          }
+        }
+      });
+
+      let totalSisa = 0;
+      Object.values(productMap).forEach(p => {
+        totalSisa += Math.max(0, p.masuk - p.keluar);
+      });
+
+      const safeBerfungsi = Math.max(0, berfungsiMasuk - berfungsiKeluar);
+      const safeRusak = Math.max(0, rusakMasuk - rusakKeluar);
+
+      return {
+        totalMasuk,
+        totalKeluar,
+        totalSisa,
+        berfungsi: safeBerfungsi,
+        rusak: safeRusak
+      };
+    }
+
     function updateStatsAndDashboard() {
       repairBarangInventarisNames();
       let totalMasuk = 0;
@@ -2097,28 +2150,7 @@
       const distContainer = document.getElementById('warehouseStockDistribution');
       if (distContainer) {
         distContainer.innerHTML = rawWarehouseData.map(wh => {
-          let whMasuk = 0;
-          let whKeluar = 0;
-          let whBerfungsi = 0;
-          let whRusak = 0;
-
-          rawInventoryData.forEach(item => {
-            if (getCanonicalWarehouseName(item.gudang) === wh.nama) {
-              const q = Number(item.quantity) || 0;
-              const j = (item.jenisTransaksi || '').toLowerCase();
-              if (j.includes('masuk')) {
-                whMasuk += q;
-                if (item.statusKondisi === 'Berfungsi') whBerfungsi += q;
-                if (item.statusKondisi === 'Tidak Berfungsi') whRusak += q;
-              } else if (j.includes('keluar')) {
-                whKeluar += q;
-                if (item.statusKondisi === 'Berfungsi') whBerfungsi = Math.max(0, whBerfungsi - q);
-                if (item.statusKondisi === 'Tidak Berfungsi') whRusak = Math.max(0, whRusak - q);
-              }
-            }
-          });
-
-          const totalSisa = Math.max(0, whMasuk - whKeluar);
+          const stats = getWarehouseStockStats(wh.nama);
           const isSelected = selectedGlobalWarehouse === wh.nama;
 
           return `
@@ -2129,12 +2161,12 @@
               </div>
               <div class="flex items-baseline justify-between">
                 <div>
-                  <span class="text-xl font-black font-mono text-slate-900">${totalSisa}</span>
+                  <span class="text-xl font-black font-mono text-slate-900">${stats.totalSisa}</span>
                   <span class="text-[10px] text-slate-500 font-semibold ml-1">unit</span>
                 </div>
                 <div class="text-[10px] font-bold flex gap-2">
-                  <span class="text-emerald-600">✓ ${Math.max(0, whBerfungsi)}</span>
-                  <span class="text-rose-600">✗ ${Math.max(0, whRusak)}</span>
+                  <span class="text-emerald-600">✓ ${stats.berfungsi}</span>
+                  <span class="text-rose-600">✗ ${stats.rusak}</span>
                 </div>
               </div>
               <div class="text-[10px] text-slate-400 truncate mt-1">PIC: ${wh.pic || '-'}</div>
@@ -2663,14 +2695,7 @@
       const isManager = currentUser && currentUser.role === 'Manager';
 
       container.innerHTML = rawWarehouseData.map((wh) => {
-        const whItems = rawInventoryData.filter(i => getCanonicalWarehouseName(i.gudang) === wh.nama);
-        let stockCount = 0;
-        whItems.forEach(i => {
-          const q = Number(i.quantity) || 0;
-          const j = (i.jenisTransaksi || '').toLowerCase();
-          if (j.includes('masuk')) stockCount += q;
-          if (j.includes('keluar')) stockCount = Math.max(0, stockCount - q);
-        });
+        const stats = getWarehouseStockStats(wh.nama);
 
         return `
           <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm motion-card-glow flex flex-col justify-between">
@@ -2707,7 +2732,7 @@
             <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
               <div>
                 <span class="text-[10px] text-slate-400 font-bold uppercase block">Stok Tersedia</span>
-                <span class="text-base font-black font-mono text-emerald-600">${stockCount} Unit</span>
+                <span class="text-base font-black font-mono text-emerald-600">${stats.totalSisa} Unit</span>
               </div>
               <button onclick="filterByWarehouseCard('${wh.nama}'); switchView('produk');" class="px-3 py-1.5 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 text-slate-700 rounded-xl text-xs font-bold transition">
                 Lihat Barang →
