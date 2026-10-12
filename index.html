@@ -2456,17 +2456,58 @@
       return !isNaN(d.getTime()) ? d.getTime() : 0;
     }
 
+    /**
+     * Menentukan bobot prioritas jenis transaksi pada tanggal yang sama:
+     * Urutan tampilan dari atas ke bawah:
+     * 1. Keluar (Rank 4 - paling atas)
+     * 2. Mutasi Masuk (Rank 3)
+     * 3. Mutasi Keluar (Rank 2)
+     * 4. Masuk (Rank 1 - paling bawah di tanggal tersebut)
+     */
+    function getJenisTransaksiRank(jenis) {
+      const j = String(jenis || '').trim().toLowerCase();
+      if (j === 'keluar') return 4;
+      if (j === 'mutasi masuk') return 3;
+      if (j === 'mutasi keluar') return 2;
+      if (j === 'masuk') return 1;
+
+      if (j.includes('mutasi') && j.includes('masuk')) return 3;
+      if (j.includes('mutasi') && j.includes('keluar')) return 2;
+      if (j.includes('keluar')) return 4;
+      if (j.includes('masuk')) return 1;
+      return 0;
+    }
+
+    function getItemInputTimestamp(item) {
+      if (!item) return 0;
+      const idStr = String(item.id || '');
+      const match = idStr.match(/\d{10,}/);
+      return match ? parseInt(match[0], 10) : 0;
+    }
+
     function sortByDateDescending(items) {
       if (!Array.isArray(items)) return [];
       return [...items].sort((a, b) => {
+        // 1. Urutkan berdasarkan Tanggal transaksi terbaru (descending)
         const timeA = getItemTimestamp(a);
         const timeB = getItemTimestamp(b);
         if (timeB !== timeA) return timeB - timeA;
-        // Penentu urutan deterministik sekunder & tersier agar baris tidak melompat acak
+
+        // 2. Jika tanggal sama, urutkan berdasarkan Jenis Transaksi:
+        // Keluar (atas) -> Mutasi Masuk -> Mutasi Keluar -> Masuk (bawah)
+        const rankA = getJenisTransaksiRank(a.jenisTransaksi);
+        const rankB = getJenisTransaksiRank(b.jenisTransaksi);
+        if (rankB !== rankA) return rankB - rankA;
+
+        // 3. Jika tanggal dan jenis transaksi sama, input transaksi terbaru di paling atas
+        const inputTimeA = getItemInputTimestamp(a);
+        const inputTimeB = getItemInputTimestamp(b);
+        if (inputTimeB !== inputTimeA) return inputTimeB - inputTimeA;
+
+        // 4. Penentu deterministik sekunder
         const idA = String(a.id || '');
         const idB = String(b.id || '');
-        if (idA !== idB) return idB.localeCompare(idA);
-        return String(a.namaBarang || '').localeCompare(String(b.namaBarang || ''));
+        return idB.localeCompare(idA);
       });
     }
 
@@ -3277,9 +3318,9 @@
         deskripsi: catatan
       };
 
-      rawMutasiData.push(mutasiRecord);
-      rawInventoryData.push(entryKeluar);
-      rawInventoryData.push(entryMasuk);
+      rawMutasiData.unshift(mutasiRecord);
+      rawInventoryData.unshift(entryKeluar);
+      rawInventoryData.unshift(entryMasuk);
 
       localStorage.setItem('ouffice_mutasi_data', JSON.stringify(rawMutasiData));
       try { localStorage.setItem('ouffice_cached_inventory', JSON.stringify(rawInventoryData)); } catch(e){}
@@ -3334,7 +3375,7 @@
         const idx = rawInventoryData.findIndex(x => x.id === id);
         if (idx !== -1) rawInventoryData[idx] = payload;
       } else {
-        rawInventoryData.push(payload);
+        rawInventoryData.unshift(payload);
       }
 
       try { localStorage.setItem('ouffice_cached_inventory', JSON.stringify(rawInventoryData)); } catch(e){}
@@ -3771,7 +3812,7 @@
       element.style.padding = '15px';
       element.style.fontFamily = 'Inter, sans-serif';
 
-      const dataToExport = [...filteredInventoryData].reverse();
+      const dataToExport = sortByDateDescending(filteredInventoryData);
 
       element.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 10px; margin-bottom: 12px;">
