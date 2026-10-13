@@ -142,7 +142,7 @@
       <!-- Company Logo Branding -->
       <div class="flex flex-col items-center mb-7">
         <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="160" crossorigin="anonymous" class="h-auto max-w-[160px] object-contain mb-3" onerror="this.src='https://placehold.co/160x50/ea580c/white?text=Ouffice.co.id'">
-        <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest">Sistem Multi-Gudang Terpadu</h2>
+        <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest">Sistem Inventaris Gudang</h2>
       </div>
 
       <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
@@ -285,7 +285,7 @@
             </button>
             <div>
               <h1 id="currentViewTitle" class="text-base sm:text-lg font-black text-slate-900 uppercase tracking-wide">Dashboard Utama</h1>
-              <p class="text-[10px] text-slate-500 font-medium hidden sm:block">Pemantauan Stok Antar Titik Gudang & Proyek</p>
+              <p class="text-[10px] text-slate-500 font-medium hidden sm:block">Pemantauan Stok Antar Gudang</p>
             </div>
           </div>
 
@@ -420,7 +420,7 @@
                 <h3 class="font-extrabold text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
                   <i class="fa-solid fa-chart-line text-orange-600"></i> Alur Transaksi Bulanan
                 </h3>
-                <p class="text-xs text-slate-500">Visualisasi Volume Transaksi 6 Bulan Terakhir</p>
+                <p class="text-xs text-slate-500">Grafik Volume Transaksi 6 Bulan Terakhir</p>
               </div>
               <span id="chartPeriodLabel" class="text-xs font-bold text-slate-400 font-mono">6 Bulan Terakhir</span>
             </div>
@@ -687,7 +687,7 @@
             <h3 class="font-bold text-indigo-700 text-sm uppercase flex items-center gap-2">
               <i class="fa-solid fa-right-left"></i> Mutasi Antar Gudang
             </h3>
-            <p class="text-xs text-slate-500">Transfer & Pemindahan Stok antar Gudang Utama, Transit, dan Cabang</p>
+            <p class="text-xs text-slate-500">Transfer & Pemindahan Stok antar Gudang</p>
           </div>
           <div class="flex items-center gap-2">
             <button id="btnTambahMutasi" onclick="openMutasiModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-md hover:bg-indigo-700 flex items-center gap-1.5 flex-shrink-0">
@@ -748,7 +748,7 @@
             <h3 class="font-bold text-slate-900 text-sm uppercase flex items-center gap-2">
               <i class="fa-solid fa-users-gear text-orange-600"></i> Manajemen Pengguna Sistem
             </h3>
-            <p class="text-xs text-slate-500">Kelola Akun Hak Akses Admin, Staff Gudang & Manager</p>
+            <p class="text-xs text-slate-500">Kelola Akun Hak Akses Admin, Staff Gudang & Direktur</p>
           </div>
           <button onclick="openUserManagementModal()" class="px-4 py-2 bg-orange-600 text-white rounded-xl text-xs font-bold">+ Tambah User Baru</button>
         </div>
@@ -1212,7 +1212,7 @@
         <div class="flex gap-2">
           <select id="newRole" class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold">
             <option value="Staff Gudang">Staff Gudang</option>
-            <option value="Manager">Manager</option>
+            <option value="Direktur">Manager</option>
             <option value="Master Admin">Master Admin</option>
           </select>
           <button type="submit" class="px-4 py-2 bg-orange-600 text-white rounded-lg font-bold hover:bg-orange-700">Simpan</button>
@@ -1664,7 +1664,7 @@
     function switchView(viewId) {
       currentActiveView = viewId;
       const viewTitleMap = {
-        'dashboard': 'Dashboard Utama',
+        'dashboard': 'Dashboard',
         'gudang': 'Master Gudang & Fasilitas',
         'produk': 'Data Produk Inventaris',
         'client': 'Data Client / Pelanggan',
@@ -4004,7 +4004,7 @@
       element.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 10px; margin-bottom: 12px;">
           <div>
-            <h2 style="margin: 0; font-size: 16px; font-weight: 900; color: #ea580c;">OUFFICE.CO.ID</h2>
+            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="180" crossorigin="anonymous" class="w-full max-w-[180px] h-auto object-contain py-1" onerror="this.src='https://placehold.co/180x50/ea580c/white?text=Ouffice.co.id'">
             <p style="font-size: 9px; color: #64748b; margin: 3px 0 0 0; text-transform: uppercase; font-weight: bold;">Inventory Management System</p>
           </div>
           <div style="text-align: right;">
