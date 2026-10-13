@@ -2883,6 +2883,7 @@
       const container = document.getElementById('warehouseCardsGrid');
       if (!container) return;
       const isManager = currentUser && currentUser.role === 'Manager';
+      const isMasterAdmin = currentUser && currentUser.role === 'Master Admin';
 
       container.innerHTML = rawWarehouseData.map((wh) => {
         const stats = getWarehouseStockStats(wh.nama);
@@ -2905,7 +2906,7 @@
                   <button onclick="editWarehouse('${wh.id}')" title="Edit Gudang" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-amber-100 hover:text-amber-800 text-slate-600 flex items-center justify-center transition">
                     <i class="fa-solid fa-pen-to-square"></i>
                   </button>
-                  ${rawWarehouseData.length > 1 ? `
+                  ${isMasterAdmin && rawWarehouseData.length > 1 ? `
                   <button onclick="deleteWarehouse('${wh.id}')" title="Hapus Gudang" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-rose-100 hover:text-rose-600 text-slate-600 flex items-center justify-center transition">
                     <i class="fa-solid fa-trash"></i>
                   </button>` : ''}
@@ -2996,7 +2997,10 @@
     }
 
     function deleteWarehouse(id) {
-      if (currentUser && currentUser.role === 'Manager') return;
+      if (!currentUser || currentUser.role !== 'Master Admin') {
+        Swal.fire('Akses Ditolak', 'Hanya Master Admin yang memiliki hak akses untuk menghapus gudang.', 'error');
+        return;
+      }
       if (rawWarehouseData.length <= 1) {
         Swal.fire('Perhatian', 'Minimal harus ada 1 gudang aktif dalam sistem.', 'warning');
         return;
