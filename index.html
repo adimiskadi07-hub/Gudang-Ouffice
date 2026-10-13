@@ -4889,7 +4889,7 @@
         <tr class="hover:bg-slate-50 transition">
           <td class="py-3 px-3 font-bold text-slate-800">${u.nama || u.username}</td>
           <td class="py-3 px-3 font-mono text-slate-600">${u.username}</td>
-          <td class="py-3 px-3"><span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${u.role === 'Master Admin' ? 'bg-purple-100 text-purple-700' : u.role === 'Manager' ? 'bg-sky-100 text-sky-700' : 'bg-emerald-100 text-emerald-700'}">${u.role || 'Staff Gudang'}</span></td>
+          <td class="py-3 px-3"><span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${u.role === 'Master Admin' ? 'bg-purple-100 text-purple-700' : u.role === 'Direktur' ? 'bg-sky-100 text-sky-700' : 'bg-emerald-100 text-emerald-700'}">${u.role || 'Staff Gudang'}</span></td>
           <td class="py-3 px-3 text-center text-slate-400 font-semibold text-[11px]">${(u.username||'').toLowerCase() === 'admin' ? 'Master' : `<button onclick="deleteUserAccount('${u.id || u.username}')" class="text-rose-600 hover:text-rose-800 font-bold p-1"><i class="fa-solid fa-trash"></i></button>`}</td>
         </tr>
       `).join('');
