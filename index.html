@@ -80,6 +80,43 @@
       pointer-events: none;
     }
 
+    /* Custom SweetAlert Aesthetic Styling */
+    .swal2-aesthetic-popup {
+      border-radius: 1.25rem !important;
+      padding: 1.75rem !important;
+      font-family: 'Inter', sans-serif !important;
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25) !important;
+      border: 1px solid rgba(226, 232, 240, 0.9) !important;
+    }
+    .swal2-aesthetic-confirm {
+      background: linear-gradient(135deg, #ea580c 0%, #f97316 100%) !important;
+      border-radius: 0.75rem !important;
+      font-weight: 700 !important;
+      font-size: 0.8125rem !important;
+      padding: 0.65rem 1.5rem !important;
+      box-shadow: 0 4px 14px 0 rgba(234, 88, 12, 0.35) !important;
+      color: #ffffff !important;
+      transition: all 0.2s ease !important;
+    }
+    .swal2-aesthetic-confirm:hover {
+      transform: translateY(-1px) !important;
+      box-shadow: 0 6px 18px 0 rgba(234, 88, 12, 0.45) !important;
+    }
+    .swal2-aesthetic-cancel {
+      background: #f1f5f9 !important;
+      color: #475569 !important;
+      border-radius: 0.75rem !important;
+      font-weight: 700 !important;
+      font-size: 0.8125rem !important;
+      padding: 0.65rem 1.25rem !important;
+      margin-right: 0.5rem !important;
+      transition: all 0.2s ease !important;
+    }
+    .swal2-aesthetic-cancel:hover {
+      background: #e2e8f0 !important;
+      color: #1e293b !important;
+    }
+
     #qrReader video {
       width: 100% !important;
       height: 100% !important;
@@ -105,7 +142,7 @@
       <!-- Company Logo Branding -->
       <div class="flex flex-col items-center mb-7">
         <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="160" crossorigin="anonymous" class="h-auto max-w-[160px] object-contain mb-3" onerror="this.src='https://placehold.co/160x50/ea580c/white?text=Ouffice.co.id'">
-        <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest">Sistem Inventaris Gudang</h2>
+        <h2 class="text-xs font-black text-slate-800 uppercase tracking-widest">Sistem Multi-Gudang Terpadu</h2>
       </div>
 
       <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
@@ -115,7 +152,7 @@
             <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
               <i class="fa-solid fa-user text-xs"></i>
             </span>
-            <input type="text" id="loginUsername" required placeholder="Masukkan username (misal: admin)" class="w-full pl-10 pr-4 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white font-semibold transition">
+            <input type="text" id="loginUsername" required placeholder="Masukkan username" class="w-full pl-10 pr-4 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white font-semibold transition">
           </div>
         </div>
 
@@ -125,7 +162,7 @@
             <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
               <i class="fa-solid fa-lock text-xs"></i>
             </span>
-            <input type="password" id="loginPassword" required placeholder="Masukkan password (misal: admin123)" class="w-full pl-10 pr-4 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white font-semibold transition">
+            <input type="password" id="loginPassword" required placeholder="Masukkan password" class="w-full pl-10 pr-4 py-2.5 bg-slate-50/80 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white font-semibold transition">
           </div>
         </div>
 
@@ -215,7 +252,7 @@
             </button>
             <button onclick="switchView('laporan')" id="nav-laporan" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition text-slate-900 font-bold hover:text-black hover:bg-slate-300/60">
               <i class="fa-solid fa-file-pdf w-4 text-center text-rose-600"></i>
-              <span>Laporan Stok Gudang</span>
+              <span>Laporan Stok Multi-Gudang</span>
             </button>
           </div>
         </div>
@@ -248,7 +285,7 @@
             </button>
             <div>
               <h1 id="currentViewTitle" class="text-base sm:text-lg font-black text-slate-900 uppercase tracking-wide">Dashboard Utama</h1>
-              <p class="text-[10px] text-slate-500 font-medium hidden sm:block">Pemantauan Stok Antar Gudang</p>
+              <p class="text-[10px] text-slate-500 font-medium hidden sm:block">Pemantauan Stok Antar Titik Gudang & Proyek</p>
             </div>
           </div>
 
@@ -331,7 +368,6 @@
             </div>
           </div>
 
-          <!-- KARTU KELAYAKAN STOK DENGAN ANIMASI MENGALIR DARI 0% KE TARGET -->
           <div class="col-span-2 lg:col-span-1 bg-slate-900 text-white p-4 rounded-2xl shadow-lg relative overflow-hidden flex flex-col justify-between">
             <div class="flex items-center justify-between z-10">
               <div>
@@ -370,7 +406,7 @@
               <h3 class="font-extrabold text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
                 <i class="fa-solid fa-cubes-stacked text-orange-600"></i> Distribusi Stok Antar Gudang
               </h3>
-              <p class="text-xs text-slate-500">Perbandingan Total Unit Siap Pakai di Setiap Titik Gudang</p>
+              <p class="text-xs text-slate-500">Perbandingan total unit siap pakai di setiap titik fasilitas gudang</p>
             </div>
             <button onclick="switchView('gudang')" class="text-xs font-bold text-orange-600 hover:text-orange-700">Kelola Gudang →</button>
           </div>
@@ -384,7 +420,7 @@
                 <h3 class="font-extrabold text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
                   <i class="fa-solid fa-chart-line text-orange-600"></i> Alur Transaksi Bulanan
                 </h3>
-                <p class="text-xs text-slate-500">Grafik Volume Transaksi 6 Bulan Terakhir</p>
+                <p class="text-xs text-slate-500">Visualisasi Volume Transaksi 6 Bulan Terakhir</p>
               </div>
               <span id="chartPeriodLabel" class="text-xs font-bold text-slate-400 font-mono">6 Bulan Terakhir</span>
             </div>
@@ -459,9 +495,9 @@
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div>
             <h3 class="font-bold text-slate-900 text-sm uppercase flex items-center gap-2">
-              <i class="fa-solid fa-warehouse text-amber-600"></i> Master Data Gudang
+              <i class="fa-solid fa-warehouse text-amber-600"></i> Master Data Gudang & Fasilitas
             </h3>
-            <p class="text-xs text-slate-500">Kelola Titik Penyimpanan Gudang Utama dan Cabang</p>
+            <p class="text-xs text-slate-500">Kelola Titik Penyimpanan Utama, Cabang, Gudang Transit & Lapangan</p>
           </div>
           <button id="btnTambahGudang" onclick="openWarehouseModal()" class="px-4 py-2 bg-amber-600 text-white rounded-xl text-xs font-bold shadow-md hover:bg-amber-700 flex items-center justify-center gap-1.5 flex-shrink-0">
             <i class="fa-solid fa-plus"></i> Tambah Gudang Baru
@@ -493,11 +529,13 @@
 
           <!-- Baris 2: Filter Rentang Waktu, Gudang & Dropdown Filter Grid -->
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 pt-2 border-t border-slate-100">
+            <!-- Filter Tanggal Dari -->
             <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs">
               <span class="text-slate-500 font-bold text-[11px] whitespace-nowrap flex items-center gap-1.5"><i class="fa-regular fa-calendar-days text-orange-600"></i> Dari:</span>
               <input type="date" id="filterStartDate" onchange="filterData()" class="w-full bg-transparent text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer">
             </div>
 
+            <!-- Filter Tanggal Sampai -->
             <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-xs">
               <span class="text-slate-500 font-bold text-[11px] whitespace-nowrap flex items-center gap-1.5"><i class="fa-regular fa-calendar-days text-orange-600"></i> s/d:</span>
               <input type="date" id="filterEndDate" onchange="filterData()" class="w-full bg-transparent text-xs font-semibold text-slate-700 focus:outline-none cursor-pointer">
@@ -506,12 +544,14 @@
               </button>
             </div>
 
+            <!-- Filter Gudang -->
             <div>
               <select id="filterGudang" onchange="filterData()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
                 <option value="">Semua Gudang</option>
               </select>
             </div>
 
+            <!-- Filter Jenis Transaksi -->
             <div>
               <select id="filterJenis" onchange="filterData()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
                 <option value="">Semua Transaksi</option>
@@ -522,6 +562,7 @@
               </select>
             </div>
 
+            <!-- Filter Status Kondisi -->
             <div>
               <select id="filterKondisi" onchange="filterData()" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
                 <option value="">Semua Status Kondisi</option>
@@ -560,7 +601,7 @@
 
           <div class="bg-slate-50 border-t border-slate-100 px-4 py-3 flex items-center justify-between text-xs text-slate-500 font-semibold">
             <span id="recordCountInfo">Menampilkan 0 dari 0 data</span>
-            <span class="text-orange-600 font-mono">Ouffice.co.id</span>
+            <span class="text-orange-600 font-mono">Ouffice Multi-Gudang</span>
           </div>
         </div>
       </section>
@@ -646,7 +687,7 @@
             <h3 class="font-bold text-indigo-700 text-sm uppercase flex items-center gap-2">
               <i class="fa-solid fa-right-left"></i> Mutasi Antar Gudang
             </h3>
-            <p class="text-xs text-slate-500">Transfer & Pemindahan Stok Antar Gudang</p>
+            <p class="text-xs text-slate-500">Transfer & Pemindahan Stok antar Gudang Utama, Transit, dan Cabang</p>
           </div>
           <div class="flex items-center gap-2">
             <button id="btnTambahMutasi" onclick="openMutasiModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-md hover:bg-indigo-700 flex items-center gap-1.5 flex-shrink-0">
@@ -707,7 +748,7 @@
             <h3 class="font-bold text-slate-900 text-sm uppercase flex items-center gap-2">
               <i class="fa-solid fa-users-gear text-orange-600"></i> Manajemen Pengguna Sistem
             </h3>
-            <p class="text-xs text-slate-500">Kelola Akun Hak Akses Admin, Staff Gudang & Direktur</p>
+            <p class="text-xs text-slate-500">Kelola Akun Hak Akses Admin, Staff Gudang & Manager</p>
           </div>
           <button onclick="openUserManagementModal()" class="px-4 py-2 bg-orange-600 text-white rounded-xl text-xs font-bold">+ Tambah User Baru</button>
         </div>
@@ -732,7 +773,7 @@
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div>
             <h3 class="font-bold text-slate-900 text-sm uppercase flex items-center gap-2">
-              <i class="fa-solid fa-file-pdf text-rose-500"></i> Rekap Laporan Stok Gudang
+              <i class="fa-solid fa-file-pdf text-rose-500"></i> Rekap Laporan Stok Multi-Gudang
             </h3>
             <p class="text-xs text-slate-500">Kalkulasi Otomatis Total Masuk, Keluar, dan Sisa Stok per Gudang</p>
           </div>
@@ -830,10 +871,13 @@
             <select id="formGudang" required class="w-full px-3 py-2 bg-orange-50/50 border border-orange-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-bold text-slate-800"></select>
           </div>
           <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Lokasi</label>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Lokasi Rak / Zona</label>
             <select id="formLokasi" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-semibold">
-              <option value="Indoor Section A">Indoor</option>
-              <option value="Outdoor Yard">Outdoor</option>
+              <option value="Rack Cabinet">Rack Cabinet</option>
+              <option value="Indoor Section A">Indoor Section A</option>
+              <option value="Indoor Section B">Indoor Section B</option>
+              <option value="Outdoor Yard">Outdoor Yard</option>
+              <option value="Staging Area">Staging Area</option>
             </select>
           </div>
         </div>
@@ -888,7 +932,7 @@
             <input type="text" id="formEndUser" placeholder="Nama supplier / vendor" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
           </div>
           <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Peruntukan</label>
+            <label class="block font-bold text-slate-700 uppercase mb-1">Peruntukan Pekerjaan/Pengadaan</label>
             <input type="text" id="formPeruntukan" placeholder="Detail pekerjaan" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium">
           </div>
         </div>
@@ -941,7 +985,7 @@
         <input type="hidden" id="formWarehouseId">
 
         <div>
-          <label class="block font-bold text-slate-700 uppercase mb-1">Nama Gudang*</label>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Nama Gudang / Fasilitas *</label>
           <input type="text" id="formWarehouseNama" required placeholder="Contoh: Gudang Pusat Tebet" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium">
         </div>
 
@@ -1014,6 +1058,7 @@
           <div id="mutasiStockInfo" class="text-[11px] text-slate-500 mt-1 font-semibold"></div>
         </div>
 
+        <!-- BARIS TIPE DAN BRAND -->
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-slate-700 uppercase mb-1">Brand / Merek</label>
@@ -1100,24 +1145,19 @@
         <button onclick="closeScannerModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <div class="my-4 relative bg-slate-900 rounded-xl overflow-hidden min-h-[250px] w-full flex flex-col items-center justify-center">
-        <div id="qrReader" class="w-full h-full min-h-[240px]"></div>
+      <div class="my-4 relative bg-slate-900 rounded-xl overflow-hidden min-h-[240px] flex flex-col items-center justify-center">
+        <div id="qrReader" class="w-full h-full"></div>
         <div class="scanner-hud-laser"></div>
       </div>
 
-      <div class="flex items-center justify-between gap-2 mb-3 px-1">
-        <p id="scannerStatusText" class="text-[11px] text-slate-500 font-semibold truncate flex-1 text-center">Menyiapkan kamera...</p>
-        <button id="btnSwitchCamera" type="button" onclick="toggleCameraSwitch()" class="hidden text-[10px] font-bold text-orange-600 hover:text-orange-700 bg-orange-50 px-2.5 py-1 rounded-lg border border-orange-200">
-          <i class="fa-solid fa-camera-rotate mr-1"></i> Ganti
-        </button>
-      </div>
+      <p id="scannerStatusText" class="text-center text-[11px] text-slate-500 font-semibold mb-3">Arahkan kamera ke QR Code / Barcode</p>
 
       <div class="flex flex-col gap-2">
-        <button type="button" onclick="triggerFileInput()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition">
+        <button type="button" onclick="triggerFileInput()" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
           <i class="fa-solid fa-camera text-orange-600"></i> 📸 Foto / Upload QR
         </button>
         <input type="file" id="qrFileInput" accept="image/*" capture="environment" class="hidden" onchange="handleFileUpload(event)">
-        <button type="button" onclick="closeScannerModal()" class="w-full py-2 text-slate-500 text-xs font-semibold hover:text-slate-700">Tutup</button>
+        <button type="button" onclick="closeScannerModal()" class="w-full py-2 text-slate-500 text-xs font-semibold">Tutup</button>
       </div>
     </div>
   </div>
@@ -1138,7 +1178,7 @@
           <thead>
             <tr class="bg-slate-900 text-white text-[11px] uppercase tracking-wider font-extrabold">
               <th class="py-3 px-3 text-center w-10">No</th>
-              <th class="py-3 px-3">Tanggal & Waktu</th>
+              <th class="py-3 px-3">Tanggal</th>
               <th class="py-3 px-3">Username</th>
               <th class="py-3 px-3">Role Hak Akses</th>
               <th class="py-3 px-3 text-center">Status</th>
@@ -1370,13 +1410,14 @@
     </div>
   </div>
 
+  <!-- APPLICATION LOGIC SCRIPT -->
   <script>
     const BULAN_INDONESIA = [
       'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
       'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
     ];
 
-    // MASTER SEED DATA CADANGAN
+    // MASTER SEED DATA CADANGAN (Mencegah data hilang jika localStorage kosong/terhapus)
     const SEED_WAREHOUSES = [
       { id: 'WH-01', kode: 'WH-KANTOR', nama: 'Ouffice', alamat: 'Jl. Rambutan No.07, Manggarai Selatan, Tebet Jakarta Selatan 12680', pic: 'Admin', kontak: '0895-3972-33737', status: 'Aktif' },
       { id: 'WH-02', kode: 'WH-CRB', nama: 'Cahaya Robbani', alamat: 'Jl. Tebet Barat Dalam, Jakarta Selatan', pic: 'Staff Gudang', kontak: '0812-3456-7890', status: 'Aktif' }
@@ -1408,41 +1449,28 @@
       { id: 'CLI-02', nama: 'Ouffice', kontak: 'Admin', email: 'admin@ouffice.co.id', telepon: '0895-3972-33737', alamat: 'Jl. Rambutan No.07, Manggarai Selatan', status: 'Aktif' }
     ];
 
-    const SEED_SUPPLIERS = [
-      { id: 'SUP-01', nama: 'PT Optima Teknologi', kontak: 'Bpk. Hendra', email: 'sales@optimateknologi.co.id', telepon: '021-5551234', status: 'Aktif' },
-      { id: 'SUP-02', nama: 'Vendor Kabel Nusantara', kontak: 'Ibu Rina', email: 'order@vendorkabel.com', telepon: '0812-8888-9999', status: 'Aktif' }
-    ];
-
     let rawWarehouseData = JSON.parse(localStorage.getItem('ouffice_warehouse_data')) || SEED_WAREHOUSES;
     let rawMutasiData = JSON.parse(localStorage.getItem('ouffice_mutasi_data')) || SEED_MUTASI;
     let rawInventoryData = JSON.parse(localStorage.getItem('ouffice_cached_inventory')) || SEED_INVENTORY;
     let filteredInventoryData = [];
     let rawClientData = JSON.parse(localStorage.getItem('ouffice_client_data')) || SEED_CLIENTS;
-    let rawSupplierData = JSON.parse(localStorage.getItem('ouffice_supplier_data')) || SEED_SUPPLIERS;
+    let rawSupplierData = JSON.parse(localStorage.getItem('ouffice_supplier_data')) || [];
     let rawReturData = JSON.parse(localStorage.getItem('ouffice_retur_data')) || [];
     let rawUsersData = JSON.parse(localStorage.getItem('ouffice_users_db')) || [
       { id: 'USR-ADMIN', nama: 'Administrator Utama', username: 'admin', role: 'Master Admin', pass: 'admin123' },
       { id: 'USR-STAFF', nama: 'Staff Gudang', username: 'staff', role: 'Staff Gudang', pass: 'staff123' },
       { id: 'USR-MGR', nama: 'Manager Logistik', username: 'manager', role: 'Manager', pass: 'manager123' }
     ];
-    let rawLoginHistory = JSON.parse(localStorage.getItem('ouffice_login_history')) || [
-      { tanggal: '14/10/2026 08:30', username: 'admin', role: 'Master Admin', status: 'Berhasil' },
-      { tanggal: '14/10/2026 09:15', username: 'staff', role: 'Staff Gudang', status: 'Berhasil' }
-    ];
 
     let html5QrScannerInstance = null;
     let activeScanTarget = 'search';
-    let availableCameras = [];
-    let currentCameraIndex = 0;
-    let isScannerStarting = false;
     let currentUser = null;
     let currentActiveView = 'dashboard';
     let realtimeSyncTimer = null;
     let isFetchingBackend = false;
     let selectedGlobalWarehouse = '';
-    let lastDataFingerprint = '';
-    let lastLocalActionTime = 0;
-    let pieAnimationFrameId = null;
+    let lastDataFingerprint = ''; // Mencegah re-render jika data tidak berubah
+    let lastLocalActionTime = 0; // Mencegah data baru tertimpa cache server lama
 
     const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbziiQkjGRqo_SBRGsJbXlVlQM5q8_iPU3kMD9cBQPbPreYyXHtP7JIVYOJPOe4pWsYGqw/exec';
     let CUSTOM_GAS_URL = localStorage.getItem('ouffice_gas_url') || DEFAULT_GAS_URL;
@@ -1472,6 +1500,7 @@
       loadDataFromBackend(true, true);
       startRealtimeSync();
 
+      // Sinkronkan saat pengguna kembali membuka tab browser
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible' && currentUser && !isFetchingBackend) {
           loadDataFromBackend(true);
@@ -1488,12 +1517,14 @@
             rawInventoryData = parsed;
           }
         }
+        // Jika data inventaris ternyata kosong, pulihkan seketika dari cadangan
         if (!Array.isArray(rawInventoryData) || rawInventoryData.length === 0) {
           const backup = localStorage.getItem('ouffice_inventory_backup');
           rawInventoryData = backup ? JSON.parse(backup) : [...SEED_INVENTORY];
           localStorage.setItem('ouffice_cached_inventory', JSON.stringify(rawInventoryData));
         }
 
+        // Pastikan juga master gudang terisi
         if (!Array.isArray(rawWarehouseData) || rawWarehouseData.length === 0) {
           rawWarehouseData = [...SEED_WAREHOUSES];
           localStorage.setItem('ouffice_warehouse_data', JSON.stringify(rawWarehouseData));
@@ -1554,6 +1585,7 @@
 
     function startRealtimeSync() {
       if (realtimeSyncTimer) clearInterval(realtimeSyncTimer);
+      // Interval sinkronisasi stabil (30 detik) agar tidak memicu race condition
       realtimeSyncTimer = setInterval(() => {
         if (currentUser && !isFetchingBackend && document.visibilityState === 'visible') {
           loadDataFromBackend(true);
@@ -1585,7 +1617,7 @@
       if (sbRole) sbRole.innerText = currentUser.role || 'Staff Gudang';
       if (badgeRole) badgeRole.innerText = currentUser.role || 'STAFF GUDANG';
 
-      const isManager = currentUser.role === 'Manager' || currentUser.role === 'Direktur';
+      const isManager = currentUser.role === 'Manager';
 
       const btnNavUsers = document.getElementById('btnNavUsers');
       if (btnNavUsers) {
@@ -1632,7 +1664,7 @@
     function switchView(viewId) {
       currentActiveView = viewId;
       const viewTitleMap = {
-        'dashboard': 'Dashboard',
+        'dashboard': 'Dashboard Utama',
         'gudang': 'Master Gudang & Fasilitas',
         'produk': 'Data Produk Inventaris',
         'client': 'Data Client / Pelanggan',
@@ -1675,19 +1707,6 @@
       refreshCurrentView();
     }
 
-    function recordLoginActivity(username, role, status) {
-      const now = new Date();
-      const tglStr = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-      rawLoginHistory.unshift({
-        tanggal: tglStr,
-        username: username,
-        role: role,
-        status: status
-      });
-      if (rawLoginHistory.length > 50) rawLoginHistory = rawLoginHistory.slice(0, 50);
-      try { localStorage.setItem('ouffice_login_history', JSON.stringify(rawLoginHistory)); } catch(e){}
-    }
-
     function handleLoginSubmit(e) {
       e.preventDefault();
       const u = document.getElementById('loginUsername').value.trim();
@@ -1712,7 +1731,6 @@
         currentUser = { id: matchUser.id, username: matchUser.username, nama: matchUser.nama || matchUser.username, role: matchUser.role || 'Staff Gudang' };
         sessionStorage.setItem('ouffice_user', JSON.stringify(currentUser));
         localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
-        recordLoginActivity(currentUser.username, currentUser.role, 'Berhasil');
 
         document.getElementById('loginScreen').classList.add('hidden');
         applyRolePermissions();
@@ -1742,7 +1760,6 @@
               currentUser = res.user;
               sessionStorage.setItem('ouffice_user', JSON.stringify(currentUser));
               localStorage.setItem('ouffice_user', JSON.stringify(currentUser));
-              recordLoginActivity(currentUser.username, currentUser.role, 'Berhasil');
 
               document.getElementById('loginScreen').classList.add('hidden');
               applyRolePermissions();
@@ -1751,7 +1768,6 @@
 
               Toast.fire({ icon: 'success', title: `Selamat datang, ${currentUser.username}!` });
             } else {
-              recordLoginActivity(u, '-', 'Gagal');
               Swal.fire({
                 icon: 'error',
                 title: 'Gagal Login',
@@ -1784,7 +1800,6 @@
       }).then((res) => {
         if (res.isConfirmed) {
           sessionStorage.removeItem('ouffice_user');
-          localStorage.removeItem('ouffice_user');
           currentUser = null;
           document.getElementById('loginForm').reset();
           document.getElementById('loginScreen').classList.remove('hidden');
@@ -1808,9 +1823,12 @@
             if (syncIcon) syncIcon.classList.remove('fa-spin');
 
             if (res && res.success) {
+              // Jika ada aksi lokal (tambah/edit/mutasi) dalam 10 detik terakhir,
+              // lindungi data baru agar tidak tertimpa respon lama dari Google Sheets
               const timeSinceLocalAction = Date.now() - lastLocalActionTime;
               const isRecentLocalAction = timeSinceLocalAction < 10000;
 
+              // PROTEKSI ANTI-HAPUS: Hanya perbarui inventaris jika respon server memiliki data
               let incomingInv = (Array.isArray(res.data) && res.data.length > 0) ? res.data : rawInventoryData;
               if (isRecentLocalAction && Array.isArray(res.data) && res.data.length > 0) {
                 const serverIdSet = new Set(res.data.map(d => d.id));
@@ -1823,6 +1841,7 @@
               const incomingWhs = (Array.isArray(res.warehouses) && res.warehouses.length > 0) ? res.warehouses : rawWarehouseData;
               const incomingMut = (Array.isArray(res.mutasi) && res.mutasi.length > 0) ? res.mutasi : rawMutasiData;
 
+              // Hitung signature data untuk mendeteksi apakah data benar-benar berubah
               const newFingerprint = computeDataFingerprint(incomingInv, incomingWhs, incomingMut);
 
               if (newFingerprint === lastDataFingerprint && !force) {
@@ -1834,6 +1853,7 @@
               rawInventoryData = incomingInv;
               rawMutasiData = incomingMut;
 
+              // Simpan cadangan aman
               try {
                 localStorage.setItem('ouffice_warehouse_data', JSON.stringify(rawWarehouseData));
                 localStorage.setItem('ouffice_cached_inventory', JSON.stringify(rawInventoryData));
@@ -1880,12 +1900,14 @@
     function getCanonicalWarehouseName(wh) {
       if (!wh) return rawWarehouseData[0] ? rawWarehouseData[0].nama : 'Gudang Utama';
       const clean = String(wh).trim().toLowerCase();
+      // Pencocokan persis nama atau kode terlebih dahulu
       const exactMatch = rawWarehouseData.find(w => 
         w.nama.toLowerCase() === clean || 
         w.kode.toLowerCase() === clean
       );
       if (exactMatch) return exactMatch.nama;
 
+      // Pencocokan parsial yang aman tanpa salah memetakan kata umum
       const partialMatch = rawWarehouseData.find(w => {
         const wNama = w.nama.toLowerCase();
         return (clean.length >= 4 && wNama.includes(clean)) || (wNama.length >= 4 && clean.includes(wNama));
@@ -1901,6 +1923,7 @@
       const mutasiTujuan = document.getElementById('formMutasiTujuan');
       const returGudang = document.getElementById('formReturGudang');
 
+      // Ambil nilai yang sedang aktif sebelum merender ulang dropdown
       const curGlobal = selectedGlobalWarehouse || (globalSel ? globalSel.value : '');
       const curFilter = filterSel ? filterSel.value : '';
       const curForm = formSel ? formSel.value : '';
@@ -2021,6 +2044,7 @@
           const isMasuk = j.includes('masuk');
           const isKeluar = j.includes('keluar');
 
+          // Sertakan brand dalam pemetaan agar barang beda brand terpisah
           const brand = (item.brand || '').trim();
           const brandClean = (brand === '-' ? '' : brand).toLowerCase();
           const brandKey = brandClean || '__no_brand__';
@@ -2101,10 +2125,11 @@
       updateCounterSmooth('statTidakBerfungsi', safeTidakBerfungsi);
 
       const totalKondisi = safeBerfungsi + safeTidakBerfungsi;
-      const targetRatioSiap = totalKondisi > 0 ? Math.round((safeBerfungsi / totalKondisi) * 100) : 0;
+      const targetRatio = totalKondisi > 0 ? Math.round((safeBerfungsi / totalKondisi) * 100) : 0;
       const targetRatioRusak = totalKondisi > 0 ? Math.round((safeTidakBerfungsi / totalKondisi) * 100) : 0;
 
-      animatePieSliceSweeping(safeBerfungsi, safeTidakBerfungsi, totalKondisi, targetRatioSiap, targetRatioRusak);
+      // Animasikan grafik kelayakan stok dari 0% ke target rasio
+      animateKelayakanStokChart(safeBerfungsi, safeTidakBerfungsi, totalKondisi, targetRatio, targetRatioRusak);
 
       // Warehouse Stock Distribution Cards
       const distContainer = document.getElementById('warehouseStockDistribution');
@@ -2224,6 +2249,7 @@
           periodLabel.innerText = `${monthSlots[0].label} - ${monthSlots[5].label}`;
         }
 
+        // Mulai animasi batang bertumbuh perlahan dari 0 ke target
         triggerMonthlyChartAnimation(monthSlots.length);
       }
 
@@ -2247,136 +2273,6 @@
       }
 
       renderProporsiStokKeluar();
-    }
-
-    function animatePieSliceSweeping(berfungsi, tidakBerfungsi, totalKondisi, targetRatioSiap, targetRatioRusak) {
-      if (pieAnimationFrameId) {
-        cancelAnimationFrame(pieAnimationFrameId);
-        pieAnimationFrameId = null;
-      }
-
-      const textPercent = document.getElementById('motionPercentText');
-      const textPctSiap = document.getElementById('pctSiapPakai');
-      const textPctRusak = document.getElementById('pctRusak');
-      const sliceSiap = document.getElementById('pieSliceSiap');
-      const sliceRusak = document.getElementById('pieSliceRusak');
-      const textSiap = document.getElementById('pieTextSiap');
-      const textRusak = document.getElementById('pieTextRusak');
-
-      if (!sliceSiap || !sliceRusak) return;
-
-      const cx = 50, cy = 50, r = 45;
-
-      function getSlicePath(startAngle, endAngle) {
-        if ((endAngle - startAngle) >= (2 * Math.PI - 0.001)) {
-          return `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx} ${cy + r} A ${r} ${r} 0 1 1 ${cx} ${cy - r} Z`;
-        }
-        const x1 = cx + r * Math.cos(startAngle);
-        const y1 = cy + r * Math.sin(startAngle);
-        const x2 = cx + r * Math.cos(endAngle);
-        const y2 = cy + r * Math.sin(endAngle);
-        const largeArc = (endAngle - startAngle > Math.PI) ? 1 : 0;
-        return `M ${cx} ${cy} L ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 ${largeArc} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`;
-      }
-
-      if (totalKondisi === 0) {
-        sliceSiap.style.display = 'none';
-        sliceRusak.style.display = 'none';
-        if (textSiap) textSiap.style.display = 'none';
-        if (textRusak) textRusak.style.display = 'none';
-        if (textPercent) textPercent.innerText = '0%';
-        if (textPctSiap) textPctSiap.innerText = '0%';
-        if (textPctRusak) textPctRusak.innerText = '0%';
-        return;
-      }
-
-      const fullRatioSiap = berfungsi / totalKondisi;
-      const fullRatioRusak = tidakBerfungsi / totalKondisi;
-      const duration = 1600;
-      const startAnimTime = performance.now();
-
-      function stepAnimation(now) {
-        const progress = Math.min((now - startAnimTime) / duration, 1);
-        const ease = 1 - Math.pow(1 - progress, 3);
-
-        const curRatioSiap = fullRatioSiap * ease;
-        const curRatioRusak = fullRatioRusak * ease;
-        const curPercentSiap = Math.round(targetRatioSiap * ease);
-        const curPercentRusak = Math.round(targetRatioRusak * ease);
-
-        if (textPercent) textPercent.innerText = `${curPercentSiap}%`;
-        if (textPctSiap) textPctSiap.innerText = `${curPercentSiap}%`;
-        if (textPctRusak) textPctRusak.innerText = `${curPercentRusak}%`;
-
-        if (fullRatioSiap > 0 && fullRatioRusak === 0) {
-          const startSiap = -Math.PI / 2;
-          const endSiap = startSiap + (curRatioSiap * 2 * Math.PI);
-          sliceSiap.setAttribute('d', getSlicePath(startSiap, endSiap));
-          sliceSiap.style.display = 'block';
-          sliceRusak.style.display = 'none';
-          if (textSiap) {
-            textSiap.setAttribute('x', '50');
-            textSiap.setAttribute('y', '50');
-            textSiap.textContent = `${curPercentSiap}%`;
-            textSiap.style.display = curPercentSiap > 0 ? 'block' : 'none';
-          }
-          if (textRusak) textRusak.style.display = 'none';
-        } else if (fullRatioRusak > 0 && fullRatioSiap === 0) {
-          const startRusak = -Math.PI / 2;
-          const endRusak = startRusak + (curRatioRusak * 2 * Math.PI);
-          sliceRusak.setAttribute('d', getSlicePath(startRusak, endRusak));
-          sliceRusak.style.display = 'block';
-          sliceSiap.style.display = 'none';
-          if (textRusak) {
-            textRusak.setAttribute('x', '50');
-            textRusak.setAttribute('y', '50');
-            textRusak.textContent = `${curPercentRusak}%`;
-            textRusak.style.display = curPercentRusak > 0 ? 'block' : 'none';
-          }
-          if (textSiap) textSiap.style.display = 'none';
-        } else {
-          const startSiap = -Math.PI / 2;
-          const endSiap = startSiap + (curRatioSiap * 2 * Math.PI);
-          const midSiap = (startSiap + endSiap) / 2;
-
-          const startRusak = endSiap;
-          const endRusak = startRusak + (curRatioRusak * 2 * Math.PI);
-          const midRusak = (startRusak + endRusak) / 2;
-
-          sliceSiap.setAttribute('d', getSlicePath(startSiap, endSiap));
-          sliceSiap.style.display = curRatioSiap > 0 ? 'block' : 'none';
-
-          sliceRusak.setAttribute('d', getSlicePath(startRusak, endRusak));
-          sliceRusak.style.display = curRatioRusak > 0 ? 'block' : 'none';
-
-          if (textSiap) {
-            const rtSiap = r * (fullRatioSiap < 0.2 ? 0.7 : 0.52);
-            textSiap.setAttribute('x', (cx + rtSiap * Math.cos(midSiap)).toFixed(1));
-            textSiap.setAttribute('y', (cy + rtSiap * Math.sin(midSiap)).toFixed(1));
-            textSiap.textContent = `${curPercentSiap}%`;
-            textSiap.style.display = curPercentSiap > 12 ? 'block' : 'none';
-          }
-
-          if (textRusak) {
-            const rtRusak = r * (fullRatioRusak < 0.2 ? 0.7 : 0.52);
-            textRusak.setAttribute('x', (cx + rtRusak * Math.cos(midRusak)).toFixed(1));
-            textRusak.setAttribute('y', (cy + rtRusak * Math.sin(midRusak)).toFixed(1));
-            textRusak.textContent = `${curPercentRusak}%`;
-            textRusak.style.display = curPercentRusak > 12 ? 'block' : 'none';
-          }
-        }
-
-        if (progress < 1) {
-          pieAnimationFrameId = requestAnimationFrame(stepAnimation);
-        } else {
-          pieAnimationFrameId = null;
-          if (textPercent) textPercent.innerText = `${targetRatioSiap}%`;
-          if (textPctSiap) textPctSiap.innerText = `${targetRatioSiap}%`;
-          if (textPctRusak) textPctRusak.innerText = `${targetRatioRusak}%`;
-        }
-      }
-
-      pieAnimationFrameId = requestAnimationFrame(stepAnimation);
     }
 
     function renderProporsiStokKeluar() {
@@ -2469,8 +2365,13 @@
 
     let chartAnimationLoopTimer = null;
 
+    /**
+     * Memainkan animasi grafik batang dari nol hingga target,
+     * serta mengulanginya setiap jeda 30 detik secara mulus.
+     */
     function triggerMonthlyChartAnimation(slotCount) {
       function playAnimation() {
+        // 1. Reset sejenak ke 0
         for (let i = 0; i < slotCount; i++) {
           const barMasuk = document.getElementById(`chartBarMasuk-${i}`);
           const barKeluar = document.getElementById(`chartBarKeluar-${i}`);
@@ -2483,9 +2384,22 @@
           if (lblKeluar) lblKeluar.innerText = '0';
         }
 
+        // Animasikan juga progress bar Proporsi Stok Keluar ke 0%
         const propBars = document.querySelectorAll('.proporsi-progress-bar');
         propBars.forEach(b => { b.style.width = '0%'; });
 
+        // Trigger ulang animasi lingkaran kelayakan stok
+        if (lastKelayakanData && lastKelayakanData.totalKondisi !== undefined) {
+          animateKelayakanStokChart(
+            lastKelayakanData.safeBerfungsi,
+            lastKelayakanData.safeTidakBerfungsi,
+            lastKelayakanData.totalKondisi,
+            lastKelayakanData.targetRatio,
+            lastKelayakanData.targetRatioRusak
+          );
+        }
+
+        // 2. Beri jeda sepersekian detik, lalu animasikan perlahan ke atas (duration: 1800ms)
         setTimeout(() => {
           for (let i = 0; i < slotCount; i++) {
             const barMasuk = document.getElementById(`chartBarMasuk-${i}`);
@@ -2496,18 +2410,22 @@
             if (barMasuk && barMasuk.dataset.target) barMasuk.style.height = barMasuk.dataset.target;
             if (barKeluar && barKeluar.dataset.target) barKeluar.style.height = barKeluar.dataset.target;
 
+            // Rolling angka perlahan dari 0 ke total terinput
             if (lblMasuk) animateSingleNumber(lblMasuk, parseInt(lblMasuk.dataset.val, 10) || 0, 1800);
             if (lblKeluar) animateSingleNumber(lblKeluar, parseInt(lblKeluar.dataset.val, 10) || 0, 1800);
           }
 
+          // Kembalikan progress bar Proporsi Stok Keluar ke targetnya
           propBars.forEach(b => {
             if (b.dataset.targetWidth) b.style.width = b.dataset.targetWidth;
           });
         }, 120);
       }
 
+      // Mainkan animasi saat ini
       playAnimation();
 
+      // Atur timer loop per 30 detik
       if (chartAnimationLoopTimer) clearInterval(chartAnimationLoopTimer);
       chartAnimationLoopTimer = setInterval(() => {
         if (currentActiveView === 'dashboard' && document.visibilityState === 'visible') {
@@ -2516,6 +2434,163 @@
       }, 30000);
     }
 
+    let kelayakanAnimationReqId = null;
+    let lastKelayakanData = null;
+
+    /**
+     * Animasi busur lingkaran dan rolling angka kelayakan stok dari 0% ke target
+     */
+    function animateKelayakanStokChart(safeBerfungsi, safeTidakBerfungsi, totalKondisi, targetRatio, targetRatioRusak) {
+      lastKelayakanData = { safeBerfungsi, safeTidakBerfungsi, totalKondisi, targetRatio, targetRatioRusak };
+
+      const sliceSiap = document.getElementById('pieSliceSiap');
+      const sliceRusak = document.getElementById('pieSliceRusak');
+      const textSiap = document.getElementById('pieTextSiap');
+      const textRusak = document.getElementById('pieTextRusak');
+      const textPercent = document.getElementById('motionPercentText');
+      const textPctSiap = document.getElementById('pctSiapPakai');
+      const textPctRusak = document.getElementById('pctRusak');
+
+      if (!sliceSiap || !sliceRusak) return;
+
+      if (kelayakanAnimationReqId) {
+        cancelAnimationFrame(kelayakanAnimationReqId);
+        kelayakanAnimationReqId = null;
+      }
+
+      if (totalKondisi <= 0) {
+        sliceSiap.style.display = 'none';
+        sliceRusak.style.display = 'none';
+        if (textSiap) textSiap.style.display = 'none';
+        if (textRusak) textRusak.style.display = 'none';
+        if (textPercent) textPercent.innerText = '0%';
+        if (textPctSiap) textPctSiap.innerText = '0%';
+        if (textPctRusak) textPctRusak.innerText = '0%';
+        return;
+      }
+
+      const cx = 50, cy = 50, r = 45;
+      function getSlicePath(startAngle, endAngle) {
+        if ((endAngle - startAngle) >= (2 * Math.PI - 0.001)) {
+          return `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx} ${cy + r} A ${r} ${r} 0 1 1 ${cx} ${cy - r} Z`;
+        }
+        const x1 = cx + r * Math.cos(startAngle);
+        const y1 = cy + r * Math.sin(startAngle);
+        const x2 = cx + r * Math.cos(endAngle);
+        const y2 = cy + r * Math.sin(endAngle);
+        const largeArc = (endAngle - startAngle > Math.PI) ? 1 : 0;
+        return `M ${cx} ${cy} L ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 ${largeArc} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} Z`;
+      }
+
+      const durationMs = 1800;
+      const startTime = performance.now();
+      const finalPSiap = safeBerfungsi / totalKondisi;
+      const finalPRusak = safeTidakBerfungsi / totalKondisi;
+
+      function frame(now) {
+        const progress = Math.min((now - startTime) / durationMs, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 3); // cubic ease-out
+
+        const curRatio = Math.round(targetRatio * easeOut);
+        const curRatioRusak = Math.round(targetRatioRusak * easeOut);
+
+        if (textPercent) textPercent.innerText = `${curRatio}%`;
+        if (textPctSiap) textPctSiap.innerText = `${curRatio}%`;
+        if (textPctRusak) textPctRusak.innerText = `${curRatioRusak}%`;
+
+        const curPSiap = finalPSiap * easeOut;
+        const curPRusak = finalPRusak * easeOut;
+
+        if (finalPRusak === 0) {
+          // 100% Berfungsi
+          const angleSweep = curPSiap * 2 * Math.PI;
+          if (angleSweep > 0.01) {
+            sliceSiap.setAttribute('d', getSlicePath(-Math.PI / 2, -Math.PI / 2 + angleSweep));
+            sliceSiap.style.display = 'block';
+          } else {
+            sliceSiap.style.display = 'none';
+          }
+          sliceRusak.style.display = 'none';
+
+          if (textSiap) {
+            textSiap.setAttribute('x', '50');
+            textSiap.setAttribute('y', '50');
+            textSiap.textContent = `${curRatio}%`;
+            textSiap.style.display = curRatio > 0 ? 'block' : 'none';
+          }
+          if (textRusak) textRusak.style.display = 'none';
+        } else if (finalPSiap === 0) {
+          // 100% Rusak
+          const angleSweep = curPRusak * 2 * Math.PI;
+          if (angleSweep > 0.01) {
+            sliceRusak.setAttribute('d', getSlicePath(-Math.PI / 2, -Math.PI / 2 + angleSweep));
+            sliceRusak.style.display = 'block';
+          } else {
+            sliceRusak.style.display = 'none';
+          }
+          sliceSiap.style.display = 'none';
+
+          if (textRusak) {
+            textRusak.setAttribute('x', '50');
+            textRusak.setAttribute('y', '50');
+            textRusak.textContent = `${curRatioRusak}%`;
+            textRusak.style.display = curRatioRusak > 0 ? 'block' : 'none';
+          }
+          if (textSiap) textSiap.style.display = 'none';
+        } else {
+          // Kombinasi Siap & Rusak
+          const startSiap = -Math.PI / 2;
+          const endSiap = startSiap + (curPSiap * 2 * Math.PI);
+          const midSiap = (startSiap + endSiap) / 2;
+
+          const startRusak = endSiap;
+          const endRusak = startRusak + (curPRusak * 2 * Math.PI);
+          const midRusak = (startRusak + endRusak) / 2;
+
+          if (curPSiap > 0.005) {
+            sliceSiap.setAttribute('d', getSlicePath(startSiap, endSiap));
+            sliceSiap.style.display = 'block';
+          } else {
+            sliceSiap.style.display = 'none';
+          }
+
+          if (curPRusak > 0.005) {
+            sliceRusak.setAttribute('d', getSlicePath(startRusak, endRusak));
+            sliceRusak.style.display = 'block';
+          } else {
+            sliceRusak.style.display = 'none';
+          }
+
+          const rtSiap = r * (finalPSiap < 0.2 ? 0.7 : 0.52);
+          if (textSiap) {
+            textSiap.setAttribute('x', (cx + rtSiap * Math.cos(midSiap)).toFixed(1));
+            textSiap.setAttribute('y', (cy + rtSiap * Math.sin(midSiap)).toFixed(1));
+            textSiap.textContent = `${curRatio}%`;
+            textSiap.style.display = curRatio >= 5 ? 'block' : 'none';
+          }
+
+          const rtRusak = r * (finalPRusak < 0.2 ? 0.7 : 0.52);
+          if (textRusak) {
+            textRusak.setAttribute('x', (cx + rtRusak * Math.cos(midRusak)).toFixed(1));
+            textRusak.setAttribute('y', (cy + rtRusak * Math.sin(midRusak)).toFixed(1));
+            textRusak.textContent = `${curRatioRusak}%`;
+            textRusak.style.display = curRatioRusak >= 5 ? 'block' : 'none';
+          }
+        }
+
+        if (progress < 1) {
+          kelayakanAnimationReqId = requestAnimationFrame(frame);
+        } else {
+          kelayakanAnimationReqId = null;
+        }
+      }
+
+      kelayakanAnimationReqId = requestAnimationFrame(frame);
+    }
+
+    /**
+     * Efek rolling angka dari 0 sampai nilai target terinput
+     */
     function animateSingleNumber(element, targetVal, durationMs) {
       if (!element || targetVal === 0) {
         if (element) element.innerText = targetVal;
@@ -2524,7 +2599,7 @@
       const startTime = performance.now();
       function updateNumber(now) {
         const progress = Math.min((now - startTime) / durationMs, 1);
-        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const easeOut = 1 - Math.pow(1 - progress, 3); // cubic ease-out
         element.innerText = Math.round(targetVal * easeOut);
         if (progress < 1) {
           requestAnimationFrame(updateNumber);
@@ -2535,15 +2610,20 @@
       requestAnimationFrame(updateNumber);
     }
 
+    /**
+     * Memformat tanggal menjadi standar numerik: dd/mm/yyyy (contoh: 09/10/2026)
+     */
     function formatDateOnly(str) {
       const s = String(str).trim();
       if (!s) return '-';
 
+      // Jika format DD-MM-YYYY atau DD/MM/YYYY
       const indoMatch = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
       if (indoMatch) {
         return `${indoMatch[1].padStart(2, '0')}/${indoMatch[2].padStart(2, '0')}/${indoMatch[3]}`;
       }
 
+      // Jika format ISO YYYY-MM-DD
       const isoMatch = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
       if (isoMatch) {
         return `${isoMatch[3].padStart(2, '0')}/${isoMatch[2].padStart(2, '0')}/${isoMatch[1]}`;
@@ -2559,16 +2639,22 @@
       return s || '-';
     }
 
+    /**
+     * Standarisasi format tanggal ke dd/mm/yyyy
+     */
     function formatDateIndoFull(str) {
       return formatDateOnly(str);
     }
 
+    /**
+     * Konversi tanggal inputan/data ke format ISO YYYY-MM-DD untuk keperluan input[type="date"]
+     */
     function toISODateString(str) {
       if (!str) return '';
       if (str instanceof Date) {
         const y = str.getFullYear();
         const m = String(str.getMonth() + 1).padStart(2, '0');
-        const d = String(d.getDate()).padStart(2, '0');
+        const d = String(str.getDate()).padStart(2, '0');
         return `${y}-${m}-${d}`;
       }
       const s = String(str).trim();
@@ -2612,6 +2698,14 @@
       return !isNaN(d.getTime()) ? d.getTime() : 0;
     }
 
+    /**
+     * Menentukan bobot prioritas jenis transaksi pada tanggal yang sama:
+     * Urutan tampilan dari atas ke bawah:
+     * 1. Keluar (Rank 4 - paling atas)
+     * 2. Mutasi Masuk (Rank 3)
+     * 3. Mutasi Keluar (Rank 2)
+     * 4. Masuk (Rank 1 - paling bawah di tanggal tersebut)
+     */
     function getJenisTransaksiRank(jenis) {
       const j = String(jenis || '').trim().toLowerCase();
       if (j === 'keluar') return 4;
@@ -2636,18 +2730,23 @@
     function sortByDateDescending(items) {
       if (!Array.isArray(items)) return [];
       return [...items].sort((a, b) => {
+        // 1. Urutkan berdasarkan Tanggal transaksi terbaru (descending)
         const timeA = getItemTimestamp(a);
         const timeB = getItemTimestamp(b);
         if (timeB !== timeA) return timeB - timeA;
 
+        // 2. Jika tanggal sama, urutkan berdasarkan Jenis Transaksi:
+        // Keluar (atas) -> Mutasi Masuk -> Mutasi Keluar -> Masuk (bawah)
         const rankA = getJenisTransaksiRank(a.jenisTransaksi);
         const rankB = getJenisTransaksiRank(b.jenisTransaksi);
         if (rankB !== rankA) return rankB - rankA;
 
+        // 3. Jika tanggal dan jenis transaksi sama, input transaksi terbaru di paling atas
         const inputTimeA = getItemInputTimestamp(a);
         const inputTimeB = getItemInputTimestamp(b);
         if (inputTimeB !== inputTimeA) return inputTimeB - inputTimeA;
 
+        // 4. Penentu deterministik sekunder
         const idA = String(a.id || '');
         const idB = String(b.id || '');
         return idB.localeCompare(idA);
@@ -2668,7 +2767,6 @@
       }
 
       const displayData = sortByDateDescending(data);
-      const isManager = currentUser && (currentUser.role === 'Manager' || currentUser.role === 'Direktur');
 
       if (tbody) {
         tbody.innerHTML = displayData.map((item, idx) => {
@@ -2683,7 +2781,7 @@
             ? '<span class="font-bold text-emerald-600">Berfungsi</span>'
             : '<span class="font-bold text-rose-600">Tidak Berfungsi</span>';
 
-          const actionButtons = isManager ? '-' : `
+          const actionButtons = (currentUser && currentUser.role === 'Manager') ? '-' : `
             <div class="flex items-center justify-center gap-1.5">
               <button onclick="editData('${item.id}')" title="Edit Data" class="w-7 h-7 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 rounded-lg text-slate-600 transition flex items-center justify-center">
                 <i class="fa-solid fa-pen-to-square"></i>
@@ -2752,10 +2850,10 @@
                 <div><span class="text-slate-400 block text-[10px]">Pekerjaan:</span> <span class="text-slate-700">${item.peruntukan || '-'}</span></div>
               </div>
               ${item.serialNumber ? `<div class="font-mono text-[10px] text-slate-500 truncate">SN: ${item.serialNumber}</div>` : ''}
-              ${!isManager ? `
+              ${currentUser && currentUser.role !== 'Manager' ? `
               <div class="flex items-center justify-end gap-2 pt-1">
                 <button onclick="editData('${item.id}')" class="px-2.5 py-1 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 text-slate-700 rounded-lg text-xs font-semibold">Edit</button>
-                ${currentUser && currentUser.role === 'Master Admin' ? `<button onclick="deleteData('${item.id}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-semibold">Hapus</button>` : ''}
+                ${currentUser.role === 'Master Admin' ? `<button onclick="deleteData('${item.id}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg text-xs font-semibold">Hapus</button>` : ''}
               </div>` : ''}
             </div>
           `;
@@ -2820,7 +2918,7 @@
 
       let data = rawInventoryData.filter(x => {
         const matchJenis = x.jenisTransaksi === jenis || (jenis === 'Masuk' && x.jenisTransaksi === 'Mutasi Masuk') || (jenis === 'Keluar' && x.jenisTransaksi === 'Mutasi Keluar');
-        const matchGudang = !selectedGlobalWarehouse || getCanonicalWarehouseName(x.gudang) === selectedGlobalWarehouse;
+        const matchGudang = !selectedGlobalWarehouse || (x.gudang || '') === selectedGlobalWarehouse;
         return matchJenis && matchGudang;
       });
 
@@ -2877,7 +2975,7 @@
     function renderWarehouseCards() {
       const container = document.getElementById('warehouseCardsGrid');
       if (!container) return;
-      const isManager = currentUser && (currentUser.role === 'Manager' || currentUser.role === 'Direktur');
+      const isManager = currentUser && currentUser.role === 'Manager';
       const isMasterAdmin = currentUser && currentUser.role === 'Master Admin';
 
       container.innerHTML = rawWarehouseData.map((wh) => {
@@ -2930,7 +3028,7 @@
     }
 
     function openWarehouseModal() {
-      if (currentUser && (currentUser.role === 'Manager' || currentUser.role === 'Direktur')) return;
+      if (currentUser && currentUser.role === 'Manager') return;
       document.getElementById('warehouseForm').reset();
       document.getElementById('formWarehouseId').value = '';
       document.getElementById('modalWarehouseTitle').innerText = 'Tambah Data Gudang';
@@ -2943,7 +3041,7 @@
 
     function handleWarehouseSubmit(e) {
       e.preventDefault();
-      if (currentUser && (currentUser.role === 'Manager' || currentUser.role === 'Direktur')) return;
+      if (currentUser && currentUser.role === 'Manager') return;
 
       const id = document.getElementById('formWarehouseId').value;
       const payload = {
@@ -2977,7 +3075,7 @@
     }
 
     function editWarehouse(id) {
-      if (currentUser && (currentUser.role === 'Manager' || currentUser.role === 'Direktur')) return;
+      if (currentUser && currentUser.role === 'Manager') return;
       const wh = rawWarehouseData.find(w => w.id === id);
       if (!wh) return;
 
@@ -3033,7 +3131,7 @@
         return;
       }
 
-      const isManager = currentUser && (currentUser.role === 'Manager' || currentUser.role === 'Direktur');
+      const isManager = currentUser && currentUser.role === 'Manager';
       const displayData = [...rawMutasiData].reverse();
 
       container.innerHTML = `
@@ -3088,7 +3186,7 @@
     }
 
     function openMutasiModal() {
-      if (currentUser && (currentUser.role === 'Manager' || currentUser.role === 'Direktur')) return;
+      if (currentUser && currentUser.role === 'Manager') return;
       document.getElementById('mutasiForm').reset();
       document.getElementById('formMutasiId').value = '';
       document.getElementById('modalMutasiTitle').innerHTML = '<i class="fa-solid fa-arrow-right-arrow-left text-indigo-600"></i> Mutasi Stok Antar Gudang';
@@ -3223,7 +3321,7 @@
     }
 
     function editMutasi(id) {
-      if (currentUser && (currentUser.role === 'Manager' || currentUser.role === 'Direktur')) return;
+      if (currentUser && currentUser.role === 'Manager') return;
       const m = rawMutasiData.find(x => x.id === id);
       if (!m) return;
 
@@ -3275,6 +3373,7 @@
         if (res.isConfirmed) {
           const m = rawMutasiData.find(x => x.id === id);
           if (m) {
+            // Hapus juga transaksi mutasi terkait di inventaris jika ada
             rawInventoryData = rawInventoryData.filter(item => 
               !(item.peruntukan && item.peruntukan.includes(m.refNo))
             );
@@ -3306,16 +3405,16 @@
 
     function handleMutasiSubmit(e) {
       e.preventDefault();
-      if (currentUser && (currentUser.role === 'Manager' || currentUser.role === 'Direktur')) return;
+      if (currentUser && currentUser.role === 'Manager') return;
 
       lastLocalActionTime = Date.now();
       const editId = document.getElementById('formMutasiId').value;
       const tgl = document.getElementById('formMutasiTanggal').value;
-      const ref = document.getElementById('formMutasiRef').value || `MUT-${Date.now().toString().slice(-6)}`;
+      const ref = document.getElementById('formMutasiRef').value || `MUT-${Date.now()}`;
       const asal = getCanonicalWarehouseName(document.getElementById('formMutasiAsal').value);
       const tujuan = getCanonicalWarehouseName(document.getElementById('formMutasiTujuan').value);
       const barangSelect = document.getElementById('formMutasiBarangSelect');
-      const opt = barangSelect ? barangSelect.selectedOptions[0] : null;
+      const opt = barangSelect.selectedOptions[0];
       const selectedNamaBarang = (opt && opt.value) ? opt.value : (barangSelect ? barangSelect.value : '');
       const brandVal = document.getElementById('formMutasiBrand').value.trim() || (opt ? opt.dataset.brand : '');
       const tipeVal = document.getElementById('formMutasiTipe').value.trim() || (opt ? opt.dataset.tipe : '');
@@ -3343,6 +3442,7 @@
       }
 
       if (editId) {
+        // Mode UPDATE Mutasi
         const idx = rawMutasiData.findIndex(x => x.id === editId);
         const oldMutasi = idx !== -1 ? rawMutasiData[idx] : null;
 
@@ -3420,6 +3520,7 @@
         return;
       }
 
+      // Mode CREATE Baru Mutasi
       const mutasiRecord = {
         id: `MUT-${Date.now()}`,
         refNo: ref,
@@ -3435,6 +3536,7 @@
         catatan: catatan
       };
 
+      // Entri Pengurangan Stok (Gudang Asal)
       const entryKeluar = {
         id: `INV-MUT-OUT-${Date.now()}`,
         tanggal: tgl,
@@ -3454,6 +3556,7 @@
         deskripsi: catatan
       };
 
+      // Entri Penambahan Stok (Gudang Tujuan)
       const entryMasuk = {
         id: `INV-MUT-IN-${Date.now() + 1}`,
         tanggal: tgl,
@@ -3501,7 +3604,7 @@
 
     function handleFormSubmit(e) {
       e.preventDefault();
-      if (currentUser && (currentUser.role === 'Manager' || currentUser.role === 'Direktur')) return;
+      if (currentUser && currentUser.role === 'Manager') return;
 
       lastLocalActionTime = Date.now();
       const id = document.getElementById('formId').value;
@@ -3556,7 +3659,7 @@
     }
 
     function editData(id) {
-      if (currentUser && (currentUser.role === 'Manager' || currentUser.role === 'Direktur')) return;
+      if (currentUser && currentUser.role === 'Manager') return;
       const item = rawInventoryData.find(x => x.id === id);
       if (!item) return;
 
@@ -3586,7 +3689,7 @@
     }
 
     function deleteData(id) {
-      if (currentUser && (currentUser.role === 'Manager' || currentUser.role === 'Direktur')) return;
+      if (currentUser && currentUser.role === 'Manager') return;
       Swal.fire({
         title: 'Hapus Transaksi?',
         text: 'Data yang dihapus tidak dapat dikembalikan.',
@@ -3612,7 +3715,7 @@
     }
 
     function openModal() {
-      if (currentUser && (currentUser.role === 'Manager' || currentUser.role === 'Direktur')) return;
+      if (currentUser && currentUser.role === 'Manager') return;
       const form = document.getElementById('inventoryForm');
       if (form) form.reset();
       document.getElementById('formId').value = '';
@@ -3625,7 +3728,7 @@
     }
 
     function openModalWithPreset(jenisPreset) {
-      if (currentUser && (currentUser.role === 'Manager' || currentUser.role === 'Direktur')) return;
+      if (currentUser && currentUser.role === 'Manager') return;
       openModal();
       const formJenis = document.getElementById('formJenis');
       if (formJenis) {
@@ -3727,6 +3830,7 @@
         const tipe = (item.tipe || '').trim();
         const seri = (item.seri || '').trim();
 
+        // Kunci unik memisahkan brand: jika brand berbeda atau tanpa brand, menjadi baris terpisah
         const brandClean = (brand === '-' ? '' : brand).toLowerCase();
         const brandKey = brandClean ? brandClean : '__no_brand__';
         const prodKey = getCanonicalProductKey(nama, tipe || seri);
@@ -3746,6 +3850,7 @@
             snsKeluar: new Set()
           };
         } else {
+          // Pilih nama yang lebih deskriptif jika ada
           if (nama.length > summaryMap[key].nama.length) summaryMap[key].nama = nama;
           if (brand && (!summaryMap[key].brand || summaryMap[key].brand === '-')) summaryMap[key].brand = brand;
           if (!summaryMap[key].tipe && tipe) summaryMap[key].tipe = tipe;
@@ -3763,6 +3868,7 @@
           summaryMap[key].keluar += qty;
         }
 
+        // Pengelolaan Serial Number
         if (item.serialNumber && item.serialNumber.trim()) {
           const snList = item.serialNumber.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
           snList.forEach(sn => {
@@ -3793,6 +3899,7 @@
         );
       }
 
+      // Urutkan per gudang, nama barang, lalu brand
       items.sort((a, b) => 
         a.gudang.localeCompare(b.gudang) || 
         a.nama.localeCompare(b.nama) || 
@@ -3830,7 +3937,7 @@
     function exportStokToPDF() {
       const cetakOlehNama = currentUser ? (currentUser.nama || currentUser.username) : 'Admin Gudang';
       const cetakOlehRole = currentUser ? currentUser.role : 'Staff Gudang';
-      const gudangLabel = selectedGlobalWarehouse || 'Semua Gudang';
+      const gudangLabel = selectedGlobalWarehouse || 'Semua Gudang Terpadu';
       const tanggalCetak = formatDateOnly(new Date());
 
       const summaryMap = {};
@@ -3847,6 +3954,7 @@
         const tipe = (item.tipe || '').trim();
         const seri = (item.seri || '').trim();
 
+        // Kunci pemisah brand yang sama persis dengan tabel
         const brandClean = (brand === '-' ? '' : brand).toLowerCase();
         const brandKey = brandClean ? brandClean : '__no_brand__';
         const prodKey = getCanonicalProductKey(nama, tipe || seri);
@@ -3924,11 +4032,11 @@
       element.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 10px; margin-bottom: 12px;">
           <div>
-            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="135" crossorigin="anonymous" style="width: 135px; height: auto; max-height: 55px; object-fit: contain; display: block;" onerror="this.src='https://placehold.co/135x45/ea580c/white?text=Ouffice.co.id'">
-            <p style="font-size: 9px; color: #64748b; margin: 3px 0 0 0; text-transform: uppercase; font-weight: bold;">Ouffice Inventory System</p>
+            <h2 style="margin: 0; font-size: 16px; font-weight: 900; color: #ea580c;">OUFFICE.CO.ID</h2>
+            <p style="font-size: 9px; color: #64748b; margin: 3px 0 0 0; text-transform: uppercase; font-weight: bold;">Multi-Warehouse Inventory System</p>
           </div>
           <div style="text-align: right;">
-            <h1 style="font-size: 14px; font-weight: 900; color: #0f172a; margin: 0; text-transform: uppercase;">REKAP ANTAR GUDANG</h1>
+            <h1 style="font-size: 14px; font-weight: 900; color: #0f172a; margin: 0; text-transform: uppercase;">REKAP STOK MULTI-GUDANG</h1>
             <p style="font-size: 9.5px; color: #475569; margin: 2px 0 0 0;">Fasilitas: <strong>${gudangLabel}</strong></p>
             <p style="font-size: 8.5px; color: #64748b; margin: 1px 0 0 0;">Tanggal Cetak: <strong>${tanggalCetak}</strong></p>
             <p style="font-size: 8.5px; color: #0f172a; margin: 2px 0 0 0; font-weight: bold;">Dicetak Oleh: <span style="color: #ea580c;">${cetakOlehNama}</span> (${cetakOlehRole})</p>
@@ -3942,229 +4050,402 @@
               <th style="padding: 5px; text-align: left;">Nama Barang</th>
               <th style="padding: 5px; text-align: left; width: 75px;">Brand</th>
               <th style="padding: 5px; text-align: left; width: 90px;">Tipe / Seri</th>
-              <th style="padding: 5px; text-align: left; width: 140px;">Serial Number (Tersedia)</th>
+              <th style="padding: 5px; text-align: left;">Serial Number Aktif</th>
               <th style="padding: 5px; text-align: right; width: 65px;">Total Masuk</th>
               <th style="padding: 5px; text-align: right; width: 65px;">Total Keluar</th>
               <th style="padding: 5px; text-align: right; width: 65px;">Sisa Stok</th>
             </tr>
           </thead>
           <tbody>
-            ${rowsHtml}
+            ${rowsHtml || '<tr><td colspan="8" style="padding: 10px; text-align: center;">Tidak ada data stok.</td></tr>'}
           </tbody>
         </table>
-
-        <div style="margin-top: 15px; display: flex; justify-content: flex-end; font-size: 9px; text-align: center;">
-          <div style="width: 180px;">
-            <p style="margin: 0 0 45px 0; color: #475569;">Petugas Gudang,</p>
-            <p style="margin: 0; font-weight: bold; border-top: 1px solid #cbd5e1; padding-top: 4px; color: #0f172a;">${cetakOlehNama}</p>
-          </div>
-        </div>
       `;
 
-      const opt = {
-        margin: [6, 6, 6, 6],
-        filename: `Rekap_Stok_${gudangLabel.replace(/\s+/g, '_')}_${tanggalCetak.replace(/\//g, '-')}.pdf`,
+      html2pdf().set({
+        margin: 8,
+        filename: `Laporan_Multi_Gudang_${formatDateOnly(new Date()).replace(/\//g, '-')}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-      };
-
-      Swal.fire({
-        title: 'Menyiapkan PDF...',
-        text: 'Mengenerate dokumen laporan rekap stok...',
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
-      });
-
-      html2pdf().set(opt).from(element).save().then(() => {
-        Swal.close();
-      }).catch(() => {
-        Swal.close();
-        Swal.fire('Gagal', 'Terjadi kesalahan saat mengekspor PDF.', 'error');
-      });
+      }).from(element).save();
     }
 
     function exportDataProdukPDF() {
       const cetakOlehNama = currentUser ? (currentUser.nama || currentUser.username) : 'Admin Gudang';
       const cetakOlehRole = currentUser ? currentUser.role : 'Staff Gudang';
-      const gudangLabel = selectedGlobalWarehouse || 'Semua Gudang';
-      const tanggalCetak = formatDateOnly(new Date());
+      const startDate = document.getElementById('filterStartDate') ? document.getElementById('filterStartDate').value : '';
+      const endDate = document.getElementById('filterEndDate') ? document.getElementById('filterEndDate').value : '';
+      const jenis = document.getElementById('filterJenis') ? document.getElementById('filterJenis').value : '';
+      const kondisi = document.getElementById('filterKondisi') ? document.getElementById('filterKondisi').value : '';
 
-      const dataToExport = sortByDateDescending(filteredInventoryData.length > 0 ? filteredInventoryData : rawInventoryData);
-
-      const rowsHtml = dataToExport.map((item, idx) => {
-        const isMasuk = item.jenisTransaksi === 'Masuk' || item.jenisTransaksi === 'Mutasi Masuk';
-        const brandSeri = [item.brand, item.tipe || item.seri].filter(Boolean).join(' - ') || '-';
-        return `
-          <tr style="border-bottom: 1px solid #e2e8f0; font-size: 8.5px; ${idx % 2 === 1 ? 'background-color: #f8fafc;' : ''}">
-            <td style="padding: 4px; text-align: center; color: #64748b;">${idx + 1}</td>
-            <td style="padding: 4px; font-family: monospace;">${formatDateOnly(item.tanggal)}</td>
-            <td style="padding: 4px; font-weight: bold; color: #b45309;">${item.gudang || '-'}</td>
-            <td style="padding: 4px; font-weight: bold; color: ${isMasuk ? '#047857' : '#0284c7'};">${item.jenisTransaksi}</td>
-            <td style="padding: 4px; font-weight: bold; color: #0f172a;">${item.namaBarang}</td>
-            <td style="padding: 4px; color: #475569;">${brandSeri}</td>
-            <td style="padding: 4px; font-family: monospace; font-size: 8px;">${item.serialNumber || '-'}</td>
-            <td style="padding: 4px; text-align: center; font-weight: bold;">${item.quantity} ${item.satuan || ''}</td>
-            <td style="padding: 4px; color: #334155;">${item.endUser || '-'}</td>
-            <td style="padding: 4px; color: #475569;">${item.peruntukan || '-'}</td>
-            <td style="padding: 4px; text-align: center; font-weight: bold; color: ${item.statusKondisi === 'Berfungsi' ? '#047857' : '#e11d48'};">${item.statusKondisi}</td>
-          </tr>
-        `;
-      }).join('');
+      let periodeText = 'Semua Periode';
+      if (startDate && endDate) {
+        periodeText = `${formatDateOnly(startDate)} s/d ${formatDateOnly(endDate)}`;
+      } else if (startDate) {
+        periodeText = `Mulai ${formatDateOnly(startDate)}`;
+      } else if (endDate) {
+        periodeText = `Sampai ${formatDateOnly(endDate)}`;
+      }
 
       const element = document.createElement('div');
       element.style.padding = '15px';
       element.style.fontFamily = 'Inter, sans-serif';
 
+      const dataToExport = sortByDateDescending(filteredInventoryData);
+
       element.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 8px; margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ea580c; padding-bottom: 10px; margin-bottom: 12px;">
           <div>
-            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="130" crossorigin="anonymous" style="width: 130px; height: auto;" onerror="this.src='https://placehold.co/130x40/ea580c/white?text=Ouffice.co.id'">
-            <p style="font-size: 8.5px; color: #64748b; margin: 2px 0 0 0; text-transform: uppercase; font-weight: bold;">Laporan Data Mutasi & Inventaris</p>
+            <h2 style="margin: 0; font-size: 16px; font-weight: 900; color: #ea580c;">OUFFICE.CO.ID</h2>
+            <p style="font-size: 9px; color: #64748b; margin: 3px 0 0 0; text-transform: uppercase; font-weight: bold;">Inventory Management System</p>
           </div>
           <div style="text-align: right;">
-            <h2 style="font-size: 13px; font-weight: 900; margin: 0; color: #0f172a; text-transform: uppercase;">LAPORAN TRANSAKSI INVENTARIS</h2>
-            <p style="font-size: 9px; color: #475569; margin: 2px 0 0 0;">Filter Gudang: <strong>${gudangLabel}</strong> | Cetak: <strong>${tanggalCetak}</strong></p>
-            <p style="font-size: 8.5px; color: #0f172a; margin: 1px 0 0 0; font-weight: bold;">Dicetak Oleh: <span style="color: #ea580c;">${cetakOlehNama}</span> (${cetakOlehRole})</p>
+            <h1 style="font-size: 14px; font-weight: 900; color: #0f172a; margin: 0; text-transform: uppercase;">LAPORAN TRANSAKSI DATA PRODUK</h1>
+            <p style="font-size: 9.5px; color: #475569; margin: 2px 0 0 0;">Periode: <strong>${periodeText}</strong> | Transaksi: <strong>${jenis || 'Semua'}</strong> | Kondisi: <strong>${kondisi || 'Semua'}</strong></p>
+            <p style="font-size: 8.5px; color: #64748b; margin: 1px 0 0 0;">Total Item: ${dataToExport.length} Transaksi | Tanggal Cetak: <strong>${formatDateOnly(new Date())}</strong></p>
+            <p style="font-size: 8.5px; color: #0f172a; margin: 2px 0 0 0; font-weight: bold;">Dicetak Oleh: <span style="color: #ea580c;">${cetakOlehNama}</span> (${cetakOlehRole})</p>
           </div>
         </div>
 
-        <table style="width: 100%; border-collapse: collapse;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
           <thead>
-            <tr style="background-color: #0f172a; color: white; font-size: 9px;">
-              <th style="padding: 5px; text-align: center; width: 25px;">No</th>
-              <th style="padding: 5px; text-align: left; width: 65px;">Tanggal</th>
-              <th style="padding: 5px; text-align: left; width: 80px;">Gudang</th>
-              <th style="padding: 5px; text-align: left; width: 75px;">Jenis</th>
-              <th style="padding: 5px; text-align: left;">Nama Barang</th>
-              <th style="padding: 5px; text-align: left; width: 100px;">Brand/Model</th>
-              <th style="padding: 5px; text-align: left; width: 110px;">SN</th>
-              <th style="padding: 5px; text-align: center; width: 50px;">Qty</th>
-              <th style="padding: 5px; text-align: left; width: 110px;">Penerima/Asal</th>
-              <th style="padding: 5px; text-align: left; width: 100px;">Pekerjaan</th>
-              <th style="padding: 5px; text-align: center; width: 65px;">Kondisi</th>
+            <tr style="background-color: #0f172a; color: white;">
+              <th style="padding: 5px 4px; text-align: center; width: 25px;">No</th>
+              <th style="padding: 5px 4px; text-align: left; width: 75px;">Tanggal</th>
+              <th style="padding: 5px 4px; text-align: center; width: 55px;">Jenis</th>
+              <th style="padding: 5px 6px; text-align: left;">Nama Barang</th>
+              <th style="padding: 5px 6px; text-align: left;">Brand / Seri</th>
+              <th style="padding: 5px 4px; text-align: center; width: 85px;">Serial Number</th>
+              <th style="padding: 5px 4px; text-align: center; width: 45px;">Qty</th>
+              <th style="padding: 5px 6px; text-align: left;">Supplier / End User</th>
+              <th style="padding: 5px 4px; text-align: center; width: 60px;">Status</th>
             </tr>
           </thead>
           <tbody>
-            ${rowsHtml}
+            ${dataToExport.map((item, idx) => {
+              const brandSeri = [item.brand, item.tipe || item.seri].filter(Boolean).join(' • ');
+              const isMasuk = item.jenisTransaksi.includes('Masuk');
+              return `
+                <tr style="border-bottom: 1px solid #e2e8f0; ${idx % 2 === 1 ? 'background-color: #f8fafc;' : ''}">
+                  <td style="padding: 4px; text-align: center; font-family: monospace;">${idx + 1}</td>
+                  <td style="padding: 4px; font-family: monospace;">${formatDateOnly(item.tanggal)}</td>
+                  <td style="padding: 4px; text-align: center; font-weight: bold; color: ${isMasuk ? '#047857' : '#0284c7'};">${item.jenisTransaksi}</td>
+                  <td style="padding: 4px 6px; font-weight: bold; color: #1e293b;">${item.namaBarang || '-'}</td>
+                  <td style="padding: 4px 6px; color: #475569;">${brandSeri || '-'}</td>
+                  <td style="padding: 4px; text-align: center; font-family: monospace; font-size: 8px;">${item.serialNumber || '-'}</td>
+                  <td style="padding: 4px; text-align: center; font-weight: bold; font-family: monospace;">${item.quantity || 0} ${item.satuan || ''}</td>
+                  <td style="padding: 4px 6px; color: #334155;">${item.endUser || '-'}</td>
+                  <td style="padding: 4px; text-align: center; font-weight: bold; color: ${item.statusKondisi === 'Berfungsi' ? '#059669' : '#e11d48'};">${item.statusKondisi || '-'}</td>
+                </tr>
+              `;
+            }).join('')}
           </tbody>
+        </table>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 8.5px;">
+          <tr>
+            <td style="width: 70%;"></td>
+            <td style="width: 30%; text-align: center; vertical-align: top;">
+              <p style="margin: 0; color: #475569;">Tanggal: <strong>${formatDateOnly(new Date())}</strong></p>
+              <p style="margin: 2px 0 0 0; font-weight: bold; color: #0f172a;">Dicetak Oleh,</p>
+              <div style="height: 40px;"></div>
+              <p style="margin: 0; font-weight: 800; text-decoration: underline; color: #0f172a;">${cetakOlehNama}</p>
+              <p style="margin: 1px 0 0 0; color: #64748b; text-transform: uppercase; font-size: 8px;">${cetakOlehRole}</p>
+            </td>
+          </tr>
         </table>
       `;
 
-      const opt = {
-        margin: [6, 6, 6, 6],
-        filename: `Data_Inventaris_${gudangLabel.replace(/\s+/g, '_')}_${tanggalCetak.replace(/\//g, '-')}.pdf`,
+      html2pdf().set({
+        margin: 6,
+        filename: `Laporan_Data_Produk_${formatDateOnly(new Date()).replace(/\//g, '-')}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-      };
-
-      Swal.fire({
-        title: 'Mengekspor PDF...',
-        text: 'Membuat dokumen PDF inventaris produk...',
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
-      });
-
-      html2pdf().set(opt).from(element).save().then(() => {
-        Swal.close();
-      }).catch(() => {
-        Swal.close();
-        Swal.fire('Gagal', 'Terjadi kesalahan saat mengekspor PDF.', 'error');
-      });
+      }).from(element).save();
     }
 
     function renderDeliveryOrders() {
       const container = document.getElementById('deliveryOrderTableContainer');
       if (!container) return;
 
-      const effectiveData = selectedGlobalWarehouse
-        ? rawInventoryData.filter(i => getCanonicalWarehouseName(i.gudang) === selectedGlobalWarehouse)
-        : rawInventoryData;
-
-      const keluarItems = effectiveData.filter(item => {
-        const j = (item.jenisTransaksi || '').toLowerCase();
-        return j === 'keluar';
+      const isManager = currentUser && currentUser.role === 'Manager';
+      const keluarData = rawInventoryData.filter(x => {
+        const matchJenis = x.jenisTransaksi === 'Keluar' || x.jenisTransaksi === 'Mutasi Keluar';
+        const matchGudang = !selectedGlobalWarehouse || (x.gudang || '') === selectedGlobalWarehouse;
+        return matchJenis && matchGudang;
       });
 
-      if (keluarItems.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs">Belum ada dokumen Delivery Order (Stok Keluar).</div>`;
+      if (keluarData.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-slate-400 font-medium">Belum ada data barang keluar untuk Delivery Order.</div>`;
         return;
       }
 
-      const doMap = {};
-      keluarItems.forEach(item => {
-        const doNum = (item.customDoNumber || '').trim() || `DO-${formatDateOnly(item.tanggal).replace(/\//g, '')}-${(item.endUser || 'GEN').slice(0, 4).toUpperCase()}`;
-        if (!doMap[doNum]) {
-          doMap[doNum] = {
-            doNumber: doNum,
-            tanggal: item.tanggal,
-            gudang: item.gudang,
-            endUser: item.endUser || '-',
-            alamat: item.alamatEndUser || '-',
-            items: []
+      const doGroups = {};
+      keluarData.forEach(item => {
+        const dateOnly = formatDateOnly(item.tanggal);
+        const endUser = (item.endUser || 'Umum').trim();
+        const peruntukan = (item.peruntukan || '-').trim();
+        const customDo = (item.customDoNumber || '').trim();
+        const alamat = (item.alamatEndUser || '').trim();
+        const wh = item.gudang || 'Gudang Utama';
+
+        const groupKey = customDo ? `DO_${customDo}` : `GROUP_${wh}_${dateOnly}_${endUser.toLowerCase()}_${peruntukan.toLowerCase()}`;
+        if (!doGroups[groupKey]) {
+          doGroups[groupKey] = {
+            id: customDo || `DO-${item.id ? item.id.replace('INV-', '') : Date.now()}`,
+            tanggal: dateOnly,
+            gudang: wh,
+            timestamp: getItemTimestamp(item),
+            endUser: endUser,
+            alamatEndUser: alamat,
+            peruntukan: peruntukan,
+            items: [],
+            itemIds: []
           };
         }
-        doMap[doNum].items.push(item);
+        doGroups[groupKey].items.push(item);
+        doGroups[groupKey].itemIds.push(item.id);
+        if (!doGroups[groupKey].alamatEndUser && alamat) doGroups[groupKey].alamatEndUser = alamat;
       });
 
-      const doList = Object.values(doMap).sort((a, b) => getItemTimestamp(b) - getItemTimestamp(a));
-      const isManager = currentUser && (currentUser.role === 'Manager' || currentUser.role === 'Direktur');
+      const doList = Object.values(doGroups).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
       container.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          ${doList.map(doObj => `
-            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col justify-between space-y-3 hover:border-amber-400 transition shadow-xs">
-              <div>
-                <div class="flex items-start justify-between border-b border-slate-200/80 pb-2.5 mb-2.5">
-                  <div>
-                    <span class="text-xs font-black font-mono text-amber-700 bg-amber-100/70 px-2 py-0.5 rounded-lg border border-amber-200 block w-fit mb-1">${doObj.doNumber}</span>
-                    <span class="text-[11px] font-semibold text-slate-500"><i class="fa-regular fa-calendar mr-1"></i> ${formatDateOnly(doObj.tanggal)} • <i class="fa-solid fa-warehouse mr-1 text-amber-700"></i> ${doObj.gudang}</span>
-                  </div>
-                  <button onclick="exportDeliveryOrderPDF('${doObj.doNumber}')" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-xs transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-file-pdf"></i> Cetak Surat Jalan
-                  </button>
-                </div>
+        <div class="max-h-[calc(100vh-240px)] min-h-[450px] overflow-y-auto custom-scrollbar overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="sticky top-0 z-10">
+              <tr class="bg-slate-900 text-white uppercase text-[10px] font-extrabold">
+                <th class="py-3.5 px-3">No. DO</th>
+                <th class="py-3.5 px-3">Gudang Asal</th>
+                <th class="py-3.5 px-3">Tanggal</th>
+                <th class="py-3.5 px-3">Penerima</th>
+                <th class="py-3.5 px-3">Alamat</th>
+                <th class="py-3.5 px-3">Daftar Barang</th>
+                <th class="py-3.5 px-3 text-center">Qty / Item</th>
+                <th class="py-3.5 px-3 text-center">Total Unit</th>
+                <th class="py-3.5 px-3 text-center w-36">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+              ${doList.map((doDoc) => {
+                const totalQty = doDoc.items.reduce((sum, i) => sum + (Number(i.quantity) || 0), 0);
+                const itemsSummary = doDoc.items.map(i => {
+                  const brandSeri = [i.brand, i.tipe || i.seri].filter(Boolean).join(' • ');
+                  return `<div class="py-0.5">• <strong>${i.namaBarang}</strong> ${brandSeri ? '(' + brandSeri + ')' : ''} ${i.serialNumber ? '<span class="text-slate-400 font-mono text-[10px]">[SN: ' + i.serialNumber + ']</span>' : ''}</div>`;
+                }).join('');
+                const itemsQtySummary = doDoc.items.map(i => `<div class="py-0.5 font-mono font-bold text-slate-800">${i.quantity} ${i.satuan || 'Unit'}</div>`).join('');
+                const doDocEscaped = JSON.stringify(doDoc).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+                const itemIdsEscaped = JSON.stringify(doDoc.itemIds).replace(/"/g, "&quot;");
 
-                <div class="space-y-1 text-xs mb-3">
-                  <div><span class="text-slate-400 font-bold text-[10px] uppercase">Penerima / Client:</span> <strong class="text-slate-800 block">${doObj.endUser}</strong></div>
-                  <div><span class="text-slate-400 font-bold text-[10px] uppercase">Alamat Pengiriman:</span> <span class="text-slate-600 line-clamp-1">${doObj.alamat}</span></div>
-                </div>
-
-                <div class="bg-white rounded-xl border border-slate-200/80 p-2 text-xs space-y-1.5 max-h-36 overflow-y-auto custom-scrollbar">
-                  ${doObj.items.map(it => `
-                    <div class="flex items-center justify-between text-[11px] border-b border-slate-100 pb-1 last:border-0 last:pb-0">
-                      <div>
-                        <span class="font-bold text-slate-800">${it.namaBarang}</span>
-                        ${it.serialNumber ? `<span class="font-mono text-[9.5px] text-slate-400 block truncate max-w-[200px]">SN: ${it.serialNumber}</span>` : ''}
-                      </div>
-                      <span class="font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded">${it.quantity} ${it.satuan || 'Pcs'}</span>
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-
-              ${!isManager ? `
-              <div class="pt-2 border-t border-slate-200/80 flex justify-end">
-                <button onclick="openEditDOModal('${doObj.doNumber}')" class="text-xs font-semibold text-slate-600 hover:text-orange-600 flex items-center gap-1">
-                  <i class="fa-solid fa-pen-to-square"></i> Edit Info DO
-                </button>
-              </div>` : ''}
-            </div>
-          `).join('')}
+                return `
+                  <tr class="hover:bg-slate-50 transition">
+                    <td class="py-3 px-3 font-mono font-bold text-amber-700 whitespace-nowrap">${doDoc.id}</td>
+                    <td class="py-3 px-3 font-bold text-slate-800 whitespace-nowrap"><i class="fa-solid fa-warehouse text-amber-600 mr-1 text-[10px]"></i>${doDoc.gudang}</td>
+                    <td class="py-3 px-3 font-mono text-[11px] text-slate-600 whitespace-nowrap">${doDoc.tanggal}</td>
+                    <td class="py-3 px-3 font-bold text-slate-800">${doDoc.endUser}</td>
+                    <td class="py-3 px-3 text-slate-600 text-[11px]">${doDoc.alamatEndUser || '-'}</td>
+                    <td class="py-3 px-3 text-slate-700">${itemsSummary}</td>
+                    <td class="py-3 px-3 text-center bg-slate-50/50">${itemsQtySummary}</td>
+                    <td class="py-3 px-3 text-center font-bold font-mono text-slate-800">${totalQty}</td>
+                    <td class="py-3 px-3 text-center">
+                      ${isManager ? '-' : `
+                      <div class="flex items-center justify-center gap-1.5">
+                        <button onclick='exportDOToPDF(${doDocEscaped})' class="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-[11px] font-bold flex items-center gap-1 shadow-sm transition">
+                          <i class="fa-solid fa-print"></i> Cetak DO
+                        </button>
+                        <button onclick='openEditDOModal("${doDoc.id}", "${doDoc.endUser.replace(/"/g, '&quot;')}", "${(doDoc.alamatEndUser||'').replace(/"/g, '&quot;')}", ${itemIdsEscaped})' title="Edit DO" class="w-7 h-7 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 rounded-lg text-slate-600 flex items-center justify-center transition">
+                          <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                      </div>`}
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
         </div>
       `;
     }
 
-    function openEditDOModal(doNumber) {
-      const items = rawInventoryData.filter(i => (i.customDoNumber || '').trim() === doNumber);
-      if (items.length === 0) return;
+    function exportDOToPDF(doDoc) {
+      if (!doDoc) return;
 
-      const first = items[0];
-      document.getElementById('editDOItemIds').value = items.map(i => i.id).join(',');
-      document.getElementById('editDONumber').value = doNumber;
-      document.getElementById('editDOEndUser').value = first.endUser || '';
-      document.getElementById('editDOAlamat').value = first.alamatEndUser || '';
+      const element = document.createElement('div');
+      element.style.boxSizing = 'border-box';
+      element.style.padding = '0 4px 6px 0';
+      element.style.fontFamily = 'Arial, sans-serif';
+      element.style.fontSize = '9.5px';
+      element.style.color = '#0f172a';
+      element.style.backgroundColor = '#ffffff';
+
+      const itemsRows = doDoc.items.map((item, idx) => {
+        const tipeSeri = [item.brand, item.tipe, item.seri].filter(Boolean).join(' ');
+        const descText = `${item.namaBarang}${tipeSeri ? ' ' + tipeSeri : ''}`;
+        
+        let snText = '-';
+        if (item.serialNumber && item.serialNumber.trim()) {
+          const snList = item.serialNumber.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
+          if (snList.length > 0) {
+            snText = snList.map(sn => `<div style="white-space: nowrap; line-height: 1.4; font-size: 8.5px;">&bull;&nbsp;${sn}</div>`).join('');
+          }
+        }
+        
+        return `
+          <tr style="border-bottom: 1px solid #cbd5e1;">
+            <td style="padding: 5px 4px; text-align: center; border-right: 1px solid #cbd5e1;">${idx + 1}</td>
+            <td style="padding: 5px 8px; font-weight: bold; border-right: 1px solid #cbd5e1;">${item.namaBarang}</td>
+            <td style="padding: 5px 8px; border-right: 1px solid #cbd5e1;">${descText}</td>
+            <td style="padding: 5px 6px; text-align: left; font-family: monospace; border-right: 1px solid #cbd5e1;">${snText}</td>
+            <td style="padding: 5px 4px; text-align: center; font-family: monospace; font-weight: bold; border-right: 1px solid #cbd5e1;">${item.quantity}</td>
+            <td style="padding: 5px 4px; text-align: center; border-right: 1px solid #0f172a;">${item.satuan || 'Unit'}</td>
+          </tr>
+        `;
+      }).join('');
+
+      element.innerHTML = `
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px;">
+          <tr>
+            <td style="width: 58%; vertical-align: middle;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="width: 140px; vertical-align: middle; padding-right: 8px;">
+                    <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo Perusahaan" width="135" crossorigin="anonymous" style="width: 135px; height: auto; max-height: 55px; object-fit: contain; display: block;" onerror="this.src='https://placehold.co/135x45/ea580c/white?text=Ouffice.co.id'">
+                  </td>
+                  <td style="vertical-align: middle; border: 1px dashed #64748b; padding: 4px 8px;">
+                    <div style="font-size: 9px; line-height: 1.35; color: #1e293b; font-family: 'Trebuchet MS', sans-serif;">
+                      <strong style="font-size: 11px; font-weight: 900; letter-spacing: 0.3px; display: inline-block; margin-bottom: 1px; color: #0f172a;">PT. CITRA SARI KENCANA</strong><br>
+                      Jl. Rambutan No. 4, Manggarai Selatan<br>
+                      Tebet, Jakarta Selatan 12860<br>
+                      Phone. [021] 835 1388
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+            <td style="width: 2%;"></td>
+            <td style="width: 40%; vertical-align: middle; text-align: center;">
+              <div style="font-size: 26px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px; font-family: 'Trebuchet MS', sans-serif; line-height: 1.1;">Delivery Order</div>
+              <div style="font-size: 10px; font-weight: bold; color: #ea580c; margin-top: 3px;">Gudang Asal: ${doDoc.gudang || 'Gudang Utama'}</div>
+            </td>
+          </tr>
+        </table>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 9.5px;">
+          <tr>
+            <td style="width: 58%; vertical-align: top;">
+              <div style="border: 1px solid #0f172a; margin-bottom: 5px; box-sizing: border-box;">
+                <div style="padding: 3px 8px; border-bottom: 1px solid #0f172a; font-weight: bold; background-color: #f8fafc;">
+                  Ship To &nbsp;&nbsp;&nbsp;: <span style="text-transform: uppercase;">${doDoc.endUser}</span>
+                </div>
+                <div style="padding: 4px 8px; line-height: 1.35; min-height: 30px;">
+                  ${doDoc.alamatEndUser || '-'}<br>
+                  Phone. 021 -
+                </div>
+              </div>
+
+              <div style="border: 1px solid #0f172a; box-sizing: border-box;">
+                <div style="padding: 3px 8px; border-bottom: 1px solid #0f172a; font-weight: bold; background-color: #f8fafc;">
+                  Bill To &nbsp;&nbsp;&nbsp;&nbsp;: <span style="text-transform: uppercase;">${doDoc.endUser}</span>
+                </div>
+                <div style="padding: 4px 8px; line-height: 1.35; min-height: 30px;">
+                  ${doDoc.alamatEndUser || '-'}<br>
+                  Phone. 021 -
+                </div>
+              </div>
+            </td>
+
+            <td style="width: 2%;"></td>
+
+            <td style="width: 40%; vertical-align: top;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; border: 1px solid #0f172a; text-align: left; box-sizing: border-box;">
+                <tr style="border-bottom: 1px solid #0f172a; background-color: #f8fafc;">
+                  <td style="padding: 4px 6px; border-right: 1px solid #0f172a; width: 50%; font-weight: bold;">Delivery Date</td>
+                  <td style="padding: 4px 6px; font-weight: bold; border-right: 1px solid #0f172a;">Delivery No.</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #0f172a; font-family: monospace; font-weight: bold;">
+                  <td style="padding: 5px 6px; border-right: 1px solid #0f172a; text-align: center;">${doDoc.tanggal}</td>
+                  <td style="padding: 5px 6px; text-align: center; border-right: 1px solid #0f172a;">${doDoc.id}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #0f172a; background-color: #f8fafc;">
+                  <td style="padding: 4px 6px; border-right: 1px solid #0f172a; font-weight: bold;">Ship Via</td>
+                  <td style="padding: 4px 6px; font-weight: bold; border-right: 1px solid #0f172a;">PO Number</td>
+                </tr>
+                <tr>
+                  <td style="padding: 5px 6px; border-right: 1px solid #0f172a; text-align: center; font-weight: bold;">OPS</td>
+                  <td style="padding: 5px 6px; text-align: center; border-right: 1px solid #0f172a;">-</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid #0f172a; margin-bottom: 8px; font-size: 9.5px; box-sizing: border-box;">
+          <thead>
+            <tr style="background-color: #ea580c; color: white; border-bottom: 1px solid #0f172a; font-weight: bold;">
+              <th style="padding: 5px; width: 30px; text-align: center; border-right: 1px solid #cbd5e1;">NO</th>
+              <th style="padding: 5px; width: 110px; text-align: center; border-right: 1px solid #cbd5e1;">ITEM</th>
+              <th style="padding: 5px; text-align: center; border-right: 1px solid #cbd5e1;">ITEM DESCRIPTION</th>
+              <th style="padding: 5px; width: 125px; text-align: center; border-right: 1px solid #cbd5e1;">SERIAL NUMBER</th>
+              <th style="padding: 5px; width: 45px; text-align: center; border-right: 1px solid #cbd5e1;">QTY</th>
+              <th style="padding: 5px; width: 55px; text-align: center; border-right: 1px solid #0f172a;">SATUAN</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsRows}
+          </tbody>
+        </table>
+
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid #0f172a; font-size: 9px; box-sizing: border-box;">
+          <tr>
+            <td style="border-right: 1px solid #0f172a; border-bottom: 1px solid #0f172a; width: 65%; vertical-align: top; padding: 0;">
+              <table style="width: 100%; border-collapse: collapse; text-align: center;">
+                <tr style="border-bottom: 1px solid #0f172a; background-color: #f8fafc; font-weight: bold;">
+                  <td style="padding: 4px; border-right: 1px solid #0f172a; width: 25%;">Prepared By</td>
+                  <td style="padding: 4px; border-right: 1px solid #0f172a; width: 25%;">Approved By</td>
+                  <td style="padding: 4px; border-right: 1px solid #0f172a; width: 25%;">Shipped By</td>
+                  <td style="padding: 4px; width: 25%;">Received By</td>
+                </tr>
+                <tr>
+                  <td style="height: 44px; border-right: 1px solid #0f172a;"></td>
+                  <td style="height: 44px; border-right: 1px solid #0f172a;"></td>
+                  <td style="height: 44px; border-right: 1px solid #0f172a;"></td>
+                  <td style="height: 44px;"></td>
+                </tr>
+                <tr style="border-top: 1px solid #0f172a; background-color: #f8fafc;">
+                  <td style="padding: 3px 4px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
+                  <td style="padding: 3px 4px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
+                  <td style="padding: 3px 4px; border-right: 1px solid #0f172a; text-align: left;">Date:</td>
+                  <td style="padding: 3px 4px; text-align: left;">Date:</td>
+                </tr>
+              </table>
+            </td>
+            <td style="vertical-align: top; padding: 5px 8px; width: 35%; border-right: 1px solid #0f172a; border-bottom: 1px solid #0f172a;">
+              <strong>Description :</strong><br>
+              <span style="color: #475569; font-size: 8.5px; line-height: 1.3;">${doDoc.peruntukan || '-'}</span>
+            </td>
+          </tr>
+        </table>
+      `;
+
+      const opt = {
+        margin: [10, 8, 8, 8],
+        filename: `Delivery_Order_${doDoc.id}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, allowTaint: true, scrollX: 0, scrollY: 0 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      html2pdf().set(opt).from(element).save();
+    }
+
+    function openEditDOModal(doNumber, endUser, alamat, itemIds) {
+      if (currentUser && currentUser.role === 'Manager') return;
+      document.getElementById('editDONumber').value = doNumber || '';
+      document.getElementById('editDOEndUser').value = endUser || '';
+      document.getElementById('editDOAlamat').value = alamat || '';
+      document.getElementById('editDOItemIds').value = JSON.stringify(itemIds || []);
       document.getElementById('editDOModal').classList.remove('hidden');
     }
 
@@ -4174,416 +4455,253 @@
 
     function handleEditDOSubmit(e) {
       e.preventDefault();
-      const ids = document.getElementById('editDOItemIds').value.split(',').filter(Boolean);
-      const newDoNum = document.getElementById('editDONumber').value.trim();
-      const newEndUser = document.getElementById('editDOEndUser').value.trim();
-      const newAlamat = document.getElementById('editDOAlamat').value.trim();
+      if (currentUser && currentUser.role === 'Manager') return;
+      const doNum = document.getElementById('editDONumber').value.trim();
+      const endUser = document.getElementById('editDOEndUser').value.trim();
+      const alamat = document.getElementById('editDOAlamat').value.trim();
+      let itemIds = [];
+      try { itemIds = JSON.parse(document.getElementById('editDOItemIds').value); } catch(err) {}
 
-      rawInventoryData.forEach(item => {
-        if (ids.includes(item.id)) {
-          item.customDoNumber = newDoNum;
-          item.endUser = newEndUser;
-          item.alamatEndUser = newAlamat;
+      if (!doNum || itemIds.length === 0) return;
+
+      itemIds.forEach(id => {
+        const item = rawInventoryData.find(x => x.id === id);
+        if (item) {
+          item.customDoNumber = doNum;
+          item.endUser = endUser;
+          item.alamatEndUser = alamat;
         }
       });
 
-      localStorage.setItem('ouffice_cached_inventory', JSON.stringify(rawInventoryData));
       closeEditDOModal();
       renderDeliveryOrders();
       filterData();
-      Swal.fire({ icon: 'success', title: 'Data Delivery Order Diperbarui!', timer: 1000, showConfirmButton: false });
+      Swal.fire({ icon: 'success', title: 'DO Diperbarui!', timer: 1000, showConfirmButton: false });
     }
 
-    function exportDeliveryOrderPDF(doNumber) {
-      const items = rawInventoryData.filter(i => {
-        const d = (i.customDoNumber || '').trim() || `DO-${formatDateOnly(i.tanggal).replace(/\//g, '')}-${(i.endUser || 'GEN').slice(0, 4).toUpperCase()}`;
-        return d === doNumber && (i.jenisTransaksi || '').toLowerCase() === 'keluar';
-      });
-
-      if (items.length === 0) {
-        Swal.fire('Info', 'Data Delivery Order tidak ditemukan.', 'warning');
-        return;
-      }
-
-      const first = items[0];
-      const tanggalDO = formatDateOnly(first.tanggal);
-      const gudangAsal = first.gudang || 'Gudang Ouffice';
-      const endUser = first.endUser || '-';
-      const alamat = first.alamatEndUser || '-';
-
-      const rowsHtml = items.map((it, idx) => `
-        <tr style="border-bottom: 1px solid #cbd5e1; font-size: 9px;">
-          <td style="padding: 6px; text-align: center;">${idx + 1}</td>
-          <td style="padding: 6px; font-weight: bold; color: #0f172a;">${it.namaBarang}</td>
-          <td style="padding: 6px; color: #475569;">${[it.brand, it.tipe || it.seri].filter(Boolean).join(' / ') || '-'}</td>
-          <td style="padding: 6px; font-family: monospace; font-size: 8px;">${it.serialNumber || '-'}</td>
-          <td style="padding: 6px; text-align: center; font-weight: bold; font-family: monospace;">${it.quantity} ${it.satuan || 'Pcs'}</td>
-          <td style="padding: 6px; color: #475569;">${it.peruntukan || it.deskripsi || '-'}</td>
-        </tr>
-      `).join('');
-
-      const element = document.createElement('div');
-      element.style.padding = '20px';
-      element.style.fontFamily = 'Inter, sans-serif';
-
-      element.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #ea580c; padding-bottom: 12px; margin-bottom: 15px;">
-          <div>
-            <img src="https://lh3.googleusercontent.com/d/1JMCRFdzrWwgjOBzTqVDv9TXOc2ZLRmdB" alt="Logo" width="150" crossorigin="anonymous" style="width: 150px; height: auto;" onerror="this.src='https://placehold.co/150x45/ea580c/white?text=Ouffice.co.id'">
-            <p style="font-size: 9px; color: #475569; margin: 4px 0 0 0; font-weight: 600;">Jl. Rambutan No.07, Manggarai Selatan, Tebet, Jakarta Selatan</p>
-            <p style="font-size: 8.5px; color: #64748b; margin: 1px 0 0 0;">Telp: 0895-3972-33737 | Website: ouffice.co.id</p>
-          </div>
-          <div style="text-align: right;">
-            <h1 style="font-size: 16px; font-weight: 900; color: #ea580c; margin: 0; text-transform: uppercase;">SURAT JALAN / DELIVERY ORDER</h1>
-            <p style="font-size: 11px; font-family: monospace; font-weight: bold; color: #0f172a; margin: 4px 0 0 0;">${doNumber}</p>
-            <p style="font-size: 9px; color: #475569; margin: 2px 0 0 0;">Tanggal: <strong>${tanggalDO}</strong></p>
-          </div>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; gap: 15px; margin-bottom: 15px; font-size: 9.5px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
-          <div style="flex: 1;">
-            <p style="margin: 0; text-transform: uppercase; font-size: 8px; font-weight: 800; color: #ea580c;">Gudang Pengirim:</p>
-            <p style="margin: 2px 0 0 0; font-weight: bold; color: #0f172a;">${gudangAsal}</p>
-          </div>
-          <div style="flex: 1.5;">
-            <p style="margin: 0; text-transform: uppercase; font-size: 8px; font-weight: 800; color: #ea580c;">Kepada / Tujuan Pengiriman:</p>
-            <p style="margin: 2px 0 0 0; font-weight: bold; color: #0f172a;">${endUser}</p>
-            <p style="margin: 2px 0 0 0; color: #475569;">${alamat}</p>
-          </div>
-        </div>
-
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
-          <thead>
-            <tr style="background-color: #0f172a; color: white; font-size: 9px;">
-              <th style="padding: 6px; width: 30px; text-align: center;">No</th>
-              <th style="padding: 6px; text-align: left;">Nama Barang</th>
-              <th style="padding: 6px; text-align: left; width: 110px;">Brand / Tipe</th>
-              <th style="padding: 6px; text-align: left; width: 120px;">Serial Number</th>
-              <th style="padding: 6px; text-align: center; width: 60px;">Quantity</th>
-              <th style="padding: 6px; text-align: left; width: 110px;">Keterangan</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rowsHtml}
-          </tbody>
-        </table>
-
-        <div style="display: flex; justify-content: space-between; font-size: 9px; text-align: center; margin-top: 30px;">
-          <div style="width: 130px;">
-            <p style="margin: 0 0 50px 0; color: #475569;">Pengirim / Gudang</p>
-            <p style="margin: 0; font-weight: bold; border-top: 1px solid #0f172a; padding-top: 4px;">( .................................. )</p>
-          </div>
-          <div style="width: 130px;">
-            <p style="margin: 0 0 50px 0; color: #475569;">Ekspedisi / Kurir</p>
-            <p style="margin: 0; font-weight: bold; border-top: 1px solid #0f172a; padding-top: 4px;">( .................................. )</p>
-          </div>
-          <div style="width: 130px;">
-            <p style="margin: 0 0 50px 0; color: #475569;">Penerima Barang</p>
-            <p style="margin: 0; font-weight: bold; border-top: 1px solid #0f172a; padding-top: 4px;">( .................................. )</p>
-          </div>
-        </div>
-      `;
-
-      const opt = {
-        margin: [8, 8, 8, 8],
-        filename: `Surat_Jalan_${doNumber}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      Swal.fire({
-        title: 'Mencetak Surat Jalan...',
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
-      });
-
-      html2pdf().set(opt).from(element).save().then(() => {
-        Swal.close();
-      }).catch(() => {
-        Swal.close();
-        Swal.fire('Gagal', 'Terjadi kesalahan saat mencetak PDF.', 'error');
-      });
-    }
-
-    function loadClient() {
+    function loadClient() { renderClient(rawClientData); }
+    function renderClient(data) {
       const container = document.getElementById('clientListContainer');
       if (!container) return;
-      const isManager = currentUser && (currentUser.role === 'Manager' || currentUser.role === 'Direktur');
-
-      if (rawClientData.length === 0) {
-        container.innerHTML = `<div class="p-6 text-center text-slate-400 text-xs">Belum ada data client terdaftar.</div>`;
+      if (!data || data.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-slate-400">Belum ada data client.</div>`;
         return;
       }
-
       container.innerHTML = `
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr class="bg-slate-900 text-white uppercase text-[10px] font-extrabold">
-                <th class="py-2.5 px-3">Nama Client</th>
-                <th class="py-2.5 px-3">PIC</th>
-                <th class="py-2.5 px-3">Email</th>
-                <th class="py-2.5 px-3">Telepon</th>
-                <th class="py-2.5 px-3">Alamat</th>
-                <th class="py-2.5 px-3 text-center">Status</th>
-                <th class="py-2.5 px-3 text-center w-20">Aksi</th>
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 uppercase text-[10px] font-extrabold">
+              <th class="py-3 px-4">Nama Client</th>
+              <th class="py-3 px-4">PIC</th>
+              <th class="py-3 px-4">Kontak</th>
+              <th class="py-3 px-4 text-center">Status</th>
+              <th class="py-3 px-4 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+            ${data.map(c => `
+              <tr class="hover:bg-slate-50 transition">
+                <td class="py-3 px-4 font-bold text-slate-800">${c.nama}</td>
+                <td class="py-3 px-4">${c.kontak || '-'}</td>
+                <td class="py-3 px-4 text-[11px] text-slate-500">${c.telepon || '-'}</td>
+                <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">${c.status}</span></td>
+                <td class="py-3 px-4 text-center">
+                  ${currentUser && currentUser.role === 'Manager' ? '-' : `
+                  <button onclick="deleteClient('${c.id}')" title="Hapus Client" class="w-7 h-7 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-600 transition inline-flex items-center justify-center">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>`}
+                </td>
               </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
-              ${rawClientData.map(c => `
-                <tr class="hover:bg-slate-50">
-                  <td class="py-2.5 px-3 font-bold text-slate-900">${c.nama}</td>
-                  <td class="py-2.5 px-3">${c.kontak || '-'}</td>
-                  <td class="py-2.5 px-3 font-mono text-[11px] text-slate-500">${c.email || '-'}</td>
-                  <td class="py-2.5 px-3 font-mono text-[11px]">${c.telepon || '-'}</td>
-                  <td class="py-2.5 px-3 text-slate-500 text-[11px] line-clamp-1">${c.alamat || '-'}</td>
-                  <td class="py-2.5 px-3 text-center">
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${c.status === 'Aktif' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${c.status || 'Aktif'}</span>
-                  </td>
-                  <td class="py-2.5 px-3 text-center">
-                    ${isManager ? '-' : `
-                    <div class="flex items-center justify-center gap-1">
-                      <button onclick="editClient('${c.id}')" class="p-1 hover:text-orange-600"><i class="fa-solid fa-pen-to-square"></i></button>
-                      <button onclick="deleteClient('${c.id}')" class="p-1 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button>
-                    </div>`}
-                  </td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
+            `).join('')}
+          </tbody>
+        </table>
       `;
     }
-
-    function openClientModal() {
-      document.getElementById('clientForm').reset();
-      document.getElementById('formClientId').value = '';
-      document.getElementById('modalClientTitle').innerText = 'Tambah Data Client';
-      document.getElementById('clientModal').classList.remove('hidden');
-    }
-
-    function closeClientModal() {
-      document.getElementById('clientModal').classList.add('hidden');
-    }
-
+    function openClientModal() { document.getElementById('clientForm').reset(); document.getElementById('clientModal').classList.remove('hidden'); }
+    function closeClientModal() { document.getElementById('clientModal').classList.add('hidden'); }
     function handleClientSubmit(e) {
       e.preventDefault();
-      const id = document.getElementById('formClientId').value;
-      const payload = {
-        id: id || `CLI-${Date.now()}`,
-        nama: document.getElementById('formNamaClient').value.trim(),
-        kontak: document.getElementById('formKontakClient').value.trim(),
-        email: document.getElementById('formEmailClient').value.trim(),
-        telepon: document.getElementById('formTeleponClient').value.trim(),
-        alamat: document.getElementById('formAlamatClient').value.trim(),
+      const p = {
+        id: `CLI-${Date.now()}`,
+        nama: document.getElementById('formNamaClient').value,
+        kontak: document.getElementById('formKontakClient').value,
+        email: document.getElementById('formEmailClient').value,
+        telepon: document.getElementById('formTeleponClient').value,
+        alamat: document.getElementById('formAlamatClient').value,
         status: document.getElementById('formStatusClient').value
       };
-
-      if (id) {
-        const idx = rawClientData.findIndex(c => c.id === id);
-        if (idx !== -1) rawClientData[idx] = payload;
-      } else {
-        rawClientData.push(payload);
-      }
-
+      rawClientData.push(p);
       localStorage.setItem('ouffice_client_data', JSON.stringify(rawClientData));
+      renderClient(rawClientData);
       closeClientModal();
-      loadClient();
-      Swal.fire({ icon: 'success', title: 'Data Client Tersimpan!', timer: 1000, showConfirmButton: false });
-    }
-
-    function editClient(id) {
-      const c = rawClientData.find(x => x.id === id);
-      if (!c) return;
-      openClientModal();
-      document.getElementById('formClientId').value = c.id;
-      document.getElementById('modalClientTitle').innerText = 'Edit Data Client';
-      document.getElementById('formNamaClient').value = c.nama || '';
-      document.getElementById('formKontakClient').value = c.kontak || '';
-      document.getElementById('formEmailClient').value = c.email || '';
-      document.getElementById('formTeleponClient').value = c.telepon || '';
-      document.getElementById('formAlamatClient').value = c.alamat || '';
-      document.getElementById('formStatusClient').value = c.status || 'Aktif';
+      if (CUSTOM_GAS_URL) {
+        fetch(CUSTOM_GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'addClient', ...p })
+        }).catch(() => {});
+      }
+      Swal.fire({ icon: 'success', title: 'Client Tersimpan!', timer: 1000, showConfirmButton: false });
     }
 
     function deleteClient(id) {
+      if (currentUser && currentUser.role === 'Manager') return;
       Swal.fire({
-        title: 'Hapus Client ini?',
+        title: 'Hapus Client?',
+        text: 'Data client ini akan dihapus dari sistem.',
         icon: 'warning',
         showCancelButton: true,
+        confirmButtonColor: '#ef4444',
         confirmButtonText: 'Ya, Hapus'
-      }).then(res => {
+      }).then((res) => {
         if (res.isConfirmed) {
-          rawClientData = rawClientData.filter(c => c.id !== id);
+          rawClientData = rawClientData.filter(x => x.id !== id);
           localStorage.setItem('ouffice_client_data', JSON.stringify(rawClientData));
-          loadClient();
+          renderClient(rawClientData);
+          if (CUSTOM_GAS_URL) {
+            fetch(CUSTOM_GAS_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: 'deleteClient', id: id })
+            }).catch(() => {});
+          }
           Swal.fire({ icon: 'success', title: 'Client Terhapus!', timer: 1000, showConfirmButton: false });
         }
       });
     }
 
-    function loadSupplier() {
+    function loadSupplier() { renderSupplier(rawSupplierData); }
+    function renderSupplier(data) {
       const container = document.getElementById('supplierListContainer');
       if (!container) return;
-      const isManager = currentUser && (currentUser.role === 'Manager' || currentUser.role === 'Direktur');
-
-      if (rawSupplierData.length === 0) {
-        container.innerHTML = `<div class="p-6 text-center text-slate-400 text-xs">Belum ada data supplier terdaftar.</div>`;
+      if (!data || data.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-slate-400">Belum ada supplier.</div>`;
         return;
       }
-
       container.innerHTML = `
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr class="bg-slate-900 text-white uppercase text-[10px] font-extrabold">
-                <th class="py-2.5 px-3">Nama Supplier</th>
-                <th class="py-2.5 px-3">PIC</th>
-                <th class="py-2.5 px-3">Email</th>
-                <th class="py-2.5 px-3">Telepon</th>
-                <th class="py-2.5 px-3 text-center">Status</th>
-                <th class="py-2.5 px-3 text-center w-20">Aksi</th>
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 uppercase text-[10px] font-extrabold">
+              <th class="py-3 px-4">Nama Supplier</th>
+              <th class="py-3 px-4">PIC</th>
+              <th class="py-3 px-4">Kontak</th>
+              <th class="py-3 px-4 text-center">Status</th>
+              <th class="py-3 px-4 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+            ${data.map(s => `
+              <tr class="hover:bg-slate-50 transition">
+                <td class="py-3 px-4 font-bold text-slate-800">${s.nama}</td>
+                <td class="py-3 px-4">${s.kontak || '-'}</td>
+                <td class="py-3 px-4 text-[11px] text-slate-500">${s.telepon || '-'}</td>
+                <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">${s.status}</span></td>
+                <td class="py-3 px-4 text-center">
+                  ${currentUser && currentUser.role === 'Manager' ? '-' : `
+                  <button onclick="deleteSupplier('${s.id}')" title="Hapus Supplier" class="w-7 h-7 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-600 transition inline-flex items-center justify-center">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>`}
+                </td>
               </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
-              ${rawSupplierData.map(s => `
-                <tr class="hover:bg-slate-50">
-                  <td class="py-2.5 px-3 font-bold text-slate-900">${s.nama}</td>
-                  <td class="py-2.5 px-3">${s.kontak || '-'}</td>
-                  <td class="py-2.5 px-3 font-mono text-[11px] text-slate-500">${s.email || '-'}</td>
-                  <td class="py-2.5 px-3 font-mono text-[11px]">${s.telepon || '-'}</td>
-                  <td class="py-2.5 px-3 text-center">
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${s.status === 'Aktif' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${s.status || 'Aktif'}</span>
-                  </td>
-                  <td class="py-2.5 px-3 text-center">
-                    ${isManager ? '-' : `
-                    <div class="flex items-center justify-center gap-1">
-                      <button onclick="editSupplier('${s.id}')" class="p-1 hover:text-orange-600"><i class="fa-solid fa-pen-to-square"></i></button>
-                      <button onclick="deleteSupplier('${s.id}')" class="p-1 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button>
-                    </div>`}
-                  </td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
+            `).join('')}
+          </tbody>
+        </table>
       `;
     }
-
-    function openSupplierModal() {
-      document.getElementById('supplierForm').reset();
-      document.getElementById('formSupplierId').value = '';
-      document.getElementById('modalSupplierTitle').innerText = 'Tambah Supplier / Vendor';
-      document.getElementById('supplierModal').classList.remove('hidden');
-    }
-
-    function closeSupplierModal() {
-      document.getElementById('supplierModal').classList.add('hidden');
-    }
-
+    function openSupplierModal() { document.getElementById('supplierForm').reset(); document.getElementById('supplierModal').classList.remove('hidden'); }
+    function closeSupplierModal() { document.getElementById('supplierModal').classList.add('hidden'); }
     function handleSupplierSubmit(e) {
       e.preventDefault();
-      const id = document.getElementById('formSupplierId').value;
-      const payload = {
-        id: id || `SUP-${Date.now()}`,
-        nama: document.getElementById('formNamaSupplier').value.trim(),
-        kontak: document.getElementById('formKontakSupplier').value.trim(),
-        email: document.getElementById('formEmailSupplier').value.trim(),
-        telepon: document.getElementById('formTeleponSupplier').value.trim(),
+      const p = {
+        id: `SUP-${Date.now()}`,
+        nama: document.getElementById('formNamaSupplier').value,
+        kontak: document.getElementById('formKontakSupplier').value,
+        email: document.getElementById('formEmailSupplier').value,
+        telepon: document.getElementById('formTeleponSupplier').value,
         status: document.getElementById('formStatusSupplier').value
       };
-
-      if (id) {
-        const idx = rawSupplierData.findIndex(s => s.id === id);
-        if (idx !== -1) rawSupplierData[idx] = payload;
-      } else {
-        rawSupplierData.push(payload);
-      }
-
+      rawSupplierData.push(p);
       localStorage.setItem('ouffice_supplier_data', JSON.stringify(rawSupplierData));
+      renderSupplier(rawSupplierData);
       closeSupplierModal();
-      loadSupplier();
-      Swal.fire({ icon: 'success', title: 'Data Supplier Tersimpan!', timer: 1000, showConfirmButton: false });
-    }
-
-    function editSupplier(id) {
-      const s = rawSupplierData.find(x => x.id === id);
-      if (!s) return;
-      openSupplierModal();
-      document.getElementById('formSupplierId').value = s.id;
-      document.getElementById('modalSupplierTitle').innerText = 'Edit Data Supplier';
-      document.getElementById('formNamaSupplier').value = s.nama || '';
-      document.getElementById('formKontakSupplier').value = s.kontak || '';
-      document.getElementById('formEmailSupplier').value = s.email || '';
-      document.getElementById('formTeleponSupplier').value = s.telepon || '';
-      document.getElementById('formStatusSupplier').value = s.status || 'Aktif';
+      if (CUSTOM_GAS_URL) {
+        fetch(CUSTOM_GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'addSupplier', ...p })
+        }).catch(() => {});
+      }
+      Swal.fire({ icon: 'success', title: 'Supplier Tersimpan!', timer: 1000, showConfirmButton: false });
     }
 
     function deleteSupplier(id) {
+      if (currentUser && currentUser.role === 'Manager') return;
       Swal.fire({
-        title: 'Hapus Supplier ini?',
+        title: 'Hapus Supplier?',
+        text: 'Data supplier ini akan dihapus dari sistem.',
         icon: 'warning',
         showCancelButton: true,
+        confirmButtonColor: '#ef4444',
         confirmButtonText: 'Ya, Hapus'
-      }).then(res => {
+      }).then((res) => {
         if (res.isConfirmed) {
-          rawSupplierData = rawSupplierData.filter(s => s.id !== id);
+          rawSupplierData = rawSupplierData.filter(x => x.id !== id);
           localStorage.setItem('ouffice_supplier_data', JSON.stringify(rawSupplierData));
-          loadSupplier();
+          renderSupplier(rawSupplierData);
+          if (CUSTOM_GAS_URL) {
+            fetch(CUSTOM_GAS_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: 'deleteSupplier', id: id })
+            }).catch(() => {});
+          }
           Swal.fire({ icon: 'success', title: 'Supplier Terhapus!', timer: 1000, showConfirmButton: false });
         }
       });
     }
 
-    function loadRetur() {
+    function loadRetur() { renderRetur(rawReturData); }
+    function renderRetur(data) {
       const container = document.getElementById('returTableContainer');
       if (!container) return;
-      const isManager = currentUser && (currentUser.role === 'Manager' || currentUser.role === 'Direktur');
-
-      const datalist = document.getElementById('returBarangList');
-      if (datalist) {
-        const distinctNames = [...new Set(rawInventoryData.map(i => i.namaBarang).filter(Boolean))];
-        datalist.innerHTML = distinctNames.map(n => `<option value="${n}"></option>`).join('');
-      }
-
-      if (rawReturData.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-slate-400">Belum ada transaksi retur barang.</div>`;
+      if (!data || data.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-slate-400">Belum ada data retur barang.</div>`;
         return;
       }
-
       container.innerHTML = `
         <div class="max-h-[calc(100vh-240px)] min-h-[450px] overflow-y-auto custom-scrollbar overflow-x-auto">
           <table class="w-full text-left border-collapse text-xs">
-            <thead class="sticky top-0 z-10">
+            <thead>
               <tr class="bg-slate-900 text-white uppercase text-[10px] font-extrabold">
                 <th class="py-3.5 px-3">Tanggal</th>
-                <th class="py-3.5 px-3">Gudang Tujuan</th>
+                <th class="py-3.5 px-3">Gudang Penerima</th>
                 <th class="py-3.5 px-3">Nama Barang</th>
                 <th class="py-3.5 px-3 text-center">Qty</th>
                 <th class="py-3.5 px-3">Asal Retur</th>
-                <th class="py-3.5 px-3">Alasan / Catatan</th>
+                <th class="py-3.5 px-3">Alasan</th>
                 <th class="py-3.5 px-3 text-center">Status</th>
-                <th class="py-3.5 px-3 text-center w-20">Aksi</th>
+                <th class="py-3.5 px-3 text-center w-24">Aksi</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
-              ${rawReturData.map(r => `
+              ${[...data].reverse().map(r => `
                 <tr class="hover:bg-slate-50 transition">
                   <td class="py-3 px-3 font-mono text-[11px] whitespace-nowrap">${formatDateOnly(r.tanggal)}</td>
-                  <td class="py-3 px-3 font-bold text-amber-700">${r.gudang}</td>
-                  <td class="py-3 px-3 font-bold text-slate-900">${r.namaBarang}</td>
-                  <td class="py-3 px-3 text-center font-bold font-mono text-rose-600">${r.quantity} ${r.satuan || 'Pcs'}</td>
-                  <td class="py-3 px-3">${r.asal}</td>
-                  <td class="py-3 px-3 text-slate-500 text-[11px]">${r.catatan || '-'}</td>
+                  <td class="py-3 px-3 font-bold text-amber-700">${r.gudang || 'Gudang Utama'}</td>
+                  <td class="py-3 px-3 font-bold text-slate-800">${r.namaBarang}</td>
+                  <td class="py-3 px-3 text-center font-bold font-mono text-rose-600">${r.quantity} ${r.satuan||'Pcs'}</td>
+                  <td class="py-3 px-3 font-semibold">${r.asalRetur}</td>
+                  <td class="py-3 px-3 text-slate-600 text-[11px]">${r.catatan || '-'}</td>
+                  <td class="py-3 px-3 text-center"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">${r.status || 'Diproses'}</span></td>
                   <td class="py-3 px-3 text-center">
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${r.status === 'Selesai' || r.status === 'Restock Gudang' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${r.status || 'Diproses'}</span>
-                  </td>
-                  <td class="py-3 px-3 text-center">
-                    ${isManager ? '-' : `
-                    <div class="flex items-center justify-center gap-1">
-                      <button onclick="editRetur('${r.id}')" class="p-1 hover:text-orange-600"><i class="fa-solid fa-pen-to-square"></i></button>
-                      <button onclick="deleteRetur('${r.id}')" class="p-1 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button>
+                    ${currentUser && currentUser.role === 'Manager' ? '-' : `
+                    <div class="flex items-center justify-center gap-1.5">
+                      <button onclick="editRetur('${r.id}')" title="Edit Retur" class="w-7 h-7 bg-slate-100 hover:bg-orange-50 hover:text-orange-600 rounded-lg text-slate-600 transition inline-flex items-center justify-center">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                      </button>
+                      <button onclick="deleteRetur('${r.id}')" title="Hapus Retur" class="w-7 h-7 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-slate-600 transition inline-flex items-center justify-center">
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
                     </div>`}
                   </td>
                 </tr>
@@ -4594,347 +4712,365 @@
       `;
     }
 
-    function openReturModal() {
-      document.getElementById('returForm').reset();
-      document.getElementById('formReturId').value = '';
-      document.getElementById('formReturTanggal').value = new Date().toISOString().split('T')[0];
-      document.getElementById('returModal').classList.remove('hidden');
-    }
-
-    function closeReturModal() {
-      document.getElementById('returModal').classList.add('hidden');
-    }
-
-    function handleReturSubmit(e) {
-      e.preventDefault();
-      const id = document.getElementById('formReturId').value;
-      const payload = {
-        id: id || `RET-${Date.now()}`,
-        tanggal: document.getElementById('formReturTanggal').value,
-        gudang: document.getElementById('formReturGudang').value,
-        status: document.getElementById('formReturStatus').value,
-        namaBarang: document.getElementById('formReturNamaBarang').value.trim(),
-        quantity: Number(document.getElementById('formReturQuantity').value) || 1,
-        satuan: document.getElementById('formReturSatuan').value.trim() || 'Pcs',
-        asal: document.getElementById('formReturAsal').value.trim(),
-        catatan: document.getElementById('formReturCatatan').value.trim()
-      };
-
-      if (id) {
-        const idx = rawReturData.findIndex(r => r.id === id);
-        if (idx !== -1) rawReturData[idx] = payload;
-      } else {
-        rawReturData.unshift(payload);
-      }
-
-      localStorage.setItem('ouffice_retur_data', JSON.stringify(rawReturData));
-      closeReturModal();
-      loadRetur();
-      Swal.fire({ icon: 'success', title: 'Data Retur Tersimpan!', timer: 1000, showConfirmButton: false });
-    }
-
     function editRetur(id) {
-      const r = rawReturData.find(x => x.id === id);
-      if (!r) return;
+      if (currentUser && currentUser.role === 'Manager') return;
+      const item = rawReturData.find(x => x.id === id);
+      if (!item) return;
+
       openReturModal();
-      document.getElementById('formReturId').value = r.id;
-      document.getElementById('formReturTanggal').value = toISODateString(r.tanggal);
-      document.getElementById('formReturGudang').value = r.gudang || '';
-      document.getElementById('formReturStatus').value = r.status || 'Diproses';
-      document.getElementById('formReturNamaBarang').value = r.namaBarang || '';
-      document.getElementById('formReturQuantity').value = r.quantity || 1;
-      document.getElementById('formReturSatuan').value = r.satuan || 'Pcs';
-      document.getElementById('formReturAsal').value = r.asal || '';
-      document.getElementById('formReturCatatan').value = r.catatan || '';
+      document.getElementById('formReturId').value = item.id;
+      document.getElementById('modalReturTitle').innerText = 'Edit Data Retur Barang';
+      document.getElementById('formReturTanggal').value = toISODateString(item.tanggal);
+      document.getElementById('formReturGudang').value = item.gudang || (rawWarehouseData[0] ? rawWarehouseData[0].nama : '');
+      document.getElementById('formReturNamaBarang').value = item.namaBarang || '';
+      document.getElementById('formReturQuantity').value = item.quantity || 1;
+      document.getElementById('formReturSatuan').value = item.satuan || 'Pcs';
+      document.getElementById('formReturAsal').value = item.asalRetur || '';
+      document.getElementById('formReturCatatan').value = item.catatan || '';
+      document.getElementById('formReturStatus').value = item.status || 'Diproses';
     }
 
     function deleteRetur(id) {
+      if (currentUser && currentUser.role === 'Manager') return;
       Swal.fire({
-        title: 'Hapus Catatan Retur?',
+        title: 'Hapus Data Retur?',
+        text: 'Catatan pengembalian barang ini akan dihapus.',
         icon: 'warning',
         showCancelButton: true,
+        confirmButtonColor: '#ef4444',
         confirmButtonText: 'Ya, Hapus'
-      }).then(res => {
+      }).then((res) => {
         if (res.isConfirmed) {
-          rawReturData = rawReturData.filter(r => r.id !== id);
+          rawReturData = rawReturData.filter(x => x.id !== id);
           localStorage.setItem('ouffice_retur_data', JSON.stringify(rawReturData));
-          loadRetur();
+          renderRetur(rawReturData);
+          if (CUSTOM_GAS_URL) {
+            fetch(CUSTOM_GAS_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: 'deleteRetur', id: id })
+            }).catch(() => {});
+          }
           Swal.fire({ icon: 'success', title: 'Retur Terhapus!', timer: 1000, showConfirmButton: false });
         }
       });
     }
 
     function filterReturData() {
-      const q = (document.getElementById('searchRetur').value || '').toLowerCase().trim();
-      if (!q) {
-        loadRetur();
-        return;
-      }
-      const filtered = rawReturData.filter(r => 
-        (r.namaBarang || '').toLowerCase().includes(q) ||
-        (r.asal || '').toLowerCase().includes(q) ||
-        (r.gudang || '').toLowerCase().includes(q) ||
-        (r.catatan || '').toLowerCase().includes(q)
-      );
-
-      const container = document.getElementById('returTableContainer');
-      if (container) {
-        container.innerHTML = `
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
-              <thead class="bg-slate-900 text-white uppercase text-[10px]">
-                <tr>
-                  <th class="py-2.5 px-3">Tanggal</th>
-                  <th class="py-2.5 px-3">Gudang Tujuan</th>
-                  <th class="py-2.5 px-3">Nama Barang</th>
-                  <th class="py-2.5 px-3 text-center">Qty</th>
-                  <th class="py-2.5 px-3">Asal Retur</th>
-                  <th class="py-2.5 px-3">Status</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100">
-                ${filtered.map(r => `
-                  <tr>
-                    <td class="py-2.5 px-3">${formatDateOnly(r.tanggal)}</td>
-                    <td class="py-2.5 px-3 font-bold">${r.gudang}</td>
-                    <td class="py-2.5 px-3 font-bold">${r.namaBarang}</td>
-                    <td class="py-2.5 px-3 text-center">${r.quantity} ${r.satuan}</td>
-                    <td class="py-2.5 px-3">${r.asal}</td>
-                    <td class="py-2.5 px-3 text-center">${r.status}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
-        `;
-      }
+      const q = (document.getElementById('searchRetur').value || '').toLowerCase();
+      renderRetur(rawReturData.filter(r => (r.namaBarang||'').toLowerCase().includes(q) || (r.asalRetur||'').toLowerCase().includes(q)));
     }
-
-    function loadUsers() {
-      const tbody1 = document.getElementById('userTableBody');
-      const tbody2 = document.getElementById('usersViewTableBody');
-      const isMasterAdmin = currentUser && currentUser.role === 'Master Admin';
-
-      const html = rawUsersData.map(u => `
-        <tr class="hover:bg-slate-50 transition">
-          <td class="py-2.5 px-3 font-bold text-slate-800">${u.nama || u.username}</td>
-          <td class="py-2.5 px-3 font-mono text-[11px] text-slate-600">${u.username}</td>
-          <td class="py-2.5 px-3">
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${u.role === 'Master Admin' ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-700'}">${u.role}</span>
-          </td>
-          <td class="py-2.5 px-3 text-center">
-            ${isMasterAdmin && u.username !== currentUser.username ? `
-              <button onclick="deleteUser('${u.id}')" class="text-rose-600 hover:text-rose-800 p-1"><i class="fa-solid fa-trash"></i></button>
-            ` : '-'}
-          </td>
-        </tr>
-      `).join('');
-
-      if (tbody1) tbody1.innerHTML = html;
-      if (tbody2) tbody2.innerHTML = html;
+    function openReturModal() {
+      document.getElementById('returForm').reset();
+      document.getElementById('formReturId').value = '';
+      document.getElementById('modalReturTitle').innerText = 'Input Retur Barang';
+      document.getElementById('formReturTanggal').value = new Date().toISOString().split('T')[0];
+      const datalist = document.getElementById('returBarangList');
+      if (datalist) datalist.innerHTML = [...new Set(rawInventoryData.map(i => i.namaBarang))].map(b => `<option value="${b}"></option>`).join('');
+      document.getElementById('returModal').classList.remove('hidden');
     }
-
-    function openUserManagementModal() {
-      if (!currentUser || currentUser.role !== 'Master Admin') {
-        Swal.fire('Akses Terbatas', 'Hanya Master Admin yang dapat mengelola pengguna.', 'warning');
-        return;
-      }
-      loadUsers();
-      document.getElementById('userModal').classList.remove('hidden');
-    }
-
-    function closeUserManagementModal() {
-      document.getElementById('userModal').classList.add('hidden');
-    }
-
-    function handleAddUser(e) {
+    function closeReturModal() { document.getElementById('returModal').classList.add('hidden'); }
+    function handleReturSubmit(e) {
       e.preventDefault();
-      const n = document.getElementById('newNama').value.trim();
-      const u = document.getElementById('newUsername').value.trim();
-      const p = document.getElementById('newPassword').value;
-      const r = document.getElementById('newRole').value;
-
-      if (rawUsersData.some(x => x.username.toLowerCase() === u.toLowerCase())) {
-        Swal.fire('Peringatan', 'Username sudah digunakan!', 'warning');
-        return;
+      const id = document.getElementById('formReturId').value;
+      const p = {
+        id: id || `RTR-${Date.now()}`,
+        tanggal: document.getElementById('formReturTanggal').value,
+        gudang: document.getElementById('formReturGudang').value,
+        namaBarang: document.getElementById('formReturNamaBarang').value.trim(),
+        quantity: Number(document.getElementById('formReturQuantity').value) || 1,
+        satuan: document.getElementById('formReturSatuan').value.trim() || 'Pcs',
+        asalRetur: document.getElementById('formReturAsal').value.trim(),
+        catatan: document.getElementById('formReturCatatan').value.trim(),
+        status: document.getElementById('formReturStatus').value
+      };
+      if (id) {
+        const idx = rawReturData.findIndex(x => x.id === id);
+        if (idx !== -1) rawReturData[idx] = p;
+      } else {
+        rawReturData.push(p);
       }
-
-      const newUser = { id: `USR-${Date.now()}`, nama: n, username: u, pass: p, role: r };
-      rawUsersData.push(newUser);
-      localStorage.setItem('ouffice_users_db', JSON.stringify(rawUsersData));
-      document.getElementById('addUserForm').reset();
-      loadUsers();
-      Swal.fire({ icon: 'success', title: 'User Berhasil Ditambahkan!', timer: 1000, showConfirmButton: false });
-    }
-
-    function deleteUser(id) {
-      if (!currentUser || currentUser.role !== 'Master Admin') return;
-      Swal.fire({
-        title: 'Hapus User ini?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Ya, Hapus'
-      }).then(res => {
-        if (res.isConfirmed) {
-          rawUsersData = rawUsersData.filter(u => u.id !== id);
-          localStorage.setItem('ouffice_users_db', JSON.stringify(rawUsersData));
-          loadUsers();
-          Swal.fire({ icon: 'success', title: 'User Terhapus!', timer: 1000, showConfirmButton: false });
-        }
-      });
+      localStorage.setItem('ouffice_retur_data', JSON.stringify(rawReturData));
+      renderRetur(rawReturData);
+      closeReturModal();
+      if (CUSTOM_GAS_URL) {
+        fetch(CUSTOM_GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: id ? 'updateRetur' : 'addRetur', id: id, ...p })
+        }).catch(() => {});
+      }
+      Swal.fire({ icon: 'success', title: 'Retur Tersimpan!', timer: 1000, showConfirmButton: false });
     }
 
     function openHistoryModal() {
+      document.getElementById('historyModal').classList.remove('hidden');
+      loadLoginHistory();
+    }
+    function closeHistoryModal() { document.getElementById('historyModal').classList.add('hidden'); }
+
+    function loadLoginHistory() {
       const tbody = document.getElementById('historyTableBody');
       if (tbody) {
-        if (rawLoginHistory.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">Belum ada riwayat aktivitas login.</td></tr>`;
-        } else {
-          tbody.innerHTML = rawLoginHistory.map((h, idx) => `
-            <tr class="hover:bg-slate-50">
-              <td class="py-2.5 px-3 text-center text-slate-400 font-mono">${idx + 1}</td>
-              <td class="py-2.5 px-3 font-mono text-[11px] text-slate-600">${h.tanggal}</td>
-              <td class="py-2.5 px-3 font-bold text-slate-800">${h.username}</td>
-              <td class="py-2.5 px-3 text-slate-600 font-semibold">${h.role}</td>
-              <td class="py-2.5 px-3 text-center">
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${h.status === 'Berhasil' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${h.status}</span>
-              </td>
-            </tr>
-          `).join('');
-        }
+        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium"><i class="fa-solid fa-spinner fa-spin mr-2"></i> Memuat riwayat login...</td></tr>`;
       }
-      document.getElementById('historyModal').classList.remove('hidden');
+      if (CUSTOM_GAS_URL) {
+        fetch(`${CUSTOM_GAS_URL}?action=readLoginHistory`)
+          .then(r => r.json())
+          .then(res => {
+            renderLoginHistory((res && res.history) ? res.history : []);
+          })
+          .catch(() => renderLoginHistory([]));
+      } else {
+        renderLoginHistory([]);
+      }
     }
 
-    function closeHistoryModal() {
-      document.getElementById('historyModal').classList.add('hidden');
+    function renderLoginHistory(history) {
+      const tbody = document.getElementById('historyTableBody');
+      if (!tbody) return;
+      if (!history || history.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-medium">Belum ada catatan riwayat login.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = history.map((item, idx) => {
+        const isSukses = (item.status || '').toLowerCase().includes('sukses');
+        const statusBadge = isSukses
+          ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Sukses</span>'
+          : '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">Gagal</span>';
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="py-2.5 px-3 text-center text-slate-400 font-mono">${idx + 1}</td>
+            <td class="py-2.5 px-3 font-mono text-[11px] text-slate-600 whitespace-nowrap">${item.waktu || '-'}</td>
+            <td class="py-2.5 px-3 font-bold text-slate-800">${item.username || '-'}</td>
+            <td class="py-2.5 px-3 text-slate-600 font-semibold">${item.role || '-'}</td>
+            <td class="py-2.5 px-3 text-center">${statusBadge}</td>
+          </tr>
+        `;
+      }).join('');
     }
 
-    function openScannerModal(target = 'search') {
-      activeScanTarget = target;
+    async function openScannerModal(target) {
+      activeScanTarget = target || 'search';
       const modal = document.getElementById('scannerModal');
       const statusText = document.getElementById('scannerStatusText');
       if (modal) modal.classList.remove('hidden');
-      if (statusText) statusText.innerText = 'Menyiapkan kamera...';
+      if (statusText) statusText.innerText = 'Menginisialisasi kamera...';
 
-      startScanner();
+      try {
+        if (html5QrScannerInstance) {
+          try { await html5QrScannerInstance.stop(); } catch(e){}
+        }
+
+        html5QrScannerInstance = new Html5Qrcode("qrReader");
+        await html5QrScannerInstance.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: { width: 220, height: 220 } },
+          (decodedText) => {
+            if (activeScanTarget === 'search') {
+              const searchInput = document.getElementById('searchInput');
+              if (searchInput) searchInput.value = decodedText;
+              filterData();
+            } else if (activeScanTarget === 'form') {
+              const snInput = document.getElementById('formSerialNumber');
+              if (snInput) {
+                const currentVal = snInput.value.trim();
+                snInput.value = currentVal ? `${currentVal} ${decodedText}` : decodedText;
+                updateSnBadge();
+              }
+            } else if (activeScanTarget === 'mutasi') {
+              const mutasiSnInput = document.getElementById('formMutasiSN');
+              if (mutasiSnInput) {
+                const currentVal = mutasiSnInput.value.trim();
+                mutasiSnInput.value = currentVal ? `${currentVal} ${decodedText}` : decodedText;
+                updateMutasiSnBadge();
+              }
+            }
+            closeScannerModal();
+            Swal.fire({ icon: 'success', title: 'QR Terbaca!', text: decodedText, timer: 1200, showConfirmButton: false });
+          },
+          () => {}
+        );
+        if (statusText) statusText.innerText = 'Arahkan kamera ke QR Code / Barcode';
+      } catch (err) {
+        if (statusText) statusText.innerText = 'Gagal mengakses kamera. Gunakan opsi foto/upload.';
+      }
     }
 
-    function closeScannerModal() {
-      stopScanner();
+    async function closeScannerModal() {
+      if (html5QrScannerInstance) {
+        try {
+          await html5QrScannerInstance.stop();
+          html5QrScannerInstance.clear();
+        } catch (e) {}
+        html5QrScannerInstance = null;
+      }
       const modal = document.getElementById('scannerModal');
       if (modal) modal.classList.add('hidden');
     }
 
-    function startScanner() {
-      if (isScannerStarting) return;
-      isScannerStarting = true;
+    function triggerFileInput() { document.getElementById('qrFileInput').click(); }
 
-      const statusText = document.getElementById('scannerStatusText');
-      const switchBtn = document.getElementById('btnSwitchCamera');
-
-      Html5Qrcode.getCameras().then(devices => {
-        isScannerStarting = false;
-        if (devices && devices.length) {
-          availableCameras = devices;
-          if (switchBtn && devices.length > 1) switchBtn.classList.remove('hidden');
-
-          const cameraId = availableCameras[currentCameraIndex % availableCameras.length].id;
-          if (!html5QrScannerInstance) {
-            html5QrScannerInstance = new Html5Qrcode("qrReader");
-          }
-
-          html5QrScannerInstance.start(
-            cameraId,
-            { fps: 15, qrbox: { width: 220, height: 220 } },
-            (decodedText) => onScanSuccess(decodedText),
-            () => {}
-          ).then(() => {
-            if (statusText) statusText.innerText = 'Arahkan kamera ke QR / Barcode';
-          }).catch(err => {
-            if (statusText) statusText.innerText = 'Gagal mengakses kamera: ' + err;
-          });
-        } else {
-          if (statusText) statusText.innerText = 'Kamera tidak ditemukan. Gunakan upload gambar.';
-        }
-      }).catch(err => {
-        isScannerStarting = false;
-        if (statusText) statusText.innerText = 'Izin kamera ditolak atau tidak didukung.';
-      });
-    }
-
-    function stopScanner() {
-      if (html5QrScannerInstance && html5QrScannerInstance.isScanning) {
-        html5QrScannerInstance.stop().then(() => {
-          html5QrScannerInstance.clear();
-        }).catch(() => {});
-      }
-    }
-
-    function toggleCameraSwitch() {
-      if (availableCameras.length > 1) {
-        currentCameraIndex = (currentCameraIndex + 1) % availableCameras.length;
-        stopScanner();
-        setTimeout(startScanner, 200);
-      }
-    }
-
-    function triggerFileInput() {
-      const fileInput = document.getElementById('qrFileInput');
-      if (fileInput) fileInput.click();
-    }
-
-    function handleFileUpload(event) {
-      const file = event.target.files[0];
+    async function handleFileUpload(e) {
+      const file = e.target.files[0];
       if (!file) return;
-
-      const statusText = document.getElementById('scannerStatusText');
-      if (statusText) statusText.innerText = 'Membaca gambar...';
-
-      if (!html5QrScannerInstance) {
-        html5QrScannerInstance = new Html5Qrcode("qrReader");
-      }
-
-      html5QrScannerInstance.scanFile(file, true)
-        .then(decodedText => onScanSuccess(decodedText))
-        .catch(() => {
-          if (statusText) statusText.innerText = 'QR / Barcode tidak terdeteksi pada gambar.';
-        });
+      const html5QrCode = new Html5Qrcode("qrReader");
+      html5QrCode.scanFile(file, true)
+        .then(decodedText => {
+          if (activeScanTarget === 'search') {
+            document.getElementById('searchInput').value = decodedText;
+            filterData();
+          } else if (activeScanTarget === 'mutasi') {
+            const snInput = document.getElementById('formMutasiSN');
+            if (snInput) {
+              const cur = snInput.value.trim();
+              snInput.value = cur ? `${cur} ${decodedText}` : decodedText;
+              updateMutasiSnBadge();
+            }
+          } else {
+            const snInput = document.getElementById('formSerialNumber');
+            if (snInput) {
+              const cur = snInput.value.trim();
+              snInput.value = cur ? `${cur} ${decodedText}` : decodedText;
+              updateSnBadge();
+            }
+          }
+          closeScannerModal();
+          Swal.fire({ icon: 'success', title: 'QR Terbaca!', text: decodedText, timer: 1200, showConfirmButton: false });
+        })
+        .catch(() => Swal.fire('Gagal', 'QR / Barcode tidak terdeteksi.', 'error'));
     }
 
-    function onScanSuccess(decodedText) {
-      closeScannerModal();
-      const scannedVal = String(decodedText || '').trim();
-      if (!scannedVal) return;
+    function openUserManagementModal() { document.getElementById('userModal').classList.remove('hidden'); loadUsers(); }
+    function closeUserManagementModal() { document.getElementById('userModal').classList.add('hidden'); }
+    function loadUsers() {
+      renderUsersTableDOM(rawUsersData);
 
-      if (activeScanTarget === 'search') {
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-          searchInput.value = scannedVal;
-          filterData();
-        }
-      } else if (activeScanTarget === 'form') {
-        const formSN = document.getElementById('formSerialNumber');
-        if (formSN) {
-          const currentVal = formSN.value.trim();
-          formSN.value = currentVal ? `${currentVal} ${scannedVal} ` : `${scannedVal} `;
-          updateSnBadge();
-        }
-      } else if (activeScanTarget === 'mutasi') {
-        const mutSN = document.getElementById('formMutasiSN');
-        if (mutSN) {
-          const currentVal = mutSN.value.trim();
-          mutSN.value = currentVal ? `${currentVal} ${scannedVal} ` : `${scannedVal} `;
-          updateMutasiSnBadge();
-        }
+      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+      if (isGASNative) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            if (res && res.success && Array.isArray(res.users) && res.users.length > 0) {
+              rawUsersData = res.users;
+              try { localStorage.setItem('ouffice_users_db', JSON.stringify(rawUsersData)); } catch(e){}
+              renderUsersTableDOM(rawUsersData);
+            }
+          })
+          .readUsers();
+      } else if (CUSTOM_GAS_URL) {
+        fetch(`${CUSTOM_GAS_URL}?action=readUsers`)
+          .then(r => r.json())
+          .then(res => {
+            if (res && res.success && Array.isArray(res.users) && res.users.length > 0) {
+              rawUsersData = res.users;
+              try { localStorage.setItem('ouffice_users_db', JSON.stringify(rawUsersData)); } catch(e){}
+              renderUsersTableDOM(rawUsersData);
+            }
+          })
+          .catch(() => {});
       }
+    }
+
+    function renderUsersTableDOM(users) {
+      const tbodyView = document.getElementById('usersViewTableBody');
+      const tbodyModal = document.getElementById('userTableBody');
+      if (!users || users.length === 0) {
+        const emptyHtml = `<tr><td colspan="4" class="py-4 text-center text-slate-400">Belum ada pengguna terdaftar.</td></tr>`;
+        if (tbodyView) tbodyView.innerHTML = emptyHtml;
+        if (tbodyModal) tbodyModal.innerHTML = emptyHtml;
+        return;
+      }
+      const rows = users.map(u => `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="py-3 px-3 font-bold text-slate-800">${u.nama || u.username}</td>
+          <td class="py-3 px-3 font-mono text-slate-600">${u.username}</td>
+          <td class="py-3 px-3"><span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${u.role === 'Master Admin' ? 'bg-purple-100 text-purple-700' : u.role === 'Manager' ? 'bg-sky-100 text-sky-700' : 'bg-emerald-100 text-emerald-700'}">${u.role || 'Staff Gudang'}</span></td>
+          <td class="py-3 px-3 text-center text-slate-400 font-semibold text-[11px]">${(u.username||'').toLowerCase() === 'admin' ? 'Master' : `<button onclick="deleteUserAccount('${u.id || u.username}')" class="text-rose-600 hover:text-rose-800 font-bold p-1"><i class="fa-solid fa-trash"></i></button>`}</td>
+        </tr>
+      `).join('');
+      if (tbodyView) tbodyView.innerHTML = rows;
+      if (tbodyModal) tbodyModal.innerHTML = rows;
+    }
+
+    function handleAddUser(e) {
+      e.preventDefault();
+      const nama = document.getElementById('newNama').value.trim();
+      const u = document.getElementById('newUsername').value.trim();
+      const p = document.getElementById('newPassword').value;
+      const r = document.getElementById('newRole').value;
+      if (!nama || !u || !p) return;
+
+      const newUser = { id: `USR-${Date.now()}`, nama, username: u, pass: p, password: p, role: r };
+      rawUsersData.push(newUser);
+      try { localStorage.setItem('ouffice_users_db', JSON.stringify(rawUsersData)); } catch(e){}
+      document.getElementById('addUserForm').reset();
+      renderUsersTableDOM(rawUsersData);
+
+      const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+      if (isGASNative) {
+        google.script.run
+          .withSuccessHandler(() => {
+            Swal.fire({ icon: 'success', title: 'User Tersimpan ke Google Sheets!', timer: 1200, showConfirmButton: false });
+          })
+          .addUser(newUser);
+      } else if (CUSTOM_GAS_URL) {
+        fetch(CUSTOM_GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'addUser', ...newUser })
+        })
+          .then(r => r.json())
+          .then(() => {
+            Swal.fire({ icon: 'success', title: 'User Tersimpan ke Google Sheets!', timer: 1200, showConfirmButton: false });
+          })
+          .catch(() => {
+            Swal.fire({ icon: 'success', title: 'User Tersimpan Secara Lokal!', timer: 1200, showConfirmButton: false });
+          });
+      } else {
+        Swal.fire({ icon: 'success', title: 'User Didaftarkan!', timer: 1000, showConfirmButton: false });
+      }
+    }
+
+    function deleteUserAccount(id) {
+      if (currentUser && currentUser.role !== 'Master Admin') return;
 
       Swal.fire({
-        icon: 'success',
-        title: 'Berhasil Membaca Kode',
-        text: scannedVal,
-        timer: 1400,
-        showConfirmButton: false
+        title: 'Hapus User ini?',
+        text: 'Pengguna akan dihapus permanen dari sistem dan Google Sheets.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Ya, Hapus'
+      }).then((res) => {
+        if (res.isConfirmed) {
+          rawUsersData = rawUsersData.filter(u => u.id !== id && u.username !== id);
+          try { localStorage.setItem('ouffice_users_db', JSON.stringify(rawUsersData)); } catch(e){}
+          renderUsersTableDOM(rawUsersData);
+
+          const isGASNative = (typeof google !== 'undefined' && google.script && google.script.run);
+          if (isGASNative) {
+            google.script.run
+              .withSuccessHandler(() => {
+                Swal.fire({ icon: 'success', title: 'User Terhapus dari Google Sheets!', timer: 1000, showConfirmButton: false });
+              })
+              .deleteUser(id);
+          } else if (CUSTOM_GAS_URL) {
+            fetch(CUSTOM_GAS_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify({ action: 'deleteUser', id: id })
+            })
+              .then(() => {
+                Swal.fire({ icon: 'success', title: 'User Terhapus dari Google Sheets!', timer: 1000, showConfirmButton: false });
+              })
+              .catch(() => {
+                Swal.fire({ icon: 'success', title: 'User Terhapus Lokal!', timer: 1000, showConfirmButton: false });
+              });
+          } else {
+            Swal.fire({ icon: 'success', title: 'User Dihapus', timer: 1000, showConfirmButton: false });
+          }
+        }
       });
     }
   </script>
